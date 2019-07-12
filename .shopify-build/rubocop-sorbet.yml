@@ -1,10 +1,16 @@
 containers:
   default:
-    docker: circleci/ruby:2.5.1-node-browsers
+    docker: "circleci/ruby:2.5.5"
 
 steps:
-- label: Tests
-  timeout: 5m
+- label: ":ruby: Specs"
+  dependencies:
+  - "bundler"
+  timeout: "5m"
   run:
-  - echo "Hello World"
-
+  - "bundle exec rspec"
+- label: "Rubocop"
+  dependencies:
+  - "bundler"
+  timeout: "5m"
+  run: "bundle exec rubocop"
