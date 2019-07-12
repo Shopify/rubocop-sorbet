@@ -20,3 +20,7 @@ Naming/FileName:
 
 Style/StringLiterals:
   EnforcedStyle: single_quotes
+
+Lint/HandleExceptions:
+  Exclude:
+  - Rakefile
