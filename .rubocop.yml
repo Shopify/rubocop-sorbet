@@ -1,0 +1,22 @@
+# This file strictly follows the rules defined in the Ruby style guide:
+#   http://shopify.github.io/ruby-style-guide/
+inherit_from:
+  - https://shopify.github.io/ruby-style-guide/rubocop.yml
+
+AllCops:
+  TargetRubyVersion: 2.5
+  Exclude:
+    - lib/waffle_cone/rbi_compilers/yard_type_parser.rb
+
+Naming/AccessorMethodName:
+  Enabled: false
+
+require:
+  - rubocop-sorbet
+
+Naming/FileName:
+  Exclude:
+  - lib/rubocop-sorbet.rb
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes

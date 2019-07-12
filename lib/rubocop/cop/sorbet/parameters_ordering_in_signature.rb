@@ -1,0 +1,67 @@
+# frozen_string_literal: true
+
+require 'rubocop'
+
+module RuboCop
+  module Cop
+    module Sorbet
+      # This cop checks for inconsistent ordering of parameters between the
+      # signature and the method definition. The sorbet-runtime gem raises
+      # when such inconsistency occurs.
+      #
+      # @example
+      #
+      #   # bad
+      #   sig { params(a: Integer, b: String).void }
+      #   def foo(b:, a:); end
+      #
+      #   # good
+      #   sig { params(a: Integer, b: String).void }
+      #   def foo(a:, b:); end
+      class ParametersOrderingInSignature < RuboCop::Cop::Cop
+        def_node_matcher(:signature?, <<-PATTERN)
+          (block (send nil? :sig) (args) ...)
+        PATTERN
+
+        def_node_search(:signature_params, <<-PATTERN)
+          (send _ :params ...)
+        PATTERN
+
+        def on_block(node)
+          return unless signature?(node)
+
+          sig_params = signature_params(node).first
+          sig_params_order =
+            if sig_params.nil?
+              []
+            else
+              sig_params.arguments.first.keys.map(&:value)
+            end
+
+          method_node = node.parent.children[node.sibling_index + 1]
+          return if method_node.nil? || method_node.type != :def
+          method_parameters = method_node.arguments
+
+          check_for_inconsistent_param_ordering(sig_params_order, method_parameters)
+        end
+
+        private
+
+        def check_for_inconsistent_param_ordering(sig_params_order, parameters)
+          parameters.each_with_index do |param, index|
+            param_name = param.children[0]
+            sig_param_name = sig_params_order[index]
+
+            next if param_name == sig_param_name
+
+            add_offense(
+              param,
+              message: "Inconsistent ordering of arguments at index #{index}. " \
+              "Expected `#{sig_param_name}` from sig above."
+            )
+          end
+        end
+      end
+    end
+  end
+end

@@ -1,0 +1,10 @@
+name: "rubocop-sorbet"
+
+type: "ruby"
+
+up:
+  - ruby: "2.5.5"
+  - "bundler"
+
+test:
+  run: "bin/rspec"
