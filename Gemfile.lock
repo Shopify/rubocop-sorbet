@@ -5,7 +5,6 @@ PATH
 
 GEM
   remote: https://rubygems.org/
-  remote: https://packages.shopify.io/shopify/gems/
   specs:
     abstract_type (0.0.7)
     adamantium (0.2.0)
@@ -69,8 +68,6 @@ GEM
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 1.7)
     ruby-progressbar (1.10.1)
-    shopify-cops (0.0.21)
-      rubocop (~> 0.53)
     thor (0.20.3)
     thread_safe (0.3.6)
     unf (0.1.4)
@@ -94,7 +91,6 @@ DEPENDENCIES
   rspec (~> 3.7)
   rubocop (~> 0.57)
   rubocop-sorbet!
-  shopify-cops
   unparser (~> 0.4.2)
 
 BUNDLED WITH
