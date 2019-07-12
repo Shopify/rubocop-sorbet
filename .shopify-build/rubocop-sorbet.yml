@@ -1,0 +1,16 @@
+containers:
+  default:
+    docker: "circleci/ruby:2.5.5"
+
+steps:
+- label: ":ruby: Specs"
+  dependencies:
+  - "bundler"
+  timeout: "5m"
+  run:
+  - "bundle exec rspec"
+- label: "Rubocop"
+  dependencies:
+  - "bundler"
+  timeout: "5m"
+  run: "bundle exec rubocop"
