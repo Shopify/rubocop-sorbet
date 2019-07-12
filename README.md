@@ -7,7 +7,7 @@ A collection of Rubocop rules for Sorbet.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'rubocop-sorbet', '~> 0.0.2'
+gem 'rubocop-sorbet'
 ```
 
 And then execute:
