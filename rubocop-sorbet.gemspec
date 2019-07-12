@@ -28,5 +28,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency('rspec', '~> 3.7')
   spec.add_development_dependency('unparser', '~> 0.4.2')
   spec.add_development_dependency('rubocop', '~> 0.57')
-  spec.add_development_dependency('shopify-cops')
 end
