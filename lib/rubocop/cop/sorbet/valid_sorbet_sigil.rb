@@ -25,10 +25,9 @@ module RuboCop
         def investigate(processed_source)
           return if processed_source.tokens.empty?
 
-          strictness = sorbet_typed_strictness(processed_source.raw_source)
-          return if valid_sorbet_strictness?(strictness)
+          sorbet_sigil_line = sorbet_typed_sigil_comment(processed_source)
 
-          if strictness.nil?
+          if sorbet_sigil_line.nil?
             token = processed_source.tokens.first
 
             add_offense(
@@ -38,11 +37,12 @@ module RuboCop
                 'Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).'
             )
           else
-            token = sorbet_typed_sigil_comment(processed_source)
+            strictness = sorbet_typed_strictness(sorbet_sigil_line)
+            return if valid_sorbet_strictness?(strictness)
 
             add_offense(
-              token,
-              location: token.pos,
+              sorbet_sigil_line,
+              location: sorbet_sigil_line.pos,
               message: "Invalid Sorbet sigil `#{strictness}`."
             )
           end
@@ -50,7 +50,7 @@ module RuboCop
 
         def autocorrect(_node)
           lambda do |corrector|
-            return unless sorbet_typed_strictness(processed_source.raw_source).nil?
+            return unless sorbet_typed_sigil_comment(processed_source).nil?
 
             token = processed_source.tokens.first
 
@@ -60,18 +60,20 @@ module RuboCop
 
         private
 
+        SORBET_SIGIL_REGEX = /#\s+typed:\s+([\w]+)/
+
         def sorbet_typed_sigil_comment(processed_source)
-          processed_source.find_token do |token|
-            /#\s+typed:\s+([\w]+)/.match?(token.text)
-          end
+          processed_source.tokens
+            .take_while { |token| token.type == :tCOMMENT }
+            .find { |token| SORBET_SIGIL_REGEX.match?(token.text) }
         end
 
         def valid_sorbet_strictness?(strictness)
           %w(ignore false true strict strong).include?(strictness)
         end
 
-        def sorbet_typed_strictness(raw_source)
-          raw_source.match(/\A(?:#[^\n]*\n)*#\s+typed:\s+([\w]+)/)&.captures&.first
+        def sorbet_typed_strictness(sigil_line)
+          sigil_line.text.match(SORBET_SIGIL_REGEX)&.captures&.first
         end
       end
     end
