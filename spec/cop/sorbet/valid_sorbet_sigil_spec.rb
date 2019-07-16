@@ -31,6 +31,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSorbetSigil, :config) do
         class Foo; end
       RUBY
     end
+
+    it 'allows empty spaces at the beginning of the file' do
+      expect_no_offenses(<<~RUBY)
+
+        # typed: true
+        class Foo; end
+      RUBY
+    end
   end
 
   describe('autocorrect') do
