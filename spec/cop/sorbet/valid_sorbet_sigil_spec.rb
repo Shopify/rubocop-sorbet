@@ -25,6 +25,16 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSorbetSigil, :config) do
       RUBY
     end
 
+    it 'enforces that the sigil must be at the beginning of the file' do
+      expect_offense(<<~RUBY)
+        # frozen_string_literal: true
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).
+        SOMETHING = <<~FOO
+          # typed: true
+        FOO
+      RUBY
+    end
+
     it 'allows Sorbet sigil' do
       expect_no_offenses(<<~RUBY)
         # typed: true
