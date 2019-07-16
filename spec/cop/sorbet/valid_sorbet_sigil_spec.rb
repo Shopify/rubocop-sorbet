@@ -20,16 +20,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSorbetSigil, :config) do
       expect_offense(<<~RUBY)
         # Hello world!
         # typed: foobar
-        ^^^^^^^^^^^^^^^ Invalid Sorbet sigil foobar.
-        class Foo; end
-      RUBY
-    end
-
-    it 'enforces that the Sorbet sigil must be valid' do
-      expect_offense(<<~RUBY)
-        # Hello world!
-        # typed: foobar
-        ^^^^^^^^^^^^^^^ Invalid Sorbet sigil foobar.
+        ^^^^^^^^^^^^^^^ Invalid Sorbet sigil `foobar`.
         class Foo; end
       RUBY
     end

@@ -43,7 +43,7 @@ module RuboCop
             add_offense(
               token,
               location: token.pos,
-              message: "Invalid Sorbet sigil #{strictness}."
+              message: "Invalid Sorbet sigil `#{strictness}`."
             )
           end
         end
