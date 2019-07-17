@@ -1,0 +1,3 @@
+Sorbet/ValidSorbetSigil:
+  Enabled: true
+  EnforcedStyle: typed_files

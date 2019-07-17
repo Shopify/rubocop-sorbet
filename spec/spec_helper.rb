@@ -14,4 +14,13 @@ RSpec.configure do |config|
   if config.files_to_run.one?
     config.default_formatter = 'doc'
   end
+
+  config.before(:each) do
+    config = RuboCop::ConfigLoader.default_configuration
+    RuboCop::ConfigLoader.default_configuration = config.merge(rubocop_sorbet_default_file)
+  end
+
+  def rubocop_sorbet_default_file
+    YAML.load(File.read(File.join(File.dirname(__FILE__), '..', 'config', 'default.yml')))
+  end
 end

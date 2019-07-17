@@ -8,7 +8,21 @@ module RuboCop
       # This cop checks that every Ruby file contains a valid Sorbet sigil.
       # Adapted from: https://gist.github.com/clarkdave/85aca4e16f33fd52aceb6a0a29936e52
       #
-      # @example
+      # @example RequireSigilOnAllFiles: false (default)
+      #
+      #  # bad
+      #  # (start of file)
+      #  # typed: no
+      #
+      #  # good
+      #  # (start of file)
+      #  class Foo; end
+      #
+      #  # good
+      #  # (start of file)
+      #  # typed: true
+      #
+      # @example RequireSigilOnAllFiles: true
       #
       #  # bad
       #  # (start of file)
@@ -30,12 +44,14 @@ module RuboCop
           if sorbet_sigil_line.nil?
             token = processed_source.tokens.first
 
-            add_offense(
-              token,
-              location: token.pos,
-              message: 'No Sorbet sigil found in file. ' \
-                'Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).'
-            )
+            if require_sorbet_sigil_on_all_files?
+              add_offense(
+                token,
+                location: token.pos,
+                message: 'No Sorbet sigil found in file. ' \
+                  'Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).'
+              )
+            end
           else
             strictness = sorbet_typed_strictness(sorbet_sigil_line)
             return if valid_sorbet_strictness?(strictness)
@@ -50,6 +66,7 @@ module RuboCop
 
         def autocorrect(_node)
           lambda do |corrector|
+            return unless require_sorbet_sigil_on_all_files?
             return unless sorbet_typed_sigil_comment(processed_source).nil?
 
             token = processed_source.tokens.first
@@ -59,6 +76,10 @@ module RuboCop
         end
 
         private
+
+        def require_sorbet_sigil_on_all_files?
+          !!cop_config['RequireSigilOnAllFiles']
+        end
 
         SORBET_SIGIL_REGEX = /#\s+typed:\s+([\w]+)/
 
