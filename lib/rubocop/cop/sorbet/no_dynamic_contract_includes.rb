@@ -65,11 +65,11 @@ module RuboCop
         TYPES_PATTERN = NodePattern.new("$(const (const _ :Types) ${:DateTime :String :Bool :Array :Int :Hash :Date})")
 
         def autocorrect(node)
-          if DYNAMIC_REFERENCE_PATTERN.match(node) # rubocop:disable Performance/RegexpMatch
+          if DYNAMIC_REFERENCE_PATTERN.match(node)
             correct_dynamic_class_reference(node)
-          elsif INSTANCE_PATTERN.match(node) # rubocop:disable Performance/RegexpMatch
+          elsif INSTANCE_PATTERN.match(node)
             correct_instance_class_reference(node)
-          elsif TYPES_PATTERN.match(node) # rubocop:disable Performance/RegexpMatch
+          elsif TYPES_PATTERN.match(node)
             correct_types_reference(node)
           end
         end
@@ -86,7 +86,7 @@ module RuboCop
         def correct_types_reference(node)
           full_source, klass = TYPES_PATTERN.match(node)
           klass_str = klass_to_str(klass)
-          new_source = format("Dry::Types[\"%s\"]", klass_str) # rubocop:disable Style/FormatStringToken
+          new_source = format("Dry::Types[\"%s\"]", klass_str)
           lambda do |corrector|
             corrector.replace(
               full_source.source_range,
@@ -98,7 +98,7 @@ module RuboCop
         def correct_instance_class_reference(node)
           full_source, klass = INSTANCE_PATTERN.match(node)
           klass_str = klass.to_s
-          new_source = format("Dry::Types::Definition.new(%s).constrained(type: %s)", klass_str, klass_str) # rubocop:disable Style/FormatStringToken
+          new_source = format("Dry::Types::Definition.new(%s).constrained(type: %s)", klass_str, klass_str)
           lambda do |corrector|
             corrector.replace(
               full_source.source_range,
@@ -111,7 +111,7 @@ module RuboCop
           full_source, strictness, primitive = DYNAMIC_REFERENCE_PATTERN.match(node)
           strictness_str = strictness.to_s.downcase
           primitive_str = klass_to_str(primitive)
-          new_source = format("Dry::Types[\"%s.%s\"]", strictness_str, primitive_str) # rubocop:disable Style/FormatStringToken
+          new_source = format("Dry::Types[\"%s.%s\"]", strictness_str, primitive_str)
           lambda do |corrector|
             corrector.replace(
               full_source.source_range,

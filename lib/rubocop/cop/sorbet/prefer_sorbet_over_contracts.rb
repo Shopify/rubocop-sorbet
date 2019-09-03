@@ -19,7 +19,7 @@ module RuboCop
         EXTEND_T_SIG_PATTERN = NodePattern.new("(send _ :extend (const (const _ :T) :Sig))")
 
         def autocorrect(node)
-          if CONTRACT_PATTERN.match(node) # rubocop:disable Performance/RegexpMatch
+          if CONTRACT_PATTERN.match(node)
             return convert_contract_multi_args(node)
           end
         end
