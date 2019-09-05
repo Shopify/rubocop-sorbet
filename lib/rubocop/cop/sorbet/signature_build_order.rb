@@ -24,6 +24,7 @@ module RuboCop
             :overridable,
             :soft,
             :checked,
+            :on_failure,
           ].each_with_index.to_h.freeze
 
         def_node_matcher(:signature?, <<~PATTERN)
