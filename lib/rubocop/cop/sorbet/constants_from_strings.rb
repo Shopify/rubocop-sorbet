@@ -43,7 +43,7 @@ module RuboCop
           add_offense(
             node,
             location: :selector,
-            message: "Don't use `#{node.method_name}`, it make the code harder to understand, less editor-friendly " \
+            message: "Don't use `#{node.method_name}`, it makes the code harder to understand, less editor-friendly, " \
               "and impossible to analyze. Replace `#{node.method_name}` with a case/when or a hash."
           )
         end
