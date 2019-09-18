@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = 'rubocop-sorbet'
   spec.version       = '0.3.1'
   spec.authors       = ['Ufuk Kayserilioglu', 'Alan Wu', 'Alexandre Terrasa', 'Peter Zhu']
-  spec.email         = ['rails@shopify.com']
+  spec.email         = ['ruby@shopify.com']
 
   spec.summary       = 'Automatic Sorbet code style checking tool.'
   spec.homepage      = 'https://github.com/shopify/rubocop-sorbet'
