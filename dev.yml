@@ -6,5 +6,6 @@ up:
   - ruby: "2.5.5"
   - "bundler"
 
-test:
-  run: "bin/rspec"
+commands:
+  test:   "bin/rspec"
+  style:  "bundle exec rubocop"
