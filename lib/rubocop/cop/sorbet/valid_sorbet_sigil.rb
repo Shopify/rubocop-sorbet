@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rubocop'
+require_relative 'sorbet_sigil'
 
 module RuboCop
   module Cop
@@ -36,21 +37,16 @@ module RuboCop
       #  # (start of file)
       #  # typed: true
       class ValidSorbetSigil < RuboCop::Cop::Cop
+        include SorbetSigil
+
         def investigate(processed_source)
           return if processed_source.tokens.empty?
 
           sorbet_sigil_line = sorbet_typed_sigil_comment(processed_source)
 
           if sorbet_sigil_line.nil?
-            token = processed_source.tokens.first
-
             if require_sorbet_sigil_on_all_files?
-              add_offense(
-                token,
-                location: token.pos,
-                message: 'No Sorbet sigil found in file. ' \
-                  'Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).'
-              )
+              add_missing_sigil_offense(processed_source)
             end
           else
             strictness = sorbet_typed_strictness(sorbet_sigil_line)
@@ -70,7 +66,6 @@ module RuboCop
             return unless sorbet_typed_sigil_comment(processed_source).nil?
 
             token = processed_source.tokens.first
-
             corrector.insert_before(token.pos, "# typed: false\n")
           end
         end
@@ -79,22 +74,6 @@ module RuboCop
 
         def require_sorbet_sigil_on_all_files?
           !!cop_config['RequireSigilOnAllFiles']
-        end
-
-        SORBET_SIGIL_REGEX = /#\s+typed:\s+([\w]+)/
-
-        def sorbet_typed_sigil_comment(processed_source)
-          processed_source.tokens
-            .take_while { |token| token.type == :tCOMMENT }
-            .find { |token| SORBET_SIGIL_REGEX.match?(token.text) }
-        end
-
-        def valid_sorbet_strictness?(strictness)
-          %w(ignore false true strict strong).include?(strictness)
-        end
-
-        def sorbet_typed_strictness(sigil_line)
-          sigil_line.text.match(SORBET_SIGIL_REGEX)&.captures&.first
         end
       end
     end
