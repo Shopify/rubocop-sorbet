@@ -6,8 +6,6 @@ module Sorbet
     EXTEND_T_SIG_PATTERN = RuboCop::NodePattern.new("(send _ :extend (const (const _ :T) :Sig))")
 
     INSTANCE_ARG_MATCHER = RuboCop::NodePattern.new("(def _ (:args $...) ...)")
-    ARG_NAMES_MATCHER = RuboCop::NodePattern.new("(defs _ _ (:args $...) ...)")
-    PRIVATE_CLASS_ARG_MATCHER = RuboCop::NodePattern.new("(send _ :private_class_method (defs _ _ (:args $...) ...))")
     CONST_PATTERN = RuboCop::NodePattern.new("(const nil? $_)")
     TWO_CONST_PATTERN = RuboCop::NodePattern.new("(const (const nil? $_) $_)")
     THREE_CONST_PATTERN = RuboCop::NodePattern.new("(const (const (const nil? $_) $_) $_)")
@@ -30,7 +28,6 @@ module Sorbet
       return_types = convert(ret)
       return format_source(arg_types, arg_names, return_types)
     rescue AutoCorrectError => e
-      puts e.message
       return nil
     end
 
@@ -120,7 +117,7 @@ module Sorbet
         return "T::Hash"
       when "Proc"
         return "T.proc.void"
-      when "Contracts::Num"
+      when "Num", "Contracts::Num"
         return "Numeric"
       when "Int", "Contracts::Int"
         return "Integer"

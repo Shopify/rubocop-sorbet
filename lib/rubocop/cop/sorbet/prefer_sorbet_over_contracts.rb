@@ -11,7 +11,7 @@ module RuboCop
 
         def on_send(node)
           contract_statement(node) do |statement|
-            add_offense(node, message: format(MSG, statement: statement))
+            add_offense(node, message: MSG)
           end
         end
 
