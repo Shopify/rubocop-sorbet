@@ -12,3 +12,8 @@ require_relative 'rubocop/cop/sorbet/keyword_argument_ordering'
 
 require_relative 'rubocop/cop/sorbet/sigils/valid_sigil'
 require_relative 'rubocop/cop/sorbet/sigils/has_sigil'
+require_relative 'rubocop/cop/sorbet/sigils/ignore_sigil'
+require_relative 'rubocop/cop/sorbet/sigils/false_sigil'
+require_relative 'rubocop/cop/sorbet/sigils/true_sigil'
+require_relative 'rubocop/cop/sorbet/sigils/strict_sigil'
+require_relative 'rubocop/cop/sorbet/sigils/strong_sigil'
