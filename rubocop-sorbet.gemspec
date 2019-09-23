@@ -5,9 +5,9 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = 'rubocop-sorbet'
-  spec.version       = '0.3.1'
+  spec.version       = '0.3.2'
   spec.authors       = ['Ufuk Kayserilioglu', 'Alan Wu', 'Alexandre Terrasa', 'Peter Zhu']
-  spec.email         = ['rails@shopify.com']
+  spec.email         = ['ruby@shopify.com']
 
   spec.summary       = 'Automatic Sorbet code style checking tool.'
   spec.homepage      = 'https://github.com/shopify/rubocop-sorbet'

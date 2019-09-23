@@ -1,0 +1,6 @@
+# https://services.shopify.io/services/rubocop-sorbet/production
+owners:
+  - Shopify/sorbet
+classification: library
+slack_channels:
+  - sorbet

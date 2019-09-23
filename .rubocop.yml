@@ -6,7 +6,6 @@ inherit_from:
 AllCops:
   TargetRubyVersion: 2.5
   Exclude:
-    - lib/waffle_cone/rbi_compilers/yard_type_parser.rb
     - vendor/**/*
 
 Naming/AccessorMethodName:
@@ -18,9 +17,6 @@ require:
 Naming/FileName:
   Exclude:
   - lib/rubocop-sorbet.rb
-
-Style/StringLiterals:
-  EnforcedStyle: single_quotes
 
 Lint/HandleExceptions:
   Exclude:
