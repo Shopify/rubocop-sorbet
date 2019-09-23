@@ -44,19 +44,19 @@ module RuboCop
 
         def on_const(node)
           types_statement(node) do |statement|
-            add_offense(node, message: format(MSG_PATH, statement: statement))
+            add_offense(node, message: MSG_PATH)
           end
           const_statement(node) do |statement|
-            add_offense(node, message: format(MSG_PATH, statement: statement))
+            add_offense(node, message: MSG_PATH)
           end
         end
 
         def on_send(node)
           instance_statement(node) do |statement|
-            add_offense(node, message: format(MSG, statement: statement))
+            add_offense(node, message: MSG)
           end
           include_statement(node) do |statement|
-            add_offense(node, message: format(MSG, statement: statement))
+            add_offense(node, message: MSG)
           end
         end
 

@@ -6,8 +6,6 @@ module Sorbet
     EXTEND_T_SIG_PATTERN = RuboCop::NodePattern.new("(send _ :extend (const (const _ :T) :Sig))")
 
     INSTANCE_ARG_MATCHER = RuboCop::NodePattern.new("(def _ (:args $...) ...)")
-    ARG_NAMES_MATCHER = RuboCop::NodePattern.new("(defs _ _ (:args $...) ...)")
-    PRIVATE_CLASS_ARG_MATCHER = RuboCop::NodePattern.new("(send _ :private_class_method (defs _ _ (:args $...) ...))")
     CONST_PATTERN = RuboCop::NodePattern.new("(const nil? $_)")
     TWO_CONST_PATTERN = RuboCop::NodePattern.new("(const (const nil? $_) $_)")
     THREE_CONST_PATTERN = RuboCop::NodePattern.new("(const (const (const nil? $_) $_) $_)")
