@@ -30,7 +30,6 @@ module Sorbet
       return_types = convert(ret)
       return format_source(arg_types, arg_names, return_types)
     rescue AutoCorrectError => e
-      puts e.message
       return nil
     end
 
@@ -120,7 +119,7 @@ module Sorbet
         return "T::Hash"
       when "Proc"
         return "T.proc.void"
-      when "Contracts::Num"
+      when "Num", "Contracts::Num"
         return "Numeric"
       when "Int", "Contracts::Int"
         return "Integer"
