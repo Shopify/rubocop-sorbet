@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rubocop'
+require_relative 'signature_cop'
 
 begin
   require 'unparser'
@@ -11,7 +12,7 @@ end
 module RuboCop
   module Cop
     module Sorbet
-      class SignatureBuildOrder < RuboCop::Cop::Cop
+      class SignatureBuildOrder < SignatureCop
         ORDER =
           [
             :type_parameters,
@@ -27,17 +28,11 @@ module RuboCop
             :on_failure,
           ].each_with_index.to_h.freeze
 
-        def_node_matcher(:signature?, <<~PATTERN)
-          (block (send nil? :sig) (args) ...)
-        PATTERN
-
         def_node_search(:root_call, <<~PATTERN)
           (send nil? {#{ORDER.keys.map(&:inspect).join(' ')}} ...)
         PATTERN
 
-        def on_block(node)
-          return unless signature?(node)
-
+        def on_signature(node)
           calls = call_chain(node.children[2]).map(&:method_name)
           return unless calls.any?
 

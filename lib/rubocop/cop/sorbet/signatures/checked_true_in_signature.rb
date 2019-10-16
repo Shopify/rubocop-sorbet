@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rubocop'
+require_relative 'signature_cop'
 
 module RuboCop
   module Cop
@@ -18,12 +19,8 @@ module RuboCop
       #
       #   # good
       #   sig { void }
-      class CheckedTrueInSignature < RuboCop::Cop::Cop
+      class CheckedTrueInSignature < SignatureCop
         include(RuboCop::Cop::RangeHelp)
-
-        def_node_matcher(:signature?, <<~PATTERN)
-          (block (send nil? :sig) (args) ...)
-        PATTERN
 
         def_node_search(:offending_node, <<~PATTERN)
           (send _ :checked (true))
@@ -36,9 +33,7 @@ module RuboCop
             '`include(WaffleCone::RuntimeChecks)` to this module and set other methods to `checked(false)`.'
         private_constant(:MESSAGE)
 
-        def on_block(node)
-          return unless signature?(node)
-
+        def on_signature(node)
           error = offending_node(node).first
           return unless error
 

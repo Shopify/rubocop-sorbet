@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rubocop'
+require_relative 'signature_cop'
 
 module RuboCop
   module Cop
@@ -19,14 +20,8 @@ module RuboCop
       #   # good
       #   sig { params(b: String, a: Integer).void }
       #   def foo(b:, a: 1); end
-      class KeywordArgumentOrdering < RuboCop::Cop::Cop
-        def_node_matcher(:signature?, <<-PATTERN)
-          (block (send nil? :sig) (args) ...)
-        PATTERN
-
-        def on_block(node)
-          return unless signature?(node)
-
+      class KeywordArgumentOrdering < SignatureCop
+        def on_signature(node)
           method_node = node.parent.children[node.sibling_index + 1]
           return if method_node.nil?
           method_parameters = method_node.arguments

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rubocop'
+require_relative 'signature_cop'
 
 module RuboCop
   module Cop
@@ -18,18 +19,12 @@ module RuboCop
       #   # good
       #   sig { params(a: Integer, b: String).void }
       #   def foo(a:, b:); end
-      class ParametersOrderingInSignature < RuboCop::Cop::Cop
-        def_node_matcher(:signature?, <<-PATTERN)
-          (block (send nil? :sig) (args) ...)
-        PATTERN
-
+      class ParametersOrderingInSignature < SignatureCop
         def_node_search(:signature_params, <<-PATTERN)
           (send _ :params ...)
         PATTERN
 
-        def on_block(node)
-          return unless signature?(node)
-
+        def on_signature(node)
           sig_params = signature_params(node).first
           sig_params_order =
             if sig_params.nil?
