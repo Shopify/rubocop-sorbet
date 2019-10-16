@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-require_relative '../../../lib/rubocop/cop/sorbet/keyword_argument_ordering'
+require_relative '../../../../lib/rubocop/cop/sorbet/signatures/keyword_argument_ordering'
 
 RSpec.describe(RuboCop::Cop::Sorbet::KeywordArgumentOrdering, :config) do
   subject(:cop) { described_class.new(config) }
