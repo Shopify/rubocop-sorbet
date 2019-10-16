@@ -1,3 +1,6 @@
 Sorbet/ValidSigil:
   Enabled: true
   EnforcedStyle: typed_files
+
+Sorbet/EnforceSignatures:
+  Enabled: true
