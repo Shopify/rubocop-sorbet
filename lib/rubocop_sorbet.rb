@@ -10,6 +10,7 @@ require_relative 'rubocop/cop/sorbet/signatures/checked_true_in_signature'
 require_relative 'rubocop/cop/sorbet/signatures/keyword_argument_ordering'
 require_relative 'rubocop/cop/sorbet/signatures/parameters_ordering_in_signature'
 require_relative 'rubocop/cop/sorbet/signatures/signature_build_order'
+require_relative 'rubocop/cop/sorbet/signatures/enforce_signatures'
 
 require_relative 'rubocop/cop/sorbet/sigils/valid_sigil'
 require_relative 'rubocop/cop/sorbet/sigils/has_sigil'
