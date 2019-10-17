@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-require_relative '../../../lib/rubocop/cop/sorbet/signature_build_order'
+require_relative '../../../../lib/rubocop/cop/sorbet/signatures/signature_build_order'
 
 RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
   subject(:cop) { described_class.new(config) }
