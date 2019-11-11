@@ -29,6 +29,15 @@ module RuboCop
           )
         PATTERN
 
+        def_node_matcher(:using_deprecated_type_alias_syntax?, <<-PATTERN)
+          (
+            send
+            (const nil? :T)
+            :type_alias
+            _
+          )
+        PATTERN
+
         def_node_matcher(:t_let?, <<-PATTERN)
           (
             send
@@ -58,6 +67,14 @@ module RuboCop
 
         def on_casgn(node)
           return unless binding_unaliased_type?(node) && !using_type_alias?(node.children[2])
+          if using_deprecated_type_alias_syntax?(node.children[2])
+            add_offense(
+              node.children[2],
+              message: "It looks like you're using the old `T.type_alias` syntax. " \
+              '`T.type_alias` now expects a block.'
+            )
+            return
+          end
           add_offense(
             node.children[2],
             message: "It looks like you're trying to bind a type to a constant. " \
@@ -67,6 +84,14 @@ module RuboCop
 
         def autocorrect(node)
           lambda do |corrector|
+            if using_deprecated_type_alias_syntax?(node)
+              corrector.replace(
+                node.source_range,
+                "T.type_alias { #{node.children[2].source} }"
+              )
+              return
+            end
+
             corrector.replace(
               node.source_range,
               "T.type_alias { #{node.source} }"
