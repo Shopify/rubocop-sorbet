@@ -14,18 +14,18 @@ module RuboCop
       #   FooOrBar = T.any(Foo, Bar)
       #
       #   # good
-      #   FooOrBar = T.type_alias(T.any(Foo, Bar))
+      #   FooOrBar = T.type_alias { T.any(Foo, Bar) }
       class BindingConstantWithoutTypeAlias < RuboCop::Cop::Cop
         def_node_matcher(:binding_unaliased_type?, <<-PATTERN)
           (casgn _ _ [#not_nil? #not_t_let? #method_needing_aliasing_on_t?])
         PATTERN
 
         def_node_matcher(:using_type_alias?, <<-PATTERN)
-          (
-            send
-            (const nil? :T)
-            :type_alias
-            _
+          (block
+            (send
+              (const nil? :T) :type_alias)
+              _
+              _
           )
         PATTERN
 
@@ -69,7 +69,7 @@ module RuboCop
           lambda do |corrector|
             corrector.replace(
               node.source_range,
-              "T.type_alias(#{node.source})"
+              "T.type_alias { #{node.source} }"
             )
           end
         end

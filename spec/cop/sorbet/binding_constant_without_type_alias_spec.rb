@@ -36,14 +36,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
 
     it('allows binding the return of T.any, T.all, etc when using T.type_alias') do
       expect_no_offenses(<<~RUBY)
-        A = T.type_alias(T.any(String, Integer))
-        B = T.type_alias(T.all(String, Integer))
-        C = T.type_alias(T.noreturn)
-        D = T.type_alias(T.class_of(String))
-        E = T.type_alias(T.proc.void)
-        F = T.type_alias(T.untyped)
-        G = T.type_alias(T.nilable(String))
-        H = T.type_alias(T.self_type)
+        A = T.type_alias { T.any(String, Integer) }
+        B = T.type_alias { T.all(String, Integer) }
+        C = T.type_alias { T.noreturn }
+        D = T.type_alias { T.class_of(String) }
+        E = T.type_alias { T.proc.void }
+        F = T.type_alias { T.untyped }
+        G = T.type_alias { T.nilable(String) }
+        H = T.type_alias { T.self_type }
       RUBY
     end
 
@@ -84,7 +84,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
 
     it('autocorrects to T.type_alias') do
       expect(autocorrect_source('Foo = T.any(String, Integer)'))
-        .to(eq('Foo = T.type_alias(T.any(String, Integer))'))
+        .to(eq('Foo = T.type_alias { T.any(String, Integer) }'))
     end
 
     it("doesn't crash when assigning constants by destructuring") do
