@@ -84,14 +84,6 @@ module RuboCop
 
         def autocorrect(node)
           lambda do |corrector|
-            if using_deprecated_type_alias_syntax?(node)
-              corrector.replace(
-                node.source_range,
-                "T.type_alias { #{node.children[2].source} }"
-              )
-              return
-            end
-
             corrector.replace(
               node.source_range,
               "T.type_alias { #{node.source} }"

@@ -118,10 +118,5 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
             ^^^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}
       RUBY
     end
-
-    it('autocorrects to the new `T.type_alias` block syntax') do
-      expect(autocorrect_source('Foo = T.type_alias(T.any(String, Integer))'))
-        .to(eq('Foo = T.type_alias { T.any(String, Integer) }'))
-    end
   end
 end
