@@ -14,13 +14,22 @@ module RuboCop
       #   FooOrBar = T.any(Foo, Bar)
       #
       #   # good
-      #   FooOrBar = T.type_alias(T.any(Foo, Bar))
+      #   FooOrBar = T.type_alias { T.any(Foo, Bar) }
       class BindingConstantWithoutTypeAlias < RuboCop::Cop::Cop
         def_node_matcher(:binding_unaliased_type?, <<-PATTERN)
           (casgn _ _ [#not_nil? #not_t_let? #method_needing_aliasing_on_t?])
         PATTERN
 
         def_node_matcher(:using_type_alias?, <<-PATTERN)
+          (block
+            (send
+              (const nil? :T) :type_alias)
+              _
+              _
+          )
+        PATTERN
+
+        def_node_matcher(:using_deprecated_type_alias_syntax?, <<-PATTERN)
           (
             send
             (const nil? :T)
@@ -58,6 +67,16 @@ module RuboCop
 
         def on_casgn(node)
           return unless binding_unaliased_type?(node) && !using_type_alias?(node.children[2])
+          if using_deprecated_type_alias_syntax?(node.children[2])
+            add_offense(
+              node.children[2],
+              message: "It looks like you're using the old `T.type_alias` syntax. " \
+              '`T.type_alias` now expects a block.' \
+              'Run Sorbet with the options "--autocorrect --error-white-list=5043" ' \
+              'to automatically upgrade to the new syntax.'
+            )
+            return
+          end
           add_offense(
             node.children[2],
             message: "It looks like you're trying to bind a type to a constant. " \
@@ -69,7 +88,7 @@ module RuboCop
           lambda do |corrector|
             corrector.replace(
               node.source_range,
-              "T.type_alias(#{node.source})"
+              "T.type_alias { #{node.source} }"
             )
           end
         end

@@ -12,6 +12,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
     'To do this, you must alias the type using `T.type_alias`.'
   end
 
+  def deprecation
+    "It looks like you're using the old `T.type_alias` syntax. " \
+    '`T.type_alias` now expects a block.' \
+    'Run Sorbet with the options "--autocorrect --error-white-list=5043" ' \
+    'to automatically upgrade to the new syntax.'
+  end
+
   describe('offenses') do
     it('disallows binding the return value of T.any, T.all, and others, without using T.type_alias') do
       expect_offense(<<~RUBY)
@@ -36,14 +43,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
 
     it('allows binding the return of T.any, T.all, etc when using T.type_alias') do
       expect_no_offenses(<<~RUBY)
-        A = T.type_alias(T.any(String, Integer))
-        B = T.type_alias(T.all(String, Integer))
-        C = T.type_alias(T.noreturn)
-        D = T.type_alias(T.class_of(String))
-        E = T.type_alias(T.proc.void)
-        F = T.type_alias(T.untyped)
-        G = T.type_alias(T.nilable(String))
-        H = T.type_alias(T.self_type)
+        A = T.type_alias { T.any(String, Integer) }
+        B = T.type_alias { T.all(String, Integer) }
+        C = T.type_alias { T.noreturn }
+        D = T.type_alias { T.class_of(String) }
+        E = T.type_alias { T.proc.void }
+        F = T.type_alias { T.untyped }
+        G = T.type_alias { T.nilable(String) }
+        H = T.type_alias { T.self_type }
       RUBY
     end
 
@@ -84,12 +91,33 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
 
     it('autocorrects to T.type_alias') do
       expect(autocorrect_source('Foo = T.any(String, Integer)'))
-        .to(eq('Foo = T.type_alias(T.any(String, Integer))'))
+        .to(eq('Foo = T.type_alias { T.any(String, Integer) }'))
     end
 
     it("doesn't crash when assigning constants by destructuring") do
       expect_no_offenses(<<~RUBY)
         A, B = [1, 2]
+      RUBY
+    end
+
+    it('disallows usage of the old T.type_alias() syntax') do
+      expect_offense(<<~RUBY)
+        A = T.type_alias(T.any(String, Integer))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}
+        B = T.type_alias(T.all(String, Integer))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}
+        C = T.type_alias(T.noreturn)
+            ^^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}
+        D = T.type_alias(T.class_of(String))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}
+        E = T.type_alias(T.proc.void)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}
+        F = T.type_alias(T.untyped)
+            ^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}
+        G = T.type_alias(T.nilable(String))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}
+        H = T.type_alias(T.self_type)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}
       RUBY
     end
   end
