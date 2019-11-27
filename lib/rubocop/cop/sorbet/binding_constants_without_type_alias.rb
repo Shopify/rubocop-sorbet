@@ -71,7 +71,9 @@ module RuboCop
             add_offense(
               node.children[2],
               message: "It looks like you're using the old `T.type_alias` syntax. " \
-              '`T.type_alias` now expects a block.'
+              '`T.type_alias` now expects a block.' \
+              'Run Sorbet with the options "--autocorrect --error-white-list=5043" ' \
+              'to automatically upgrade to the new syntax.'
             )
             return
           end
