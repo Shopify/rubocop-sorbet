@@ -28,4 +28,40 @@ RSpec.describe(RuboCop::Cop::Sorbet::KeywordArgumentOrdering, :config) do
       def foo; end
     RUBY
   end
+
+  it('does not add offense when splats are after keyword parameters') do
+    expect_no_offenses(<<~RUBY)
+      sig { params(a: String, b: Integer, c: String, d: Integer).void }
+      def foo(a, b:, c:, **d); end
+    RUBY
+  end
+
+  it('does not add offense when splats are after optional keyword parameters') do
+    expect_no_offenses(<<~RUBY)
+      sig { params(a: String, b: Integer, c: String, d: Integer).void }
+      def foo(a, b: 1, c: 'a', **d); end
+    RUBY
+  end
+
+  it('does not add offense when there is only a splat') do
+    expect_no_offenses(<<~RUBY)
+      sig { params(a: String).void }
+      def foo(**a); end
+    RUBY
+  end
+
+  it('does not add offense when there is a splat after a standard parameter') do
+    expect_no_offenses(<<~RUBY)
+      sig { params(a: String, b: Integer).void }
+      def foo(a, **b); end
+    RUBY
+  end
+
+  it('adds offense when optional arguments are after default ones and there is a splat') do
+    expect_offense(<<~RUBY)
+      sig { params(a: String, b: Integer, c: String, d: Integer).void }
+      def foo(a, b: 1, c:, **d); end
+                 ^^^^ Optional keyword arguments must be at the end of the parameter list.
+    RUBY
+  end
 end
