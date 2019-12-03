@@ -36,7 +36,8 @@ module RuboCop
             return unless extract_sigil(processed_source).nil?
 
             token = processed_source.tokens.first
-            corrector.insert_before(token.pos, "# typed: #{minimum_strictness || suggested_strictness}\n")
+            replace_with = suggested_strictness_level(minimum_strictness, suggested_strictness)
+            corrector.insert_before(token.pos, "# typed: #{replace_with}\n")
           end
         end
 
@@ -64,7 +65,7 @@ module RuboCop
 
           token = processed_source.tokens.first
           if require_sigil_on_all_files?
-            strictness = minimum_strictness || suggested_strictness
+            strictness = suggested_strictness_level(minimum_strictness, suggested_strictness)
             add_offense(
               token,
               location: token.pos,
@@ -73,6 +74,25 @@ module RuboCop
             )
           end
           false
+        end
+
+        def suggested_strictness_level(minimum_strictness, suggested_strictness)
+          # if no minimum strictness is set (eg. using Sorbet/HasSigil without config) then
+          # we always use the suggested strictness which defaults to `false`
+          return suggested_strictness unless minimum_strictness
+
+          # special case: if you're using Sorbet/IgnoreSigil without config, we should recommend `ignore`
+          return "ignore" if minimum_strictness == "ignore" && cop_config['SuggestedStrictness'].nil?
+
+          # if a minimum strictness is set (eg. you're using Sorbet/FalseSigil)
+          # we want to compare the minimum strictness and suggested strictness. this is because
+          # the suggested strictness might be higher than the minimum (eg. if you want all new files
+          # at a higher strictness level, without having to migrate existing files at lower levels).
+
+          suggested_level = STRICTNESS_LEVELS.index(suggested_strictness)
+          minimum_level = STRICTNESS_LEVELS.index(minimum_strictness)
+
+          suggested_level > minimum_level ? suggested_strictness : minimum_strictness
         end
 
         def check_strictness_not_empty(sigil, strictness)
