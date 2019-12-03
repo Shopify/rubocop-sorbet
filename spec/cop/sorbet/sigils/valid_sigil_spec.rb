@@ -205,4 +205,80 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
   end
+
+  describe('SuggestedStrictness: true, MinimumStrictness: false') do
+    let(:cop_config) do
+      {
+        'Enabled' => true,
+        'RequireSigilOnAllFiles' => true,
+        'MinimumStrictness' => 'false',
+        'SuggestedStrictness' => 'true',
+      }
+    end
+    it_should_behave_like 'offense for an invalid sigil'
+
+    it 'suggest the default strictness if the sigil is missing' do
+      expect_offense(<<~RUBY)
+        # frozen_string_literal: true
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: true` to start (you can also use `rubocop -a` to automatically add this).
+        class Foo; end
+      RUBY
+    end
+
+    describe('autocorrect') do
+      it_should_behave_like 'no autocorrect on files with sigil'
+
+      it('autocorrects by adding typed: true to file without sigil') do
+        expect(
+          autocorrect_source(<<~RUBY)
+            # frozen_string_literal: true
+            class Foo; end
+          RUBY
+        )
+          .to(eq(<<~RUBY))
+            # typed: true
+            # frozen_string_literal: true
+            class Foo; end
+          RUBY
+      end
+    end
+  end
+
+  describe('SuggestedStrictness: false, MinimumStrictness: ignore') do
+    let(:cop_config) do
+      {
+        'Enabled' => true,
+        'RequireSigilOnAllFiles' => true,
+        'MinimumStrictness' => 'ignore',
+        'SuggestedStrictness' => 'false',
+      }
+    end
+    it_should_behave_like 'offense for an invalid sigil'
+
+    it 'suggest the default strictness if the sigil is missing' do
+      expect_offense(<<~RUBY)
+        # frozen_string_literal: true
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).
+        class Foo; end
+      RUBY
+    end
+
+    describe('autocorrect') do
+      it_should_behave_like 'no autocorrect on files with sigil'
+
+      it('autocorrects by adding typed: false to file without sigil') do
+        expect(
+          autocorrect_source(<<~RUBY)
+            # frozen_string_literal: true
+            class Foo; end
+          RUBY
+        )
+          .to(eq(<<~RUBY))
+            # typed: false
+            # frozen_string_literal: true
+            class Foo; end
+          RUBY
+      end
+    end
+  end
 end
