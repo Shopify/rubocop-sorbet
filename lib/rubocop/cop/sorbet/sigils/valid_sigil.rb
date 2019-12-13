@@ -142,12 +142,12 @@ module RuboCop
 
         # Default is `'false'`
         def suggested_strictness
-          cop_config['SuggestedStrictness'] || 'false'
+          STRICTNESS_LEVELS.include?(cop_config['SuggestedStrictness']) ? cop_config['SuggestedStrictness'] : 'false'
         end
 
         # Default is `nil`
         def minimum_strictness
-          cop_config['MinimumStrictness']
+          cop_config['MinimumStrictness'] if STRICTNESS_LEVELS.include?(cop_config['MinimumStrictness'])
         end
       end
     end
