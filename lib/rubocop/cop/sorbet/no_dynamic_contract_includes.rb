@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # In preparation for adding Sorbet to the codebase we must remove all dynamic imports as these
 # make type checking impossible. The biggest single offender in our codebase is `Dry::Types.module`
@@ -23,8 +25,8 @@ module RuboCop
   module Cop
     module Sorbet
       class NoDynamicContractIncludes < Cop
-        MSG = "Sorbet disallows dynamic includes. Do not include Dry::Types.module directly; use direct path instead.".freeze
-        MSG_PATH = "Sorbet disallows dynamic includes. Use full Dry::Types path instead.".freeze
+        MSG = "Sorbet disallows dynamic includes. Do not include Dry::Types.module directly; use direct path instead."
+        MSG_PATH = "Sorbet disallows dynamic includes. Use full Dry::Types path instead."
 
         def_node_matcher :include_statement, <<-PATTERN
           (send _ :include (send (const (const _ :Dry) :Types) _))
@@ -43,19 +45,19 @@ module RuboCop
         PATTERN
 
         def on_const(node)
-          types_statement(node) do |statement|
+          types_statement(node) do |_statement|
             add_offense(node, message: MSG_PATH)
           end
-          const_statement(node) do |statement|
+          const_statement(node) do |_statement|
             add_offense(node, message: MSG_PATH)
           end
         end
 
         def on_send(node)
-          instance_statement(node) do |statement|
+          instance_statement(node) do |_statement|
             add_offense(node, message: MSG)
           end
-          include_statement(node) do |statement|
+          include_statement(node) do |_statement|
             add_offense(node, message: MSG)
           end
         end

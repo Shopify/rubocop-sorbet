@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Sorbet
   class SorbetFromContractService
     class AutoCorrectError < StandardError; end
@@ -5,17 +7,18 @@ module Sorbet
 
     EXTEND_T_SIG_PATTERN = RuboCop::NodePattern.new("(send _ :extend (const (const _ :T) :Sig))")
 
-    INSTANCE_ARG_MATCHER = RuboCop::NodePattern.new("(def _ (:args $...) ...)")
-    CONST_PATTERN = RuboCop::NodePattern.new("(const nil? $_)")
-    TWO_CONST_PATTERN = RuboCop::NodePattern.new("(const (const nil? $_) $_)")
-    THREE_CONST_PATTERN = RuboCop::NodePattern.new("(const (const (const nil? $_) $_) $_)")
-    FOUR_CONST_PATTERN = RuboCop::NodePattern.new("(const (const (const (const nil? $_) $_) $_) $_)")
+    CONST_PATTERN = RuboCop::NodePattern.new("(const {nil? (cbase)} $_)")
+    TWO_CONST_PATTERN = RuboCop::NodePattern.new("(const (const {nil? (cbase)} $_) $_)")
+    THREE_CONST_PATTERN = RuboCop::NodePattern.new("(const (const (const {nil? (cbase)} $_) $_) $_)")
+    FOUR_CONST_PATTERN = RuboCop::NodePattern.new("(const (const (const (const {nil? (cbase)} $_) $_) $_) $_)")
     SEND_PATTERN = RuboCop::NodePattern.new("(send $_ _ $...)")
     NIL_PATTERN = RuboCop::NodePattern.new("nil")
+    SELF_PATTERN = RuboCop::NodePattern.new("self")
     HASH_PATTERN = RuboCop::NodePattern.new("(hash $...)")
     PAIR_MATCHER = RuboCop::NodePattern.new("(pair ({sym str} $_) $_)")
-    CONST_PAIR_MATCHER = RuboCop::NodePattern.new("(hash (pair (const nil? $_) (const nil? $_)))")
+    CONST_PAIR_MATCHER = RuboCop::NodePattern.new("(hash (pair (const {nil? (cbase)} $_) (const {nil? (cbase)} $_)))")
     CONTRACT_ARGS_PATTERN = RuboCop::NodePattern.new("({arg optarg blockarg kwoptarg kwarg} $_ ...)")
+    TUPLE_PATTERN = RuboCop::NodePattern.new("(array $...)")
 
     ARG_NAMES_MATCHER = RuboCop::NodePattern.new("(defs _ _ (:args $...) ...)")
     INSTANCE_ARG_MATCHER = RuboCop::NodePattern.new("(def _ (:args $...) ...)")
@@ -26,14 +29,15 @@ module Sorbet
       arg_types = args.map { |arg| convert(arg) }.flatten
       return nil unless arg_types.any? && arg_types.all?
       return_types = convert(ret)
-      return format_source(arg_types, arg_names, return_types)
+      format_source(arg_types, arg_names, return_types)
     rescue AutoCorrectError => e
-      return nil
+      puts e.message
+      nil
     end
 
     def self.format_source(arg_types, arg_names, return_types)
-      if arg_types.length == 1 && arg_types[0] == "None"
-        return format("sig { returns(%s) }", return_types)
+      if arg_names.empty?
+        format("sig { returns(%s) }", return_types)
       else
         params = arg_names.zip(arg_types).map do |arg, arg_type|
           arg_name = CONTRACT_ARGS_PATTERN.match(arg).to_s
@@ -84,6 +88,9 @@ module Sorbet
       if NIL_PATTERN.match(src)
         return nil
       end
+      if SELF_PATTERN.match(src)
+        return "T.self_type"
+      end
       if CONST_PAIR_MATCHER.match(src)
         first, second = CONST_PAIR_MATCHER.match(src)
         return format("%s, %s", first, second)
@@ -92,8 +99,12 @@ module Sorbet
         hash_vals = hash_entries(src).map { |match| "#{match[0]}: #{convert(match[1])}" }.join(", ")
         return format("{%s}", hash_vals)
       end
+      if TUPLE_PATTERN.match(src)
+        values = TUPLE_PATTERN.match(src)
+        return format("[%s]", values.map { |value| convert(value) }.join(", "))
+      end
       # Know we (at least) cannot handle literals
-      raise AutoCorrectError.new("Could not recognize source #{src}")
+      raise AutoCorrectError, "Could not recognize source #{src}"
     end
 
     # Given a hash node, return a list of key,value
@@ -110,17 +121,17 @@ module Sorbet
     def self.map_const(contracts_value)
       case contracts_value.to_s
       when "Boolean", "Bool", "Contracts::Bool"
-        return "T::Boolean"
+        "T::Boolean"
       when "Any", "Contracts::Any"
-        return "T.untyped"
+        "T.untyped"
       when "Hash"
-        return "T::Hash"
+        "T::Hash[T.untyped, T.untyped]"
       when "Proc"
-        return "T.proc.void"
-      when "Num", "Contracts::Num"
-        return "Numeric"
-      when "Int", "Contracts::Int"
-        return "Integer"
+        "T.proc.void"
+      when "Num", "Contracts::Num", "Neg", "Contracts::Neg", "Pos", "Contracts::Pos"
+        "Numeric"
+      when "Int", "Contracts::Int", "Nat", "Contracts::Nat", "NatPos", "Contracts::NatPos"
+        "Integer"
       else
         contracts_value.to_s
       end
@@ -130,27 +141,26 @@ module Sorbet
     def self.map_send(contracts_value)
       case contracts_value
       when "Maybe", "Contracts::Maybe"
-        return "T.nilable(%s)"
+        "T.nilable(%s)"
       when "ArrayOf", "Contracts::ArrayOf"
-        return "T::Array[%s]"
+        "T::Array[%s]"
       when "HashOf", "Contracts::HashOf"
-        return "T::Hash[%s]"
+        "T::Hash[%s]"
       when "Or", "Contracts::Or"
-        return "T.any(%s)"
-      when "KeywordArgs"
+        "T.any(%s)"
+      when "KeywordArgs", "Contracts::KeywordArgs"
         # KeywordArgs is handled specifically
-        return "KeywordArgs"
-      when "Optional"
-        return "%s"
+        "KeywordArgs"
+      when "Optional", "Contracts::Optional"
+        "%s"
       when "SetOf"
-        return "T::Set[%s]"
+        "T::Set[%s]"
       when "TryOf"
-        return "Try[%s]"
+        "Try[%s]"
       else
         # Know we (at least) cannot handle Enum and KeywordArgs
-        raise AutoCorrectError.new("Could not recognize send value #{contracts_value}")
+        raise AutoCorrectError, "Could not recognize send value #{contracts_value}"
       end
     end
   end
 end
-# rubocop:enable Style/FormatStringToken, Performance/RegexpMatch
