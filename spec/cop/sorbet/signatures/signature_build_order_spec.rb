@@ -16,7 +16,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
 
         sig { void.abstract }
 
-        sig { void.implementation.soft }
+        sig { void.soft }
 
         sig { void.override.checked(false) }
 

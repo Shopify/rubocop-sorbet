@@ -20,7 +20,6 @@ module RuboCop
             :returns,
             :void,
             :abstract,
-            :implementation,
             :override,
             :overridable,
             :soft,
