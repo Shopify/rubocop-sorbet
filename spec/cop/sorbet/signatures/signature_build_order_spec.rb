@@ -10,26 +10,26 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
   describe('offenses') do
     it('allows the correct order') do
       expect_no_offenses(<<~RUBY)
-        sig { params(x: Integer).returns(Integer).abstract }
+        sig { abstract.params(x: Integer).returns(Integer) }
 
         sig { params(x: Integer).void }
 
-        sig { void.abstract }
+        sig { abstract.void }
 
         sig { void.soft }
 
-        sig { void.override.checked(false) }
+        sig { override.void.checked(false) }
 
-        sig { void.overridable }
+        sig { overridable.void }
       RUBY
     end
 
     it('allows using multiline sigs') do
       expect_no_offenses(<<~RUBY)
         sig do
-          params(x: Integer)
+          abstract
+            .params(x: Integer)
             .returns(Integer)
-            .abstract
         end
       RUBY
     end

@@ -15,13 +15,13 @@ module RuboCop
       class SignatureBuildOrder < SignatureCop
         ORDER =
           [
+            :abstract,
+            :override,
+            :overridable,
             :type_parameters,
             :params,
             :returns,
             :void,
-            :abstract,
-            :override,
-            :overridable,
             :soft,
             :checked,
             :on_failure,
