@@ -130,29 +130,60 @@ RSpec.describe(RuboCop::Cop::Sorbet::PreferSorbetOverContracts, :config) do
     end
 
     describe "Auto-corrects void" do
-      let(:source) do
-        <<~RUBY
-          class Example
-            Contract String => nil
-            def self.cool_thing(str)
-            end
+      context 'there is a param' do
+        context 'param is string' do
+          let(:source) do
+            <<~RUBY
+              class Example
+                Contract String => nil
+                def self.cool_thing(str)
+                end
+              end
+            RUBY
           end
-        RUBY
-      end
-      let(:fixed_source) do
-        <<~RUBY
-          class Example
-            extend T::Sig
-            sig { params(str: String).void }
-            def self.cool_thing(str)
-            end
+          let(:fixed_source) do
+            <<~RUBY
+              class Example
+                extend T::Sig
+                sig { params(str: String).void }
+                def self.cool_thing(str)
+                end
+              end
+            RUBY
           end
-        RUBY
+
+          it "autocorrects the offense" do
+            new_source = autocorrect_source(source)
+            expect(new_source).to(eq(fixed_source))
+          end
+        end
       end
 
-      it "autocorrects the offense" do
-        new_source = autocorrect_source(source)
-        expect(new_source).to(eq(fixed_source))
+      context 'there is no param' do
+        let(:source) do
+          <<~RUBY
+            class Example
+              Contract None => nil
+              def self.cool_thing
+              end
+            end
+          RUBY
+        end
+        let(:fixed_source) do
+          <<~RUBY
+            class Example
+              extend T::Sig
+              sig { void }
+              def self.cool_thing
+              end
+            end
+          RUBY
+        end
+
+        it "autocorrects the offense" do
+          new_source = autocorrect_source(source)
+          expect(new_source).to(eq(fixed_source))
+        end
       end
     end
 
@@ -821,6 +852,125 @@ RSpec.describe(RuboCop::Cop::Sorbet::PreferSorbetOverContracts, :config) do
 
         it "autocorrects the offense" do
           new_source = autocorrect_source(src)
+          expect(new_source).to(eq(fixed_source))
+        end
+      end
+    end
+
+    describe "Autocorrect works for shorthand no param list" do
+      context 'return param is a boolean' do
+        let(:source) do
+          <<~RUBY
+            class ClassWithShorthandNoParams
+              Contract Bool
+              def returns_bool
+                return false
+              end
+            end
+          RUBY
+        end
+        let(:fixed_source) do
+          <<~RUBY
+            class ClassWithShorthandNoParams
+              extend T::Sig
+              sig { returns(T::Boolean) }
+              def returns_bool
+                return false
+              end
+            end
+          RUBY
+        end
+
+        it "autocorrects the offense" do
+          new_source = autocorrect_source(source)
+          expect(new_source).to(eq(fixed_source))
+        end
+
+      end
+
+      context 'return param is a hash' do
+        let(:source) do
+          <<~RUBY
+            class ClassWithShorthandNoParams
+              Contract HashOf[Symbol => Symbol]
+              def returns_bool
+                return false
+              end
+            end
+          RUBY
+        end
+        let(:fixed_source) do
+          <<~RUBY
+            class ClassWithShorthandNoParams
+              extend T::Sig
+              sig { returns(T::Hash[Symbol, Symbol]) }
+              def returns_bool
+                return false
+              end
+            end
+          RUBY
+        end
+
+        it "autocorrects the offense" do
+          new_source = autocorrect_source(source)
+          expect(new_source).to(eq(fixed_source))
+        end
+      end
+
+      context 'return param is nil' do
+        let(:source) do
+          <<~RUBY
+            class ClassWithShorthandNoParams
+              Contract nil
+              def returns_bool
+                return false
+              end
+            end
+          RUBY
+        end
+        let(:fixed_source) do
+          <<~RUBY
+            class ClassWithShorthandNoParams
+              extend T::Sig
+              sig { void }
+              def returns_bool
+                return false
+              end
+            end
+          RUBY
+        end
+
+        it "autocorrects the offense" do
+          new_source = autocorrect_source(source)
+          expect(new_source).to(eq(fixed_source))
+        end
+      end
+
+      context 'return param is any' do
+        let(:source) do
+          <<~RUBY
+            class ClassWithShorthandNoParams
+              Contract Any
+              def returns_bool
+                return false
+              end
+            end
+          RUBY
+        end
+        let(:fixed_source) do
+          <<~RUBY
+            class ClassWithShorthandNoParams
+              extend T::Sig
+              sig { returns(T.untyped) }
+              def returns_bool
+                return false
+              end
+            end
+          RUBY
+        end
+
+        it "autocorrects the offense" do
+          new_source = autocorrect_source(source)
           expect(new_source).to(eq(fixed_source))
         end
       end

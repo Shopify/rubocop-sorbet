@@ -27,7 +27,6 @@ module Sorbet
     def self.source(node, args, ret)
       arg_names = arg_names(node)
       arg_types = args.map { |arg| convert(arg) }.flatten
-      return nil unless arg_types.any? && arg_types.all?
       return_types = convert(ret)
       format_source(arg_types, arg_names, return_types)
     rescue AutoCorrectError => e
@@ -37,7 +36,11 @@ module Sorbet
 
     def self.format_source(arg_types, arg_names, return_types)
       if arg_names.empty?
-        format("sig { returns(%s) }", return_types)
+        if return_types.nil?
+          format("sig { void }", [])
+        else
+          format("sig { returns(%s) }", return_types)
+        end
       else
         params = arg_names.zip(arg_types).map do |arg, arg_type|
           arg_name = CONTRACT_ARGS_PATTERN.match(arg).to_s

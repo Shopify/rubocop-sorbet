@@ -18,12 +18,20 @@ module RuboCop
         end
 
         CONTRACT_PATTERN = NodePattern.new("$(send _ :Contract $... (:hash (:pair $_ $_)))")
+        SHORTHAND_CONTRACT_PATTERN = NodePattern.new("$(send _ :Contract $_)")
         EXTEND_T_SIG_PATTERN = NodePattern.new("(send _ :extend (const (const _ :T) :Sig))")
 
         def autocorrect(node)
           if CONTRACT_PATTERN.match(node)
             convert_contract_multi_args(node)
+          elsif SHORTHAND_CONTRACT_PATTERN.match(node)
+            convert_shorthand_contract(node)
           end
+        end
+
+        def convert_shorthand_contract(node)
+          full_source, ret = SHORTHAND_CONTRACT_PATTERN.match(node)
+          convert_node(node, full_source, [], ret)
         end
 
         def convert_contract_multi_args(node)
@@ -33,7 +41,10 @@ module RuboCop
           # list of nodes and Integer ends up as the first key in a (:pair) node where the values
           # are the return types. I guess this is to allow the => syntax?
           args = arg0 << arg1
+          convert_node(node, full_source, args, ret)
+        end
 
+        def convert_node(node, full_source, args, ret)
           new_source = ::Sorbet::SorbetFromContractService.source(node, args, ret)
           return nil if new_source.nil?
 

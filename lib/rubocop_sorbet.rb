@@ -20,3 +20,5 @@ require_relative 'rubocop/cop/sorbet/sigils/true_sigil'
 require_relative 'rubocop/cop/sorbet/sigils/strict_sigil'
 require_relative 'rubocop/cop/sorbet/sigils/strong_sigil'
 require_relative 'rubocop/cop/sorbet/sigils/enforce_sigil_order'
+
+require_relative 'rubocop/cop/sorbet/prefer_sorbet_over_contracts'
