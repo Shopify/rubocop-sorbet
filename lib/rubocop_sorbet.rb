@@ -4,6 +4,7 @@ require_relative 'rubocop/cop/sorbet/binding_constants_without_type_alias'
 require_relative 'rubocop/cop/sorbet/constants_from_strings'
 require_relative 'rubocop/cop/sorbet/forbid_superclass_const_literal'
 require_relative 'rubocop/cop/sorbet/forbid_include_const_literal'
+require_relative 'rubocop/cop/sorbet/prefer_sorbet_over_contracts'
 
 require_relative 'rubocop/cop/sorbet/signatures/allow_incompatible_override'
 require_relative 'rubocop/cop/sorbet/signatures/checked_true_in_signature'
