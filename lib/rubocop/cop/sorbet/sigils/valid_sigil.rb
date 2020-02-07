@@ -37,7 +37,12 @@ module RuboCop
 
             token = processed_source.tokens.first
             replace_with = suggested_strictness_level(minimum_strictness, suggested_strictness)
-            corrector.insert_before(token.pos, "# typed: #{replace_with}\n")
+            sigil = "# typed: #{replace_with}"
+            if token.text.start_with?("#!") # shebang line
+              corrector.insert_after(token.pos, "\n#{sigil}")
+            else
+              corrector.insert_before(token.pos, "#{sigil}\n")
+            end
           end
         end
 

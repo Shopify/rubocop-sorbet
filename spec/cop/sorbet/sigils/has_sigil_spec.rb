@@ -103,6 +103,20 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
             class Foo; end
           RUBY
       end
+
+      it('adds the sigil after the shebang line, if present') do
+        expect(
+          autocorrect_source(<<~RUBY)
+            #!/usr/bin/env ruby
+            class Foo; end
+          RUBY
+        )
+          .to(eq(<<~RUBY))
+            #!/usr/bin/env ruby
+            # typed: false
+            class Foo; end
+          RUBY
+      end
     end
   end
 end
