@@ -2,10 +2,10 @@
 
 require "spec_helper"
 
-require_relative '../../../lib/rubocop/cop/sorbet/no_dynamic_contract_includes'
+require_relative '../../../lib/rubocop/cop/sorbet/no_dynamic_dry_types_includes'
 
-RSpec.describe(RuboCop::Cop::Sorbet::NoDynamicContractIncludes) do
-  subject(:cop) { RuboCop::Cop::Sorbet::NoDynamicContractIncludes.new }
+RSpec.describe(RuboCop::Cop::Sorbet::NoDynamicDryTypesIncludes) do
+  subject(:cop) { RuboCop::Cop::Sorbet::NoDynamicDryTypesIncludes.new }
 
   context "Fixes Dry::Types.module imports" do
     describe "Detects include" do

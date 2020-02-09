@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
+# Disallows use of DryTypes dynamic include and converts DryTypes classes to full static paths.
 #
-# In preparation for adding Sorbet to the codebase we must remove all dynamic imports as these
-# make type checking impossible. The biggest single offender in our codebase is `Dry::Types.module`
-# which includes all the types like Strict::String, Coercible::Int, Types::Bool, etc.
+# Sorbet does not allow the dynamic includes statements permitted by Ruby because of the 
+# impossibility of statically typing this construct. The DryTypes gem makes frequent use
+# of dynamic includes with `Dry::Types.module` which includes all the primitive types 
+# such as Strict::String, Coercible::Int, Types::Bool, etc.
 #
-# Instead of using these auto-magic includes, we must use ths static path. In most cases this is
-# can be done automatically by this class, so:
+# To add Sorbet to a codebase, instead of using this dynamic includes to mass include all the types 
+# we must use the full static paths of the types we need.
+# In most cases this is can be done automatically by this class, so:
 #
 # Strict::String -> Dry::Types['strict.string']
 # Coercible::Int -> Dry::Types['coercible.string']
@@ -24,7 +27,7 @@
 module RuboCop
   module Cop
     module Sorbet
-      class NoDynamicContractIncludes < Cop
+      class NoDynamicDryTypesIncludes < Cop
         MSG = "Sorbet disallows dynamic includes. Do not include Dry::Types.module directly; use direct path instead."
         MSG_PATH = "Sorbet disallows dynamic includes. Use full Dry::Types path instead."
 
@@ -78,11 +81,8 @@ module RuboCop
 
         def klass_to_str(klass)
           klass_str = klass.to_s.downcase
-          if klass_str == "datetime"
-            "date_time"
-          else
-            klass_str
-          end
+          return "date_time" if klass_str == "datetime"
+          klass_str
         end
 
         def correct_types_reference(node)
