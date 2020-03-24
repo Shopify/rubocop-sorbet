@@ -59,8 +59,8 @@ module RuboCop
         FROZEN_REGEX = /#\s+frozen_string_literal:(?:\s+([\w]+))?/
 
         PREFERRED_ORDER = {
-          SIGIL_REGEX => 'typed',
           CODING_REGEX => 'encoding',
+          SIGIL_REGEX => 'typed',
           INDENT_REGEX => 'warn_indent',
           FROZEN_REGEX => 'frozen_string_literal',
         }.freeze
