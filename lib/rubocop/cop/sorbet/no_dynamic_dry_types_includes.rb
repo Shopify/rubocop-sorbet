@@ -31,21 +31,19 @@ module RuboCop
         MSG = "Sorbet disallows dynamic includes. Do not include Dry::Types.module directly; use direct path instead."
         MSG_PATH = "Sorbet disallows dynamic includes. Use full Dry::Types path instead."
 
+        DYNAMIC_REFERENCE_PATTERN = NodePattern.new("$(const (const _ ${:Strict :Coercible}) $_)")
+        TYPES_PATTERN = NodePattern.new("$(const (const _ :Types) ${:DateTime :String :Bool :Array :Int :Hash :Date})")
+        INSTANCE_PATTERN = NodePattern.new("$(send _ :Instance (const _ $_))")
+
         def_node_matcher :include_statement, <<-PATTERN
           (send _ :include (send (const (const _ :Dry) :Types) _))
         PATTERN
 
-        def_node_matcher :instance_statement, <<-PATTERN
-          (send _ :Instance (const ...))
-        PATTERN
+        def_node_matcher :instance_statement, INSTANCE_PATTERN.pattern
 
-        def_node_matcher :const_statement, <<-PATTERN
-          (const (const _ {:Strict :Coercible}) _)
-        PATTERN
+        def_node_matcher :const_statement, DYNAMIC_REFERENCE_PATTERN.pattern
 
-        def_node_matcher :types_statement, <<-PATTERN
-          (const (const _ :Types) {:DateTime :String :Bool :Array :Int :Hash :Date})
-        PATTERN
+        def_node_matcher :types_statement, TYPES_PATTERN.pattern
 
         def on_const(node)
           types_statement(node) do |_statement|
@@ -64,10 +62,6 @@ module RuboCop
             add_offense(node, message: MSG)
           end
         end
-
-        DYNAMIC_REFERENCE_PATTERN = NodePattern.new("$(const (const _ ${:Strict :Coercible}) $_)")
-        INSTANCE_PATTERN = NodePattern.new("$(send _ :Instance (const _ $_))")
-        TYPES_PATTERN = NodePattern.new("$(const (const _ :Types) ${:DateTime :String :Bool :Array :Int :Hash :Date})")
 
         def autocorrect(node)
           if DYNAMIC_REFERENCE_PATTERN.match(node)
