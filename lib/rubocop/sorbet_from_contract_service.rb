@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# Helper service used by the PreferSorbetOverContracts cop to auto-correct
+# Contract contracts into Sorbet signatures, adding `extend T::Sig` when necessary
+
 module Sorbet
   class SorbetFromContractService
     class AutoCorrectError < StandardError; end
