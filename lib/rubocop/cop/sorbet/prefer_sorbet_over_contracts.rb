@@ -1,5 +1,24 @@
 # frozen_string_literal: true
 
+# Disallows the use of Contracts and converts Contracts to Sorbet signatures
+#
+# For example:
+#
+#  Contract Integer, Boolean => String
+#  def self.cool_thing(number, bool)
+#    return false
+#  end
+#
+#  Will be converted to:
+#
+#  sig { params(number: Integer, bool: T::Boolean).returns(String) }
+#  def self.cool_thing(number, bool)
+#    return false
+#  end
+#
+# Additonally `extend T::Sig` will be added when necessary.
+#
+
 require_relative "../../sorbet_from_contract_service.rb"
 module RuboCop
   module Cop
@@ -71,9 +90,7 @@ module RuboCop
         def previous_line(parent)
           if parent.sibling_index > 1
             previous = parent.parent.children[parent.sibling_index - 1]
-            if previous&.source_range
-              return previous
-            end
+            return previous if previous&.source_range
           end
           parent.parent.children.first
         end

@@ -885,7 +885,6 @@ RSpec.describe(RuboCop::Cop::Sorbet::PreferSorbetOverContracts, :config) do
           new_source = autocorrect_source(source)
           expect(new_source).to(eq(fixed_source))
         end
-
       end
 
       context 'return param is a hash' do

@@ -3,10 +3,6 @@
 module Sorbet
   class SorbetFromContractService
     class AutoCorrectError < StandardError; end
-    CONTRACT_PATTERN = RuboCop::NodePattern.new("$(send _ :Contract $... (:hash (:pair $_ $_)))")
-
-    EXTEND_T_SIG_PATTERN = RuboCop::NodePattern.new("(send _ :extend (const (const _ :T) :Sig))")
-
     CONST_PATTERN = RuboCop::NodePattern.new("(const {nil? (cbase)} $_)")
     TWO_CONST_PATTERN = RuboCop::NodePattern.new("(const (const {nil? (cbase)} $_) $_)")
     THREE_CONST_PATTERN = RuboCop::NodePattern.new("(const (const (const {nil? (cbase)} $_) $_) $_)")
@@ -36,21 +32,15 @@ module Sorbet
 
     def self.format_source(arg_types, arg_names, return_types)
       if arg_names.empty?
-        if return_types.nil?
-          format("sig { void }", [])
-        else
-          format("sig { returns(%s) }", return_types)
-        end
+        return format("sig { void }", []) if return_types.nil?
+        format("sig { returns(%s) }", return_types)
       else
         params = arg_names.zip(arg_types).map do |arg, arg_type|
           arg_name = CONTRACT_ARGS_PATTERN.match(arg).to_s
           "#{arg_name}: #{arg_type}"
         end.join(", ")
-        if return_types.nil?
-          return format("sig { params(%s).void }", params)
-        else
-          return format("sig { params(%s).returns(%s) }", params, return_types)
-        end
+        return format("sig { params(%s).void }", params) if return_types.nil?
+        format("sig { params(%s).returns(%s) }", params, return_types)
       end
     end
 
@@ -88,12 +78,8 @@ module Sorbet
           return format(send_value, rest_string)
         end
       end
-      if NIL_PATTERN.match(src)
-        return nil
-      end
-      if SELF_PATTERN.match(src)
-        return "T.self_type"
-      end
+      return nil if NIL_PATTERN.match(src)
+      return "T.self_type" if SELF_PATTERN.match(src)
       if CONST_PAIR_MATCHER.match(src)
         first, second = CONST_PAIR_MATCHER.match(src)
         return format("%s, %s", first, second)
