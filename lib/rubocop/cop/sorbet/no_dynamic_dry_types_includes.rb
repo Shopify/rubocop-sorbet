@@ -2,12 +2,12 @@
 
 # Disallows use of DryTypes dynamic include and converts DryTypes classes to full static paths.
 #
-# Sorbet does not allow the dynamic includes statements permitted by Ruby because of the 
+# Sorbet does not allow the dynamic includes statements permitted by Ruby because of the
 # impossibility of statically typing this construct. The DryTypes gem makes frequent use
-# of dynamic includes with `Dry::Types.module` which includes all the primitive types 
+# of dynamic includes with `Dry::Types.module` which includes all the primitive types
 # such as Strict::String, Coercible::Int, Types::Bool, etc.
 #
-# To add Sorbet to a codebase, instead of using this dynamic includes to mass include all the types 
+# To add Sorbet to a codebase, instead of using this dynamic includes to mass include all the types
 # we must use the full static paths of the types we need.
 # In most cases this is can be done automatically by this class, so:
 #
@@ -79,6 +79,15 @@ module RuboCop
           end
         end
 
+        def corrector(full_source, new_source)
+          lambda do |corrector|
+            corrector.replace(
+              full_source.source_range,
+              new_source,
+            )
+          end
+        end
+
         def klass_to_str(klass)
           klass_str = klass.to_s.downcase
           return "date_time" if klass_str == "datetime"
@@ -89,24 +98,14 @@ module RuboCop
           full_source, klass = TYPES_PATTERN.match(node)
           klass_str = klass_to_str(klass)
           new_source = format("Dry::Types[\"%s\"]", klass_str)
-          lambda do |corrector|
-            corrector.replace(
-              full_source.source_range,
-              new_source,
-            )
-          end
+          corrector(full_source, new_source)
         end
 
         def correct_instance_class_reference(node)
           full_source, klass = INSTANCE_PATTERN.match(node)
           klass_str = klass.to_s
           new_source = format("Dry::Types::Definition.new(%s).constrained(type: %s)", klass_str, klass_str)
-          lambda do |corrector|
-            corrector.replace(
-              full_source.source_range,
-              new_source,
-            )
-          end
+          corrector(full_source, new_source)
         end
 
         def correct_dynamic_class_reference(node)
@@ -114,12 +113,7 @@ module RuboCop
           strictness_str = strictness.to_s.downcase
           primitive_str = klass_to_str(primitive)
           new_source = format("Dry::Types[\"%s.%s\"]", strictness_str, primitive_str)
-          lambda do |corrector|
-            corrector.replace(
-              full_source.source_range,
-              new_source,
-            )
-          end
+          corrector(full_source, new_source)
         end
       end
     end
