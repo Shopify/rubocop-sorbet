@@ -35,7 +35,7 @@ module Sorbet
 
     def self.format_source(arg_types, arg_names, return_types)
       if arg_names.empty?
-        return format("sig { void }", []) if return_types.nil?
+        return format("sig { void }") if return_types.nil?
         format("sig { returns(%s) }", return_types)
       else
         params = arg_names.zip(arg_types).map do |arg, arg_type|
