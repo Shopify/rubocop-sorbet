@@ -36,9 +36,9 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
 
   it('makes no offense when the magic comments are correctly ordered') do
     expect_no_offenses(<<~RUBY)
-      # typed: true
       # encoding: utf-8
       # coding: utf-8
+      # typed: true
       # warn_indent: true
       # frozen_string_literal: true
       class Foo; end
@@ -47,9 +47,9 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
 
   it('makes no offense when the magic comments are correctly ordered with random comments in the middle') do
     expect_no_offenses(<<~RUBY)
+      # coding: utf-8
       # typed: true
       # foo: 1
-      # coding: utf-8
       # bar: true
       # frozen_string_literal: true
       # baz: "Hello, World"
@@ -60,9 +60,9 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
   it('makes offense when two magic comments are not correctly ordered') do
     expect_offense(<<~RUBY)
       # frozen_string_literal: true
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: typed, encoding, warn_indent, frozen_string_literal.
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: encoding, typed, warn_indent, frozen_string_literal.
       # typed: true
-      ^^^^^^^^^^^^^ Magic comments should be in the following order: typed, encoding, warn_indent, frozen_string_literal.
+      ^^^^^^^^^^^^^ Magic comments should be in the following order: encoding, typed, warn_indent, frozen_string_literal.
       class Foo; end
     RUBY
   end
@@ -70,15 +70,15 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
   it('makes offense when all magic comments are not correctly ordered') do
     expect_offense(<<~RUBY)
       # encoding: utf-8
-      ^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: typed, encoding, warn_indent, frozen_string_literal.
+      ^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: encoding, typed, warn_indent, frozen_string_literal.
       # frozen_string_literal: true
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: typed, encoding, warn_indent, frozen_string_literal.
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: encoding, typed, warn_indent, frozen_string_literal.
       # warn_indent: true
-      ^^^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: typed, encoding, warn_indent, frozen_string_literal.
+      ^^^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: encoding, typed, warn_indent, frozen_string_literal.
       # typed: true
-      ^^^^^^^^^^^^^ Magic comments should be in the following order: typed, encoding, warn_indent, frozen_string_literal.
+      ^^^^^^^^^^^^^ Magic comments should be in the following order: encoding, typed, warn_indent, frozen_string_literal.
       # coding: utf-8
-      ^^^^^^^^^^^^^^^ Magic comments should be in the following order: typed, encoding, warn_indent, frozen_string_literal.
+      ^^^^^^^^^^^^^^^ Magic comments should be in the following order: encoding, typed, warn_indent, frozen_string_literal.
       class Foo; end
     RUBY
   end
@@ -109,9 +109,9 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
       RUBY
       expect(autocorrect_source(source))
         .to(eq(<<~RUBY))
-          # typed: true
           # encoding: utf-8
           # coding: utf-8
+          # typed: true
           # warn_indent: true
           # frozen_string_literal: true
           class Foo; end
@@ -133,11 +133,11 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
       RUBY
       expect(autocorrect_source(source))
         .to(eq(<<~RUBY))
-          # typed: true
-          # foo
           # encoding: utf-8
-          # bar: true
+          # foo
           # coding: utf-8
+          # bar: true
+          # typed: true
           # baz: "Hello"
           # warn_indent: true
           # frozen_string_literal: true
