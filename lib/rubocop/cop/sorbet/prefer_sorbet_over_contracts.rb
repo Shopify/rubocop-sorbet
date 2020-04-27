@@ -55,7 +55,7 @@ module RuboCop
 
         def convert_contract_multi_args(node)
           full_source, arg0, arg1, ret, = CONTRACT_PATTERN.match(node)
-          # Conracts puts the first argument types in one list and the list on its own.
+          # Contracts puts the first argument types in one list and the list on its own.
           # IE in Contract String, Boolean, Integer => Number, [String, Boolean] end up in one
           # list of nodes and Integer ends up as the first key in a (:pair) node where the values
           # are the return types. I guess this is to allow the => syntax?
