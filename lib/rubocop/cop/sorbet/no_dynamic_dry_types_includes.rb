@@ -7,7 +7,7 @@
 # of dynamic includes with `Dry::Types.module` which includes all the primitive types
 # such as Strict::String, Coercible::Int, Types::Bool, etc.
 #
-# To add Sorbet to a codebase, instead of using this dynamic includes to mass include all the types
+# To add Sorbet to a codebase, instead of using these dynamic includes to mass include all the types
 # we must use the full static paths of the types we need.
 # In most cases this is can be done automatically by this class, so:
 #
