@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Disallows use of DryTypes dynamic include and converts DryTypes classes to full static paths.
+# Disallows dynamic inclusions of DryTypes and converts DryTypes classes to fully qualified names.
 #
 # Sorbet does not allow the dynamic includes statements permitted by Ruby because of the
 # impossibility of statically typing this construct. The DryTypes gem makes frequent use
