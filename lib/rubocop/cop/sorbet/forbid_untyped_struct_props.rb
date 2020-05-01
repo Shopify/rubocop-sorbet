@@ -34,7 +34,7 @@ module RuboCop
         PATTERN
 
         def_node_matcher :t_nilable_untyped, <<~PATTERN
-          (send (const nil? :T) :nilable #t_untyped)
+          (send (const nil? :T) :nilable {#t_untyped #t_nilable_untyped})
         PATTERN
 
         def_node_matcher :subclass_of_t_struct?, <<~PATTERN
