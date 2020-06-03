@@ -26,13 +26,9 @@ module RuboCop
 
         def on_signature(node)
           sig_params = signature_params(node).first
-          sig_params_order =
-            if sig_params.nil?
-              []
-            else
-              sig_params.arguments.first.keys.map(&:value)
-            end
 
+          sig_params_order = extract_parameters(sig_params)
+          return if sig_params_order.nil?
           method_node = node.parent.children[node.sibling_index + 1]
           return if method_node.nil? || method_node.type != :def
           method_parameters = method_node.arguments
@@ -41,6 +37,18 @@ module RuboCop
         end
 
         private
+
+        def extract_parameters(sig_params)
+          return [] if sig_params.nil?
+
+          arguments = sig_params.arguments.first
+          return arguments.keys.map(&:value) if RuboCop::AST::HashNode === arguments
+
+          add_offense(
+            sig_params,
+            message: "Invalid signature."
+          )
+        end
 
         def check_for_inconsistent_param_ordering(sig_params_order, parameters)
           parameters.each_with_index do |param, index|

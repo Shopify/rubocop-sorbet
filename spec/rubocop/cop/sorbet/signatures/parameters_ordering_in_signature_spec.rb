@@ -25,6 +25,16 @@ RSpec.describe(RuboCop::Cop::Sorbet::ParametersOrderingInSignature, :config) do
     RUBY
   end
 
+  it('adds offense when the signature is incorrect') do
+    expect_offense(<<~RUBY)
+      sig do
+        params(String, Integer, T::Boolean).void
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Invalid signature.
+      end
+      def foo(a, b:, c:); end
+    RUBY
+  end
+
   it('does not add offense when order is correct') do
     expect_no_offenses(<<~RUBY)
       sig { params(a: String, b: Integer, c: Integer, blk: Proc).void }
