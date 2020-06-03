@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-require_relative '../../../../lib/rubocop/cop/sorbet/signatures/checked_true_in_signature'
-
 RSpec.describe(RuboCop::Cop::Sorbet::CheckedTrueInSignature, :config) do
   subject(:cop) { described_class.new(config) }
 

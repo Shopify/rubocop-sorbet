@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-require_relative '../../../lib/rubocop/cop/sorbet/binding_constants_without_type_alias'
-
 RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) do
   subject(:cop) { described_class.new(config) }
 

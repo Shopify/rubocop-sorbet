@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-require_relative '../../../lib/rubocop/cop/sorbet/forbid_include_const_literal'
-
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
   subject(:cop) { described_class.new(config) }
 

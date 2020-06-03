@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-require_relative '../../../../lib/rubocop/cop/sorbet/signatures/enforce_signatures'
-
 RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
   subject(:cop) { described_class.new(config) }
 

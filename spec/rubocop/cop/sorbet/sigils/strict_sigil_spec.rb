@@ -2,23 +2,21 @@
 
 require 'spec_helper'
 
-require_relative '../../../../lib/rubocop/cop/sorbet/sigils/strong_sigil'
-
-RSpec.describe(RuboCop::Cop::Sorbet::StrongSigil, :config) do
+RSpec.describe(RuboCop::Cop::Sorbet::StrictSigil, :config) do
   subject(:cop) { described_class.new(config) }
 
   describe('always require a ignore sigil') do
-    it 'makes offense if the strongness is not at least `strong`' do
+    it 'makes offense if the strictness is not at least `strict`' do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
-        # typed: strict
-        ^^^^^^^^^^^^^^^ Sorbet sigil should be at least `strong` got `strict`.
+        # typed: true
+        ^^^^^^^^^^^^^ Sorbet sigil should be at least `strict` got `true`.
         class Foo; end
       RUBY
     end
 
     describe('autocorrect') do
-      it('autocorrects by adding typed: strong to file without sigil') do
+      it('autocorrects by adding typed: strict to file without sigil') do
         expect(
           autocorrect_source(<<~RUBY)
             # frozen_string_literal: true
@@ -26,7 +24,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::StrongSigil, :config) do
           RUBY
         )
           .to(eq(<<~RUBY))
-            # typed: strong
+            # typed: strict
             # frozen_string_literal: true
             class Foo; end
           RUBY

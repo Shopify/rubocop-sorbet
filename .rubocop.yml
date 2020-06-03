@@ -8,16 +8,6 @@ AllCops:
   Exclude:
     - vendor/**/*
 
-Naming/AccessorMethodName:
-  Enabled: false
-
-require:
-  - rubocop-sorbet
-
 Naming/FileName:
   Exclude:
   - lib/rubocop-sorbet.rb
-
-Lint/HandleExceptions:
-  Exclude:
-  - Rakefile

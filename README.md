@@ -9,7 +9,7 @@ A collection of Rubocop rules for Sorbet.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'rubocop-sorbet'
+gem 'rubocop-sorbet', require: false
 ```
 
 And then execute:

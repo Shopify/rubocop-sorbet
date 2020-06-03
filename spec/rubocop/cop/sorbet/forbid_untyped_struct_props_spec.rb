@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-require_relative '../../../lib/rubocop/cop/sorbet/forbid_superclass_const_literal'
-
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
   subject(:cop) { described_class.new(config) }
 

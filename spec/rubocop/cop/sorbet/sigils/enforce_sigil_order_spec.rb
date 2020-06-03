@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-require_relative '../../../../lib/rubocop/cop/sorbet/sigils/enforce_sigil_order'
-
 RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
   subject(:cop) { described_class.new(config) }
 
