@@ -65,6 +65,7 @@ GEM
       equalizer (~> 0.0.9)
       parser (>= 2.6.5)
       procto (~> 0.0.2)
+    yard (0.9.25)
 
 PLATFORMS
   ruby
@@ -75,6 +76,7 @@ DEPENDENCIES
   rubocop-shopify
   rubocop-sorbet!
   unparser
+  yard (~> 0.9)
 
 BUNDLED WITH
    1.17.3
