@@ -72,6 +72,7 @@ PLATFORMS
 DEPENDENCIES
   rake (~> 12.0)
   rspec
+  rubocop-shopify
   rubocop-sorbet!
   unparser
 
