@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-require_relative '../../../../lib/rubocop/cop/sorbet/sigils/valid_sigil'
-
 RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
   subject(:cop) { described_class.new(config) }
 

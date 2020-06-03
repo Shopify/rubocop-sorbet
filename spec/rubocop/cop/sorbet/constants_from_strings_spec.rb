@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-require_relative '../../../lib/rubocop/cop/sorbet/constants_from_strings'
-
 RSpec.describe(RuboCop::Cop::Sorbet::ConstantsFromStrings, :config) do
   subject(:cop) { described_class.new(config) }
 

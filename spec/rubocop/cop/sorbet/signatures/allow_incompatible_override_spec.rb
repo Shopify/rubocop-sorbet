@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-require_relative '../../../../lib/rubocop/cop/sorbet/signatures/allow_incompatible_override'
-
 RSpec.describe(RuboCop::Cop::Sorbet::AllowIncompatibleOverride, :config) do
   subject(:cop) { described_class.new(config) }
 

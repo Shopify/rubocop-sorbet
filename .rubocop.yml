@@ -1,23 +1,13 @@
 # This file strictly follows the rules defined in the Ruby style guide:
 #   http://shopify.github.io/ruby-style-guide/
-inherit_from:
-  - https://shopify.github.io/ruby-style-guide/rubocop.yml
+inherit_gem:
+  rubocop-shopify: rubocop.yml
 
 AllCops:
   TargetRubyVersion: 2.5
   Exclude:
     - vendor/**/*
 
-Naming/AccessorMethodName:
-  Enabled: false
-
-require:
-  - rubocop-sorbet
-
 Naming/FileName:
   Exclude:
   - lib/rubocop-sorbet.rb
-
-Lint/HandleExceptions:
-  Exclude:
-  - Rakefile
