@@ -29,7 +29,7 @@ Put this into your `.rubocop.yml`:
 require: rubocop-sorbet
 ```
 
-Alternatively, use the following array notation when specifying multiple extensions.
+Alternatively, use the following array notation when specifying multiple extensions:
 
 ```yaml
 require:
