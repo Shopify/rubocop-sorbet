@@ -68,7 +68,7 @@ Sorbet/ForbidUntypedStructProps:
                   Disallows use of `T.untyped` or `T.nilable(T.untyped)` as a
                   prop type for `T::Struct` subclasses.
   Enabled: true
-  VersionAdded: 0.3.8
+  VersionAdded: 0.4.0
 
 Sorbet/HasSigil:
   Description: 'Makes the Sorbet typed sigil mandatory in all files.'
