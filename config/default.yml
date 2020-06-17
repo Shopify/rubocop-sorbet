@@ -90,6 +90,17 @@ Sorbet/KeywordArgumentOrdering:
   Enabled: true
   VersionAdded: 0.2.0
 
+Sorbet/MutableTLetConstant:
+  Description: 'Freeze mutable objects in T.let expressions assigned to constants.'
+  Enabled: true
+  VersionAdded: 0.5.0
+  EnforcedStyle: literals
+  SupportedStyles:
+    # literals: freeze literals assigned to constants
+    # strict: freeze all constants
+    - literals
+    - strict
+
 Sorbet/ParametersOrderingInSignature:
   Description: 'Enforces same parameter order between a method and its signature.'
   Enabled: true

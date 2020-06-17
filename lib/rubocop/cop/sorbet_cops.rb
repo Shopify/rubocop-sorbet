@@ -4,6 +4,7 @@ require_relative 'sorbet/constants_from_strings'
 require_relative 'sorbet/forbid_superclass_const_literal'
 require_relative 'sorbet/forbid_include_const_literal'
 require_relative 'sorbet/forbid_untyped_struct_props'
+require_relative 'sorbet/mutable_t_let_constant'
 
 require_relative 'sorbet/signatures/allow_incompatible_override'
 require_relative 'sorbet/signatures/checked_true_in_signature'
