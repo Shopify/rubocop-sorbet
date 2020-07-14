@@ -17,7 +17,7 @@ module RuboCop
       #   FooOrBar = T.type_alias { T.any(Foo, Bar) }
       class BindingConstantWithoutTypeAlias < RuboCop::Cop::Cop
         def_node_matcher(:binding_unaliased_type?, <<-PATTERN)
-          (casgn _ _ [#not_nil? #not_t_let? #method_needing_aliasing_on_t?])
+          (casgn _ _ [#not_nil? #not_t_let? #not_type_member? #method_needing_aliasing_on_t?])
         PATTERN
 
         def_node_matcher(:using_type_alias?, <<-PATTERN)
@@ -48,6 +48,12 @@ module RuboCop
           )
         PATTERN
 
+        def_node_matcher(:type_member?, <<-PATTERN)
+          (
+            send nil? :type_member ...
+          )
+        PATTERN
+
         def_node_search(:method_needing_aliasing_on_t?, <<-PATTERN)
           (
             send
@@ -59,6 +65,10 @@ module RuboCop
 
         def not_t_let?(node)
           !t_let?(node)
+        end
+
+        def not_type_member?(node)
+          !type_member?(node)
         end
 
         def not_nil?(node)
