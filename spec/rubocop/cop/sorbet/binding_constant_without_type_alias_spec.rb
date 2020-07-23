@@ -59,6 +59,18 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
       RUBY
     end
 
+    it('allows assigning type_member to a constant') do
+      expect_no_offenses(<<~RUBY)
+        A = type_member(fixed: T.untyped)
+      RUBY
+    end
+
+    it('allows assigning type_template to a constant') do
+      expect_no_offenses(<<~RUBY)
+        A = type_template(fixed: T.untyped)
+      RUBY
+    end
+
     it('allows using the return value of T.any, T.all, etc in a signature definition') do
       expect_no_offenses(<<~RUBY)
         sig { params(foo: T.any(String, Integer)).void }
