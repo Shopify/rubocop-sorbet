@@ -51,6 +51,16 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
           sig { type_parameters(:U).params(x: T.type_parameter(:U)).void }
         RUBY
     end
+
+    it('autocorrects sigs with generic types properly') do
+      source = <<~RUBY
+        sig { void.type_parameters(:U).params(x: T.type_parameter(:U), y: T::Hash[String, Integer]) }
+      RUBY
+      expect(autocorrect_source(source))
+        .to(eq(<<~RUBY))
+          sig { type_parameters(:U).params(x: T.type_parameter(:U), y: T::Hash[String, Integer]).void }
+        RUBY
+    end
   end
 
   describe('without the unparser gem') do
