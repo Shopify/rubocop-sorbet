@@ -55,10 +55,9 @@ module RuboCop
           return nil unless can_autocorrect?
 
           lambda do |corrector|
-            rich_node = node_with_index_sends(node)
-            nodes = call_chain(rich_node).sort_by { |call| ORDER[call.method_name] }
-            tree =
-              nodes.reduce(nil) do |receiver, caller|
+            tree = call_chain(node_with_index_sends(node))
+              .sort_by { |call| ORDER[call.method_name] }
+              .reduce(nil) do |receiver, caller|
                 caller.updated(nil, [receiver] + caller.children.drop(1))
               end
 
