@@ -55,9 +55,9 @@ module RuboCop
           return nil unless can_autocorrect?
 
           lambda do |corrector|
-            nodes = call_chain(node).sort_by { |call| ORDER[call.method_name] }
-            tree =
-              nodes.reduce(nil) do |receiver, caller|
+            tree = call_chain(node_with_index_sends(node))
+              .sort_by { |call| ORDER[call.method_name] }
+              .reduce(nil) do |receiver, caller|
                 caller.updated(nil, [receiver] + caller.children.drop(1))
               end
 
@@ -69,6 +69,16 @@ module RuboCop
         end
 
         private
+
+        def node_with_index_sends(node)
+          # This is really dirty hack to reparse the current node with index send
+          # emitting enabled, which is necessary to unparse them back as index accessors.
+          emit_index_value = RuboCop::AST::Builder.emit_index
+          RuboCop::AST::Builder.emit_index = true
+          RuboCop::AST::ProcessedSource.new(node.source, target_ruby_version, processed_source.path).ast
+        ensure
+          RuboCop::AST::Builder.emit_index = emit_index_value
+        end
 
         def can_autocorrect?
           defined?(::Unparser)
