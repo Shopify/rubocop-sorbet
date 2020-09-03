@@ -53,10 +53,11 @@ module RuboCop
             end
 
             # Remove blank lines between the magic comments
-            lines = Set.new
-            tokens.each { |token| lines << token.line }
-            each_extra_empty_line(lines.sort) do |range|
-              corrector.remove(range)
+            lines = tokens.map(&:line).to_set
+            (lines.min...lines.max).each do |line|
+              next if lines.include?(line)
+              next unless processed_source[line - 1].empty?
+              corrector.remove(source_range(processed_source.buffer, line, 0))
             end
           end
         end
@@ -106,24 +107,6 @@ module RuboCop
                 message: "Magic comments should be in the following order: #{PREFERRED_ORDER.values.join(', ')}."
               )
             end
-          end
-        end
-
-        def each_extra_empty_line(lines)
-          prev_line = 1
-
-          lines.each do |cur_line|
-            if (cur_line - prev_line) > 1
-              # we need to be wary of comments since they
-              # don't show up in the tokens
-              ((prev_line + 1)...cur_line).each do |line|
-                next unless processed_source[line - 1].empty?
-
-                yield source_range(processed_source.buffer, line, 0)
-              end
-            end
-
-            prev_line = cur_line
           end
         end
       end
