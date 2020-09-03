@@ -113,7 +113,7 @@ module RuboCop
           prev_line = 1
 
           lines.each do |cur_line|
-            if (cur_line - prev_line) > 0
+            if (cur_line - prev_line) > 1
               # we need to be wary of comments since they
               # don't show up in the tokens
               ((prev_line + 1)...cur_line).each do |line|
