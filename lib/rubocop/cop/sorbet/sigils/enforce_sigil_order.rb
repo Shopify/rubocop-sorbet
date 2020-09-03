@@ -117,7 +117,7 @@ module RuboCop
               # we need to be wary of comments since they
               # don't show up in the tokens
               ((prev_line + 1)...cur_line).each do |line|
-                next unless processed_source[line-1].empty?
+                next unless processed_source[line - 1].empty?
 
                 yield source_range(processed_source.buffer, line, 0)
               end
