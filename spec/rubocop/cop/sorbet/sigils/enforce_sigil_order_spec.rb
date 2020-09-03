@@ -143,5 +143,26 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
           class Foo; end
         RUBY
     end
+
+    it('autocorrects magic comments while removing blank lines') do
+      source = <<~RUBY
+        # frozen_string_literal: true
+
+
+        # typed: true
+
+
+
+        # encoding: utf-8
+        class Foo; end
+      RUBY
+      expect(autocorrect_source(source))
+        .to(eq(<<~RUBY))
+          # encoding: utf-8
+          # typed: true
+          # frozen_string_literal: true
+          class Foo; end
+        RUBY
+    end
   end
 end
