@@ -28,6 +28,8 @@ module RuboCop
       # Only `typed`, `(en)?coding`, `warn_indent` and `frozen_string_literal` magic comments are considered,
       # other comments or magic comments are left in the same place.
       class EnforceSigilOrder < ValidSigil
+        include RangeHelp
+
         def investigate(processed_source)
           return if processed_source.tokens.empty?
 
@@ -48,6 +50,14 @@ module RuboCop
 
             tokens.each_with_index do |token, index|
               corrector.replace(token.pos, expected[index].text)
+            end
+
+            # Remove blank lines between the magic comments
+            lines = tokens.map(&:line).to_set
+            (lines.min...lines.max).each do |line|
+              next if lines.include?(line)
+              next unless processed_source[line - 1].empty?
+              corrector.remove(source_range(processed_source.buffer, line, 0))
             end
           end
         end
