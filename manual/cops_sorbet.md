@@ -175,7 +175,7 @@ Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | 0.2.0 | -
+Disabled | Yes | Yes  | 0.2.0 | 0.5.0
 
 No documentation
 
@@ -183,7 +183,7 @@ No documentation
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | 0.2.0 | -
+Disabled | Yes | Yes  | 0.2.0 | 0.5.0
 
 No documentation
 
