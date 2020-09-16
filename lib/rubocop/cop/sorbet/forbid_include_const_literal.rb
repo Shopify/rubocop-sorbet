@@ -52,18 +52,6 @@ module RuboCop
           return unless [:module, :class, :sclass].include?(parent.type)
           add_offense(node)
         end
-
-        # Find a free local variable name
-        #
-        # Since each include uses its own local variable to store the send result,
-        # we need to ensure that we don't use the same name twice in the same
-        # module.
-        def find_free_name(base_name)
-          return base_name unless used_names.include?(base_name)
-          i = 2
-          i += 1 while used_names.include?("#{base_name}#{i}")
-          "#{base_name}#{i}"
-        end
       end
     end
   end
