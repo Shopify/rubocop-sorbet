@@ -55,12 +55,12 @@ Sorbet/FalseSigil:
 
 Sorbet/ForbidIncludeConstLiteral:
   Description: 'Forbids include of non-literal constants.'
-  Enabled: true
+  Enabled: false
   VersionAdded: 0.2.0
 
 Sorbet/ForbidSuperclassConstLiteral:
   Description: 'Forbid superclasses which are non-literal constants.'
-  Enabled: true
+  Enabled: false
   VersionAdded: 0.2.0
 
 Sorbet/ForbidUntypedStructProps:
