@@ -12,13 +12,6 @@ require 'rubocop'
 # class Foo < send_expr; end
 # ```
 #
-# This cop replaces them by:
-#
-# ```ruby
-# FooParent = send_expr
-# class Foo < FooParent; end
-# ```
-#
 # Multiple occurences of this can be found in Shopify's code base like:
 #
 # ```ruby
@@ -45,16 +38,6 @@ module RuboCop
         def on_class(node)
           return unless not_lit_const_superclass?(node)
           add_offense(node.child_nodes[1])
-        end
-
-        def autocorrect(node)
-          lambda do |corrector|
-            class_name = node.parent.child_nodes.first.const_name
-            parent_name = "#{class_name}Parent"
-            indent = ' ' * node.parent.loc.column
-            corrector.insert_before(node.parent.loc.expression, "#{parent_name} = #{node.source}\n#{indent}")
-            corrector.replace(node.loc.expression, parent_name)
-          end
         end
       end
     end
