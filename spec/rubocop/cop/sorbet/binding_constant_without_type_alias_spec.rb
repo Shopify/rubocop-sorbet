@@ -71,6 +71,34 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
       RUBY
     end
 
+    it('allow using Class.new or Module.new with extend T::Sig') do
+      expect_no_offenses(<<~RUBY)
+        Foo = Class.new do
+          A = T.let(42, T.any(Integer, Float))
+        end
+
+        Foo2 = Class.new(String) do
+          A = T.let(42, T.any(Integer, Float))
+        end
+
+        Bar = Module.new do
+          A = T.let(42, T.any(Integer, Float))
+        end
+
+        Baz = Struct.new do
+          A = T.let(42, T.any(Integer, Float))
+        end
+
+        Baz2 = Struct.new(:baz) do
+          A = T.let(42, T.any(Integer, Float))
+        end
+
+        Baz3 = Struct.new(:baz, :bar, :foo) do
+          A = T.let(42, T.any(Integer, Float))
+        end
+      RUBY
+    end
+
     it('allows using the return value of T.any, T.all, etc in a signature definition') do
       expect_no_offenses(<<~RUBY)
         sig { params(foo: T.any(String, Integer)).void }

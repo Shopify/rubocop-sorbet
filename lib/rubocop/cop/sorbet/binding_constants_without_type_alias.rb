@@ -17,7 +17,7 @@ module RuboCop
       #   FooOrBar = T.type_alias { T.any(Foo, Bar) }
       class BindingConstantWithoutTypeAlias < RuboCop::Cop::Cop
         def_node_matcher(:binding_unaliased_type?, <<-PATTERN)
-          (casgn _ _ [#not_nil? #not_t_let? #not_generic_parameter_decl? #method_needing_aliasing_on_t?])
+          (casgn _ _ [#not_nil? #not_t_let? #not_dynamic_type_creation_with_block? #not_generic_parameter_decl? #method_needing_aliasing_on_t?])
         PATTERN
 
         def_node_matcher(:using_type_alias?, <<-PATTERN)
@@ -48,6 +48,15 @@ module RuboCop
           )
         PATTERN
 
+        def_node_matcher(:dynamic_type_creation_with_block?, <<-PATTERN)
+          (block
+            (send
+              const :new ...)
+              _
+              _
+          )
+        PATTERN
+
         def_node_matcher(:generic_parameter_decl?, <<-PATTERN)
           (
             send nil? {:type_template :type_member} ...
@@ -65,6 +74,10 @@ module RuboCop
 
         def not_t_let?(node)
           !t_let?(node)
+        end
+
+        def not_dynamic_type_creation_with_block?(node)
+          !dynamic_type_creation_with_block?(node)
         end
 
         def not_generic_parameter_decl?(node)
