@@ -45,6 +45,66 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
+    it 'handles signature overloads' do
+      expect_no_offenses(<<~RUBY)
+        class Foo
+          sig { void }
+          sig { void }
+          sig { void }
+          sig { void }
+          sig { void }
+          def foo; end
+        end
+
+        sig { void }
+        sig { void }
+        def foo; end
+      RUBY
+    end
+
+    it 'handles scopes correctly' do
+      expect_offense(<<~RUBY)
+        module Foo
+          sig { void }
+        end
+
+        class Bar
+          def foo; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+
+          sig { void }
+        end
+
+        def foo; end
+        ^^^^^^^^^^^^ Each method is required to have a signature.
+
+        class Baz
+          sig { void }
+          def foo; end
+
+          def baz; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+        end
+
+        foo do
+          sig { void }
+          def foo; end
+
+          def baz; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+        end
+
+        foo do
+          sig { void }
+        end
+
+        foo do
+          def foo; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+        end
+      RUBY
+    end
+
     it 'makes no offense if a singleton method has a signature' do
       expect_no_offenses(<<~RUBY)
         class Foo
@@ -95,6 +155,22 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
           sig { void }
           attr_reader :foo, :bar
         end
+      RUBY
+    end
+
+    it('supports visibility modifiers') do
+      expect_no_offenses(<<~RUBY)
+        sig { void }
+        private def foo; end
+
+        sig { void }
+        public def foo; end
+
+        sig { void }
+        protected def foo; end
+
+        sig { void }
+        foo bar baz def foo; end
       RUBY
     end
 
