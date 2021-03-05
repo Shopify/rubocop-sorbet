@@ -5,6 +5,7 @@ require_relative 'sorbet/forbid_superclass_const_literal'
 require_relative 'sorbet/forbid_include_const_literal'
 require_relative 'sorbet/forbid_untyped_struct_props'
 require_relative 'sorbet/single_line_rbi_class_module_definitions'
+require_relative 'sorbet/one_ancestor_per_line'
 
 require_relative 'sorbet/signatures/allow_incompatible_override'
 require_relative 'sorbet/signatures/checked_true_in_signature'
