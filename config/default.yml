@@ -107,6 +107,13 @@ Sorbet/SignatureBuildOrder:
   Enabled: true
   VersionAdded: 0.3.0
 
+Sorbet/SingleLineRbiClassModuleDefinitions:
+  Description: 'Empty class and module definitions in RBI must be on a single line.'
+  Enabled: false
+  VersionAdded: '0.86'
+  Include:
+  - "**/*.rbi"
+
 Sorbet/StrictSigil:
   Description: 'All files must be at least at strictness `strict`.'
   Enabled: false

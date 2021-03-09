@@ -175,7 +175,7 @@ Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No  | 0.2.0 | 0.5.0
+Disabled | Yes | No | 0.2.0 | 0.5.0
 
 No documentation
 
@@ -183,7 +183,7 @@ No documentation
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No  | 0.2.0 | 0.5.0
+Disabled | Yes | No | 0.2.0 | 0.5.0
 
 No documentation
 
@@ -191,7 +191,7 @@ No documentation
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | No | 0.3.8 | -
+Enabled | Yes | No | 0.4.0 | -
 
 This cop disallows use of `T.untyped` or `T.nilable(T.untyped)`
 as a prop type for `T::Struct`.
@@ -297,6 +297,32 @@ Enabled | Yes | No | - | -
 Abstract cop specific to Sorbet signatures
 
 You can subclass it to use the `on_signature` trigger and the `signature?` node matcher.
+
+## Sorbet/SingleLineRbiClassModuleDefinitions
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | 0.86 | -
+
+This cop ensures empty class/module definitions in RBI files are
+done on a single line rather than being split across multiple lines.
+
+### Examples
+
+```ruby
+# bad
+module SomeModule
+end
+
+# good
+module SomeModule;end
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Include | `**/*.rbi` | Array
 
 ## Sorbet/StrictSigil
 

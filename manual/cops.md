@@ -21,6 +21,7 @@ In the following section you find all available cops:
 * [Sorbet/ParametersOrderingInSignature](cops_sorbet.md#sorbetparametersorderinginsignature)
 * [Sorbet/SignatureBuildOrder](cops_sorbet.md#sorbetsignaturebuildorder)
 * [Sorbet/SignatureCop](cops_sorbet.md#sorbetsignaturecop)
+* [Sorbet/SingleLineRbiClassModuleDefinitions](cops_sorbet.md#sorbetsinglelinerbiclassmoduledefinitions)
 * [Sorbet/StrictSigil](cops_sorbet.md#sorbetstrictsigil)
 * [Sorbet/StrongSigil](cops_sorbet.md#sorbetstrongsigil)
 * [Sorbet/TrueSigil](cops_sorbet.md#sorbettruesigil)
