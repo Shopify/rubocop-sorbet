@@ -53,6 +53,13 @@ Sorbet/FalseSigil:
   - db/**/*.rb
   - script/**/*
 
+Sorbet/ForbidExtendTSigInShims:
+  Description: 'Forbid the use of `extend T::Sig` in RBI shims'
+  Enabled: false
+  VersionAdded: '0.86'
+  Include:
+  - "sorbet/rbi/shims/**/*.rbi"
+
 Sorbet/ForbidIncludeConstLiteral:
   Description: 'Forbids include of non-literal constants.'
   Enabled: false

@@ -171,6 +171,38 @@ SuggestedStrictness | `true` | Boolean
 Include | `**/*.rb`, `**/*.rbi`, `**/*.rake`, `**/*.ru` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
+## Sorbet/ForbidExtendTSigInShims
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | Yes  | 0.86 | -
+
+This cop ensures RBI shims do not include a call to extend T::Sig
+
+### Examples
+
+```ruby
+# bad
+module SomeModule
+  extend T::Sig
+
+  sig { returns(String) }
+  def foo; end
+end
+
+# good
+module SomeModule
+  sig { returns(String) }
+  def foo; end
+end
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Include | `sorbet/rbi/shims/**/*.rbi` | Array
+
 ## Sorbet/ForbidIncludeConstLiteral
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
