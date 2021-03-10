@@ -258,6 +258,30 @@ sig { params(b: String, a: Integer).void }
 def foo(b:, a: 1); end
 ```
 
+## Sorbet/OneAncestorPerLine
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | - | -
+
+This cop ensures one ancestor per requires_ancestor line
+rather than chaining them as a comma-separated list.
+
+### Examples
+
+```ruby
+# bad
+module SomeModule
+  requires_ancestor Kernel, Minitest::Assertions
+end
+
+# good
+module SomeModule
+  requires_ancestor Kernel
+  requires_ancestor Minitest::Assertions
+end
+```
+
 ## Sorbet/ParametersOrderingInSignature
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
@@ -302,7 +326,7 @@ You can subclass it to use the `on_signature` trigger and the `signature?` node 
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | 0.86 | -
+Disabled | Yes | Yes  | 0.86 | -
 
 This cop ensures empty class/module definitions in RBI files are
 done on a single line rather than being split across multiple lines.
@@ -315,7 +339,7 @@ module SomeModule
 end
 
 # good
-module SomeModule;end
+module SomeModule; end
 ```
 
 ### Configurable attributes
