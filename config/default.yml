@@ -58,7 +58,7 @@ Sorbet/ForbidExtendTSigInShims:
   Enabled: false
   VersionAdded: '0.86'
   Include:
-  - "sorbet/rbi/shims/**/*.rbi"
+  - "**/*.rbi"
 
 Sorbet/ForbidIncludeConstLiteral:
   Description: 'Forbids include of non-literal constants.'
