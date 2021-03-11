@@ -175,7 +175,7 @@ Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes  | 0.86 | -
+Enabled | Yes | Yes  | 0.86 | -
 
 This cop ensures RBI shims do not include a call to extend T::Sig
 
@@ -201,7 +201,7 @@ end
 
 Name | Default value | Configurable values
 --- | --- | ---
-Include | `sorbet/rbi/shims/**/*.rbi` | Array
+Include | `**/*.rbi` | Array
 
 ## Sorbet/ForbidIncludeConstLiteral
 

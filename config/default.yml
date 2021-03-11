@@ -55,7 +55,7 @@ Sorbet/FalseSigil:
 
 Sorbet/ForbidExtendTSigInShims:
   Description: 'Forbid the use of `extend T::Sig` in RBI shims'
-  Enabled: false
+  Enabled: true
   VersionAdded: '0.86'
   Include:
   - "**/*.rbi"

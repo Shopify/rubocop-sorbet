@@ -23,11 +23,15 @@ module RuboCop
       class ForbidExtendTSigInShims < RuboCop::Cop::Cop
         include RangeHelp
 
-        MSG = 'Extending T::Sig in a shim is unnecessary'
+        MSG = 'Extending T::Sig or T::Helpers in a shim is unnecessary'
         RESTRICT_ON_SEND = [:extend]
 
         def_node_matcher :extend_t_sig?, <<~PATTERN
           (send nil? :extend (const (const nil? :T) :Sig))
+        PATTERN
+
+        def_node_matcher :extend_t_helpers?, <<~PATTERN
+          (send nil? :extend (const (const nil? :T) :Helpers))
         PATTERN
 
         def autocorrect(node)
@@ -39,7 +43,7 @@ module RuboCop
         end
 
         def on_send(node)
-          add_offense(node) if extend_t_sig?(node)
+          add_offense(node) if extend_t_helpers?(node) || extend_t_sig?(node)
         end
       end
     end
