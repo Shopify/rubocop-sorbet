@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require_relative 'sorbet/binding_constants_without_type_alias'
 require_relative 'sorbet/constants_from_strings'
-require_relative 'sorbet/forbid_extend_t_sig_in_shims'
+require_relative 'sorbet/forbid_extend_t_sig_helpers_in_shims'
 require_relative 'sorbet/forbid_superclass_const_literal'
 require_relative 'sorbet/forbid_include_const_literal'
 require_relative 'sorbet/forbid_untyped_struct_props'

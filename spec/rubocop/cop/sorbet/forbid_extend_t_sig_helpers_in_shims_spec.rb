@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigInShims, :config) do
+RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigHelpersInShims, :config) do
   subject(:cop) { described_class.new(config) }
 
   describe('offences') do
@@ -36,7 +36,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigInShims, :config) do
   end
 
   describe('no offences') do
-    it 'does not add an offence to uses of extend that are not T::Sig' do
+    it 'does not add an offence to uses of extend that are not T::Sig or T::Helpers' do
       expect_no_offenses(<<~RBI)
         module MyModule
           extend ActiveSupport::Concern

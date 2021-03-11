@@ -171,13 +171,14 @@ SuggestedStrictness | `true` | Boolean
 Include | `**/*.rb`, `**/*.rbi`, `**/*.rake`, `**/*.ru` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
-## Sorbet/ForbidExtendTSigInShims
+## Sorbet/ForbidExtendTSigHelpersInShims
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.86 | -
 
 This cop ensures RBI shims do not include a call to extend T::Sig
+or to extend T::Helpers
 
 ### Examples
 
@@ -185,6 +186,7 @@ This cop ensures RBI shims do not include a call to extend T::Sig
 # bad
 module SomeModule
   extend T::Sig
+  extend T::Helpers
 
   sig { returns(String) }
   def foo; end

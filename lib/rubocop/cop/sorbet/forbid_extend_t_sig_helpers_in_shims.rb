@@ -4,12 +4,14 @@ module RuboCop
   module Cop
     module Sorbet
       # This cop ensures RBI shims do not include a call to extend T::Sig
+      # or to extend T::Helpers
       #
       # @example
       #
       #   # bad
       #   module SomeModule
       #     extend T::Sig
+      #     extend T::Helpers
       #
       #     sig { returns(String) }
       #     def foo; end
@@ -20,7 +22,7 @@ module RuboCop
       #     sig { returns(String) }
       #     def foo; end
       #   end
-      class ForbidExtendTSigInShims < RuboCop::Cop::Cop
+      class ForbidExtendTSigHelpersInShims < RuboCop::Cop::Cop
         include RangeHelp
 
         MSG = 'Extending T::Sig or T::Helpers in a shim is unnecessary'
