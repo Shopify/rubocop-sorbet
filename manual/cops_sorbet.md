@@ -175,7 +175,7 @@ Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | 0.86 | -
+Enabled | Yes | Yes  | 0.6.0 | -
 
 This cop ensures RBI shims do not include a call to extend T::Sig
 or to extend T::Helpers
@@ -360,7 +360,7 @@ You can subclass it to use the `on_signature` trigger and the `signature?` node 
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes  | 0.86 | -
+Disabled | Yes | Yes  | 0.6.0 | -
 
 This cop ensures empty class/module definitions in RBI files are
 done on a single line rather than being split across multiple lines.
