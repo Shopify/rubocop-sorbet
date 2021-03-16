@@ -217,9 +217,15 @@ No documentation
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | 0.2.0 | 0.5.0
+Disabled | Yes | No | 0.2.0 | 0.6.1
 
 No documentation
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Exclude | `db/migrate/*.rb` | Array
 
 ## Sorbet/ForbidUntypedStructProps
 
@@ -296,7 +302,7 @@ def foo(b:, a: 1); end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | - | -
+Disabled | Yes | Yes  | 0.6.0 | -
 
 This cop ensures one ancestor per requires_ancestor line
 rather than chaining them as a comma-separated list.
