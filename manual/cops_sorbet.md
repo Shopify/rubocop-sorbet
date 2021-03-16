@@ -302,7 +302,7 @@ def foo(b:, a: 1); end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | - | -
+Disabled | Yes | Yes  | 0.6.0 | -
 
 This cop ensures one ancestor per requires_ancestor line
 rather than chaining them as a comma-separated list.
