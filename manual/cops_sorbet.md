@@ -217,9 +217,15 @@ No documentation
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | 0.2.0 | 0.5.0
+Disabled | Yes | No | 0.2.0 | 0.6.1
 
 No documentation
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Exclude | `db/migrate/*.rb` | Array
 
 ## Sorbet/ForbidUntypedStructProps
 
