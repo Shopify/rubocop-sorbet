@@ -111,6 +111,11 @@ Sorbet/ParametersOrderingInSignature:
   Enabled: true
   VersionAdded: 0.2.0
 
+Sorbet/ScopeHelperPosition:
+  Description: 'Enforces that helpers such as abstract!, interface! and final! appear before method definitions.'
+  Enabled: true
+  VersionAdded: 0.7.0
+
 Sorbet/SignatureBuildOrder:
   Description: >-
                   Enforces the order of parts in a signature.

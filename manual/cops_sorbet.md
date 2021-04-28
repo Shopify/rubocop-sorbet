@@ -344,6 +344,41 @@ sig { params(a: Integer, b: String).void }
 def foo(a:, b:); end
 ```
 
+## Sorbet/ScopeHelperPosition
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | 0.7.0 | -
+
+This cop ensures that helpers such as abstract!, interface! and final!
+are invoke before any method definitions
+
+### Examples
+
+```ruby
+# bad
+module Interface
+  extend T::Sig
+  extend T::Helpers
+
+  sig { returns(String) }
+  def foo; end
+
+  interface!
+end
+
+# good
+module Interface
+  extend T::Sig
+  extend T::Helpers
+
+  interface!
+
+  sig { returns(String) }
+  def foo; end
+end
+```
+
 ## Sorbet/SignatureBuildOrder
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
