@@ -31,7 +31,7 @@ module RuboCop
       #   end
       class ScopeHelperPosition < RuboCop::Cop::Cop
         include RangeHelp
-        HELPERS = %i(interface! abstract! final!).freeze
+        HELPERS = %i(interface! abstract! final! sealed!).freeze
 
         def autocorrect(node)
           lambda do |corrector|
