@@ -351,7 +351,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 Enabled | Yes | Yes  | 0.7.0 | -
 
 This cop ensures that helpers such as abstract!, interface! and final!
-are invoke before any method definitions
+are invoke before any method definitions or invocations
 
 ### Examples
 

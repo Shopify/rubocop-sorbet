@@ -6,7 +6,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
   subject(:cop) { described_class.new(config) }
 
   describe("offenses") do
-    it("disallows using interface! after method definitions") do
+    it("disallows using interface! after method definitions and invocations") do
       expect_offense(<<~RUBY)
         module Interface
           extend T::Sig
@@ -16,7 +16,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
           def foo; end
 
           interface!
-          ^^^^^^^^^^ Cannot invoke interface! after method definitions
+          ^^^^^^^^^^ Cannot invoke interface! after method definitions or invocations
 
           sig { abstract.void }
           def bar; end
@@ -24,7 +24,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
       RUBY
     end
 
-    it("disallows abstract! after method definitions") do
+    it("disallows abstract! after method definitions and invocations") do
       expect_offense(<<~RUBY)
         module Interface
           extend T::Sig
@@ -34,7 +34,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
           def foo; end
 
           abstract!
-          ^^^^^^^^^ Cannot invoke abstract! after method definitions
+          ^^^^^^^^^ Cannot invoke abstract! after method definitions or invocations
 
           sig { abstract.void }
           def bar; end
@@ -42,17 +42,35 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
       RUBY
     end
 
-    it("disallows final! after method definitions") do
+    it("disallows final! after method definitions and invocations") do
       expect_offense(<<~RUBY)
-        module Interface
+        class Final
           extend T::Sig
           extend T::Helpers
 
-          sig { abstract.void }
-          def foo; end
+          validates :something, presence: true
 
           final!
-          ^^^^^^ Cannot invoke final! after method definitions
+          ^^^^^^ Cannot invoke final! after method definitions or invocations
+
+          sig { abstract.void }
+          def bar; end
+        end
+      RUBY
+    end
+
+    it("disallows sealed! after method definitions and invocations") do
+      expect_offense(<<~RUBY)
+        class Sealed
+          extend T::Sig
+          extend T::Helpers
+
+          configure do
+            something
+          end
+
+          sealed!
+          ^^^^^^^ Cannot invoke sealed! after method definitions or invocations
 
           sig { abstract.void }
           def bar; end
@@ -184,6 +202,32 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
           def foo; end
 
           def bar; end
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("autocorrects when there are method invocations") do
+      source = <<~RUBY
+        class Final
+          extend T::Sig
+          extend T::Helpers
+
+          validates :something, presence: true
+
+          final!
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        class Final
+          extend T::Sig
+          extend T::Helpers
+
+          final!
+
+          validates :something, presence: true
         end
       CORRECTED
 
