@@ -6,6 +6,18 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
   subject(:cop) { described_class.new(config) }
 
   describe("offenses") do
+    it("disallows scope helpers after defining methods with reserved names") do
+      expect_offense(<<~RUBY)
+        class Foo
+          extend T::Helpers
+
+          def include; end
+          abstract!
+          ^^^^^^^^^ Cannot invoke abstract! after method definitions or invocations
+        end
+      RUBY
+    end
+
     it("disallows using interface! after method definitions and invocations") do
       expect_offense(<<~RUBY)
         module Interface
@@ -228,6 +240,40 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
           final!
 
           validates :something, presence: true
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("autocorrects when multiple scope helpers are used together") do
+      source = <<~RUBY
+        class Foo
+          extend T::Helpers
+        
+          def foo; end
+        
+          interface!
+          abstract!
+          sealed!
+          final!
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        class Foo
+          extend T::Helpers
+
+          final!
+
+          sealed!
+
+          abstract!
+
+          interface!
+
+          def foo; end
+
         end
       CORRECTED
 
