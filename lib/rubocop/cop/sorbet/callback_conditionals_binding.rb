@@ -27,6 +27,12 @@ module RuboCop
       #   end
       class CallbackConditionalsBinding < RuboCop::Cop::Cop
         CALLBACKS = %i(
+          validate
+          validates
+          validates_with
+          before_validation
+          around_validation
+
           before_create
           before_save
           before_destroy
