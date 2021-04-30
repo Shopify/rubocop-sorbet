@@ -4,6 +4,7 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in rubocop-sorbet.gemspec
 gemspec
 
+gem "byebug"
 gem "rake", ">= 12.3.3"
 gem "rspec"
 gem "rubocop-shopify", require: false

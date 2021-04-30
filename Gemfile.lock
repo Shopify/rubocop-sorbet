@@ -12,6 +12,7 @@ GEM
       ice_nine (~> 0.11.0)
       memoizable (~> 0.4.0)
     ast (2.4.0)
+    byebug (11.1.3)
     concord (0.1.5)
       adamantium (~> 0.2.0)
       equalizer (~> 0.0.9)
@@ -71,6 +72,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  byebug
   rake (>= 12.3.3)
   rspec
   rubocop-shopify
