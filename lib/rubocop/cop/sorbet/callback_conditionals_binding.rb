@@ -26,8 +26,46 @@ module RuboCop
       #     end
       #   end
       class CallbackConditionalsBinding < RuboCop::Cop::Cop
-        CALLBACKS = %i(before_create).freeze
-        include RangeHelp
+        CALLBACKS = %i(
+          before_create
+          before_save
+          before_destroy
+          before_update
+
+          after_create
+          after_save
+          after_destroy
+          after_update
+          after_touch
+          after_initialize
+          after_find
+
+          around_create
+          around_save
+          around_destroy
+          around_update
+
+          before_commit
+
+          after_commit
+          after_create_commit
+          after_destroy_commit
+          after_rollback
+          after_save_commit
+          after_update_commit
+
+          before_action
+          prepend_before_action
+          append_before_action
+
+          around_action
+          prepend_around_action
+          append_around_action
+
+          after_action
+          prepend_after_action
+          append_after_action
+        ).freeze
 
         def autocorrect(node)
           lambda do |corrector|
