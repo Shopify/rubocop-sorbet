@@ -86,12 +86,12 @@ module RuboCop
             end
 
             _, _, block = conditional.child_nodes
-            expected_class = node.parent.child_nodes.first.source
+            expected_class = node.parent_module_name
 
             bind = if block.begin_type?
               indentation = " " * block.child_nodes.first.loc.column
               "T.bind(self, #{expected_class})\n#{indentation}"
-            elsif block.child_nodes.empty?
+            elsif block.child_nodes.empty? && !block.ivar_type?
               "T.bind(self, #{expected_class})."
             else
               "T.bind(self, #{expected_class}); "
@@ -105,21 +105,25 @@ module RuboCop
           return unless CALLBACKS.include?(node.method_name)
 
           options = node.each_child_node.find(&:hash_type?)
+          return if options.nil?
 
           conditional = nil
           options.each_pair do |keyword, block|
+            next unless keyword.sym_type?
+
             if keyword.value == :if || keyword.value == :unless
               conditional = block
               break
             end
           end
 
-          return if conditional.nil?
+          return if conditional.nil? || conditional.child_nodes.empty?
 
           type, _, block = conditional.child_nodes
           return unless type.lambda_or_proc?
 
-          expected_class = node.parent.child_nodes.first.source
+          expected_class = node.parent_module_name
+          return if expected_class.nil?
 
           unless block.source.include?("T.bind(self, #{expected_class})")
             add_offense(
