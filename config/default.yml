@@ -14,6 +14,11 @@ Sorbet/BindingConstantWithoutTypeAlias:
   Enabled: true
   VersionAdded: 0.2.0
 
+Sorbet/CallbackConditionalsBinding:
+  Description: 'Ensures callback conditionals are bound to the right type.'
+  Enabled: true
+  VersionAdded: 0.7.0
+
 Sorbet/CheckedTrueInSignature:
   Description: 'Disallows the usage of `checked(true)` in signatures.'
   Enabled: true
