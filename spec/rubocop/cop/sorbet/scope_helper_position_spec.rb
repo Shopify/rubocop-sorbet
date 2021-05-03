@@ -89,7 +89,35 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
         end
       RUBY
     end
+  end
 
+  describe("no offenses") do
+    it("allows scope helpers after constants") do
+      expect_no_offenses(<<~RUBY)
+        class Abstract
+          extend T::Helpers
+
+          SOME_CONSTANT = "VALUE"
+
+          abstract!
+        end
+      RUBY
+    end
+
+    it("allows scope helpers after requires_ancestor") do
+      expect_no_offenses(<<~RUBY)
+        module Interface
+          extend(T::Sig)
+          extend(T::Helpers)
+          requires_ancestor(Kernel)
+
+          interface!
+        end
+      RUBY
+    end
+  end
+
+  describe("autocorrect") do
     it("autocorrects moving the invocation to the right spot") do
       source = <<~RUBY
         module Interface

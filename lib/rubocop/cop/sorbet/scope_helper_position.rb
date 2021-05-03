@@ -32,7 +32,7 @@ module RuboCop
       class ScopeHelperPosition < RuboCop::Cop::Cop
         include RangeHelp
         HELPERS = %i(interface! abstract! final! sealed!).freeze
-        ALLOWED_METHODS = %i(extend include prepend).freeze
+        ALLOWED_METHODS = %i(extend include prepend requires_ancestor).freeze
 
         def autocorrect(node)
           lambda do |corrector|
@@ -46,7 +46,11 @@ module RuboCop
             end
 
             before_node = node.parent.each_child_node.find do |child_node|
-              (child_node.def_type? || !ALLOWED_METHODS.include?(child_node.method_name))
+              method_invocation = child_node.send_type? || child_node.block_type?
+              offense_invocation = method_invocation && !ALLOWED_METHODS.include?(child_node.method_name) &&
+                !HELPERS.include?(child_node.method_name)
+
+              child_node.def_type? || offense_invocation
             end
 
             indentation = " " * before_node.loc.column
@@ -59,7 +63,11 @@ module RuboCop
           return unless HELPERS.include?(node.method_name)
 
           node.parent.each_child_node do |child_node|
-            next unless (child_node.def_type? || !ALLOWED_METHODS.include?(child_node.method_name)) &&
+            method_invocation = child_node.send_type? || child_node.block_type?
+            offense_invocation = method_invocation && !ALLOWED_METHODS.include?(child_node.method_name) &&
+              !HELPERS.include?(child_node.method_name)
+
+            next unless (child_node.def_type? || offense_invocation) &&
               child_node.first_line < node.first_line
 
             add_offense(node, message: "Cannot invoke #{node.method_name} after method definitions or invocations")
