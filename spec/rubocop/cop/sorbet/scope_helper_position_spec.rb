@@ -307,5 +307,27 @@ RSpec.describe(RuboCop::Cop::Sorbet::ScopeHelperPosition, :config) do
 
       expect(autocorrect_source(source)).to(eq(corrected_source))
     end
+
+    it("autocorrects the extend T::Helpers if necessary") do
+      source = <<~RUBY
+        class Foo
+          self.table_name = "foos"
+          extend T::Helpers
+        
+          abstract!
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        class Foo
+          extend T::Helpers
+          abstract!
+
+          self.table_name = "foos"
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
   end
 end

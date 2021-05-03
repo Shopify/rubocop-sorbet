@@ -55,7 +55,16 @@ module RuboCop
 
             indentation = " " * before_node.loc.column
 
+            t_helpers_node = node.parent.each_child_node.find do |child_node|
+              child_node.method_name == :extend && child_node.source == "extend T::Helpers"
+            end
+
             corrector.insert_before(before_node, "#{node.source}\n\n#{indentation}")
+
+            if t_helpers_node.first_line > before_node.first_line
+              corrector.remove(range_by_whole_lines(t_helpers_node.source_range, include_final_newline: true))
+              corrector.insert_before(before_node, "#{t_helpers_node.source}\n#{indentation}")
+            end
           end
         end
 
