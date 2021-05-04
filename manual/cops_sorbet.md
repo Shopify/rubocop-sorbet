@@ -41,6 +41,37 @@ FooOrBar = T.any(Foo, Bar)
 FooOrBar = T.type_alias { T.any(Foo, Bar) }
 ```
 
+## Sorbet/CallbackConditionalsBinding
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | 0.7.0 | -
+
+This cop ensures that callback conditionals are bound to the right type
+so that they are type checked properly.
+
+### Examples
+
+```ruby
+# bad
+class Post < ApplicationRecord
+  before_create :do_it, if: -> { should_do_it? }
+
+  def should_do_it?
+    true
+  end
+end
+
+# good
+class Post < ApplicationRecord
+  before_create :do_it, if: -> { T.bind(self, Post).should_do_it? }
+
+  def should_do_it?
+    true
+  end
+end
+```
+
 ## Sorbet/CheckedTrueInSignature
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

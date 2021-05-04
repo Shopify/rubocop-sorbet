@@ -7,6 +7,7 @@ In the following section you find all available cops:
 
 * [Sorbet/AllowIncompatibleOverride](cops_sorbet.md#sorbetallowincompatibleoverride)
 * [Sorbet/BindingConstantWithoutTypeAlias](cops_sorbet.md#sorbetbindingconstantwithouttypealias)
+* [Sorbet/CallbackConditionalsBinding](cops_sorbet.md#sorbetcallbackconditionalsbinding)
 * [Sorbet/CheckedTrueInSignature](cops_sorbet.md#sorbetcheckedtrueinsignature)
 * [Sorbet/ConstantsFromStrings](cops_sorbet.md#sorbetconstantsfromstrings)
 * [Sorbet/EnforceSigilOrder](cops_sorbet.md#sorbetenforcesigilorder)
