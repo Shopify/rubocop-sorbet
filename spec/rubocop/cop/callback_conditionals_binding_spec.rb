@@ -39,6 +39,22 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         end
       RUBY
     end
+
+    it("does not verify callbacks using validator classes") do
+      expect_no_offenses(<<~RUBY)
+        class Post < ApplicationRecord
+          validates_with PostValidator
+        end
+      RUBY
+    end
+
+    it("does not verify callbacks using validator instances") do
+      expect_no_offenses(<<~RUBY)
+        class Post < ApplicationRecord
+          validates_with PostValidator.new
+        end
+      RUBY
+    end
   end
 
   describe("offenses") do
