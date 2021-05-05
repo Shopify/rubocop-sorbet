@@ -186,6 +186,31 @@ You can configure the placeholders used by changing the following options:
 * `ParameterTypePlaceholder`: placeholders used for parameter types (default: 'T.untyped')
 * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
 
+## Sorbet/ExtendSigPosition
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | 0.7.0 | -
+
+This cop ensures that, if extend T::Sig is used in a class/module, it
+is the first statement inside it.
+
+### Examples
+
+```ruby
+# bad
+module Interface
+  include Something
+  extend T::Sig
+end
+
+# good
+module Interface
+  extend T::Sig
+  include Something
+end
+```
+
 ## Sorbet/FalseSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

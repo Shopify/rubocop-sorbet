@@ -43,6 +43,11 @@ Sorbet/EnforceSignatures:
   Enabled: false
   VersionAdded: 0.3.4
 
+Sorbet/ExtendSigPosition:
+  Description: 'Ensures extend T::Sig is always invoked first in classes/modules.'
+  Enabled: true
+  VersionAdded: 0.7.0
+
 Sorbet/FalseSigil:
   Description: 'All files must be at least at strictness `false`.'
   Enabled: true
