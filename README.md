@@ -17,6 +17,13 @@ or, if you use `Bundler`, add this line your application's `Gemfile`:
 gem 'rubocop-sorbet', require: false
 ```
 
+Note: in order to use the Sorbet/SignatureBuildOrder cop autocorrect feature, it is necessary
+to install `unparser` in addition to `rubocop-sorbet`.
+
+```ruby
+gem "unparser", require: false
+```
+
 ## Usage
 
 You need to tell RuboCop to load the Sorbet extension. There are three ways to do this:
