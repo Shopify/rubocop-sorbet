@@ -17,7 +17,7 @@ or, if you use `Bundler`, add this line your application's `Gemfile`:
 gem 'rubocop-sorbet', require: false
 ```
 
-Note: in order to use the Sorbet/SignatureBuildOrder cop autocorrect feature, it is necessary
+Note: in order to use the [Sorbet/SignatureBuildOrder](https://github.com/Shopify/rubocop-sorbet/blob/master/manual/cops_sorbet.md#sorbetsignaturebuildorder) cop autocorrect feature, it is necessary
 to install `unparser` in addition to `rubocop-sorbet`.
 
 ```ruby
