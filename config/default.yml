@@ -89,6 +89,8 @@ Sorbet/ForbidUntypedStructProps:
 Sorbet/HasSigil:
   Description: 'Makes the Sorbet typed sigil mandatory in all files.'
   Enabled: false
+  SuggestedStrictness: "false"
+  MinimumStrictness: "false"
   VersionAdded: 0.3.3
 
 Sorbet/IgnoreSigil:
