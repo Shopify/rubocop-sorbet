@@ -47,7 +47,7 @@ Sorbet/FalseSigil:
   Description: 'All files must be at least at strictness `false`.'
   Enabled: true
   VersionAdded: 0.3.3
-  SuggestedStrictness: true
+  SuggestedStrictness: "true"
   Include:
   - "**/*.rb"
   - "**/*.rbi"
@@ -96,6 +96,7 @@ Sorbet/HasSigil:
 Sorbet/IgnoreSigil:
   Description: 'All files must be at least at strictness `ignore`.'
   Enabled: false
+  SuggestedStrictness: "ignore"
   VersionAdded: 0.3.3
 
 Sorbet/KeywordArgumentOrdering:
@@ -138,16 +139,19 @@ Sorbet/SingleLineRbiClassModuleDefinitions:
 Sorbet/StrictSigil:
   Description: 'All files must be at least at strictness `strict`.'
   Enabled: false
+  SuggestedStrictness: "strict"
   VersionAdded: 0.3.3
 
 Sorbet/StrongSigil:
   Description: 'All files must be at least at strictness `strong`.'
   Enabled: false
+  SuggestedStrictness: "strong"
   VersionAdded: 0.3.3
 
 Sorbet/TrueSigil:
   Description: 'All files must be at least at strictness `true`.'
   Enabled: false
+  SuggestedStrictness: "true"
   VersionAdded: 0.3.3
 
 Sorbet/ValidSigil:
