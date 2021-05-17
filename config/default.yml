@@ -151,4 +151,7 @@ Sorbet/TrueSigil:
 Sorbet/ValidSigil:
   Description: 'All files must have a valid sigil.'
   Enabled: true
+  RequireSigilOnAllFiles: false
+  SuggestedStrictness: "false"
+  MinimumStrictness: "false"
   VersionAdded: 0.3.3
