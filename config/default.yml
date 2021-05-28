@@ -86,6 +86,12 @@ Sorbet/ForbidSuperclassConstLiteral:
   Exclude:
   - db/migrate/*.rb
 
+Sorbet/ForbidTUnsafe:
+  Description: 'Forbid usage of T.unsafe.'
+  Enabled: false
+  VersionAdded: 0.7.0
+  VersionChanged: 0.7.0
+
 Sorbet/ForbidUntypedStructProps:
   Description: >-
                   Disallows use of `T.untyped` or `T.nilable(T.untyped)` as a
