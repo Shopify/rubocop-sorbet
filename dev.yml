@@ -8,4 +8,4 @@ up:
 
 commands:
   test:   "bin/rspec"
-  style:  "bundle exec rubocop"
+  style:  "bin/rubocop"
