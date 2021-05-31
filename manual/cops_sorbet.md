@@ -244,6 +244,32 @@ Disabled | Yes | No | 0.2.0 | 0.5.0
 
 No documentation
 
+## Sorbet/ForbidRBIOutsideOfSorbetDir
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | 0.6.1 | -
+
+This cop makes sure that RBI files are always located under sorbet/rbi/.
+
+### Examples
+
+```ruby
+# bad
+lib/some_file.rbi
+other_file.rbi
+
+# good
+sorbet/rbi/some_file.rbi
+sorbet/rbi/any/path/for/file.rbi
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Include | `**/*.rbi` | Array
+
 ## Sorbet/ForbidSuperclassConstLiteral
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
