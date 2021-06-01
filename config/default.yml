@@ -47,7 +47,7 @@ Sorbet/FalseSigil:
   Description: 'All files must be at least at strictness `false`.'
   Enabled: true
   VersionAdded: 0.3.3
-  SuggestedStrictness: "true"
+  SuggestedStrictness: "false"
   Include:
   - "**/*.rb"
   - "**/*.rbi"
