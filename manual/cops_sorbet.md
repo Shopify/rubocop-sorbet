@@ -198,7 +198,7 @@ This cop makes the Sorbet `false` sigil mandatory in all files.
 
 Name | Default value | Configurable values
 --- | --- | ---
-SuggestedStrictness | `true` | Boolean
+SuggestedStrictness | `false` | String
 Include | `**/*.rb`, `**/*.rbi`, `**/*.rake`, `**/*.ru` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
@@ -243,6 +243,32 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 Disabled | Yes | No | 0.2.0 | 0.5.0
 
 No documentation
+
+## Sorbet/ForbidRBIOutsideOfSorbetDir
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | 0.6.1 | -
+
+This cop makes sure that RBI files are always located under sorbet/rbi/.
+
+### Examples
+
+```ruby
+# bad
+lib/some_file.rbi
+other_file.rbi
+
+# good
+sorbet/rbi/some_file.rbi
+sorbet/rbi/any/path/for/file.rbi
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Include | `**/*.rbi` | Array
 
 ## Sorbet/ForbidSuperclassConstLiteral
 
@@ -298,6 +324,13 @@ Options:
 
 If a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
 
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+SuggestedStrictness | `false` | String
+MinimumStrictness | `false` | String
+
 ## Sorbet/IgnoreSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
@@ -305,6 +338,12 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 Disabled | Yes | Yes  | 0.3.3 | -
 
 This cop makes the Sorbet `ignore` sigil mandatory in all files.
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+SuggestedStrictness | `ignore` | String
 
 ## Sorbet/KeywordArgumentOrdering
 
@@ -427,6 +466,12 @@ Disabled | Yes | Yes  | 0.3.3 | -
 
 This cop makes the Sorbet `strict` sigil mandatory in all files.
 
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+SuggestedStrictness | `strict` | String
+
 ## Sorbet/StrongSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
@@ -435,6 +480,12 @@ Disabled | Yes | Yes  | 0.3.3 | -
 
 This cop makes the Sorbet `strong` sigil mandatory in all files.
 
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+SuggestedStrictness | `strong` | String
+
 ## Sorbet/TrueSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
@@ -442,6 +493,12 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 Disabled | Yes | Yes  | 0.3.3 | -
 
 This cop makes the Sorbet `true` sigil mandatory in all files.
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+SuggestedStrictness | `true` | String
 
 ## Sorbet/ValidSigil
 
@@ -459,3 +516,11 @@ Options:
 * `MinimumStrictness`: If set, make offense if the strictness level in the file is below this one
 
 If a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+RequireSigilOnAllFiles | `false` | Boolean
+SuggestedStrictness | `false` | String
+MinimumStrictness | `false` | String
