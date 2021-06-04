@@ -284,6 +284,24 @@ Name | Default value | Configurable values
 --- | --- | ---
 Exclude | `db/migrate/*.rb` | Array
 
+## Sorbet/ForbidTUnsafe
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | 0.7.0 | 0.7.0
+
+This cop disallows using `T.unsafe` anywhere.
+
+### Examples
+
+```ruby
+# bad
+T.unsafe(foo)
+
+# good
+foo
+```
+
 ## Sorbet/ForbidUntypedStructProps
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
