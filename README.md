@@ -94,6 +94,12 @@ bundle exec rake new_cop[Sorbet/NewCopName]
 
 which will create a skeleton cop, a skeleton spec, an entry in the default config file and will require the new cop so that it is properly exported from the gem.
 
+Don't forget to update the documentation with:
+
+```sh
+bundle exec rake generate_cops_documentation
+```
+
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://github.com/Shopify/rubocop-sorbet/blob/master/LICENSE.txt).
