@@ -48,7 +48,7 @@ module RuboCop
 
         protected
 
-        STRICTNESS_LEVELS = %w(ignore false true strict strong)
+        STRICTNESS_LEVELS = ['ignore', 'false', 'true', 'strict', 'strong']
         SIGIL_REGEX = /#\s+typed:(?:\s+([\w]+))?/
 
         # extraction
