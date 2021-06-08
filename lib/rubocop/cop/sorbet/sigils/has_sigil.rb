@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'rubocop'
-require_relative 'valid_sigil'
+require "rubocop"
+require_relative "valid_sigil"
 
 module RuboCop
   module Cop

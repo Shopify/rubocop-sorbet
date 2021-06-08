@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
   subject(:cop) { described_class.new(config) }
 
-  shared_examples_for 'offense for an invalid sigil' do
-    it 'enforces that the Sorbet sigil must not be empty' do
+  shared_examples_for "offense for an invalid sigil" do
+    it "enforces that the Sorbet sigil must not be empty" do
       expect_offense(<<~RUBY)
         # Hello world!
         # typed:
@@ -15,7 +15,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
       RUBY
     end
 
-    it 'enforces that the Sorbet sigil must be a valid strictness' do
+    it "enforces that the Sorbet sigil must be a valid strictness" do
       expect_offense(<<~RUBY)
         # Hello world!
         # typed: foobar
@@ -25,8 +25,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
     end
   end
 
-  shared_examples_for 'no autocorrect on files with sigil' do
-    it('does not change files with a sigil') do
+  shared_examples_for "no autocorrect on files with sigil" do
+    it("does not change files with a sigil") do
       expect(
         autocorrect_source(<<~RUBY)
           # frozen_string_literal: true
@@ -41,7 +41,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
         RUBY
     end
 
-    it('does not change files with an invalid sigil') do
+    it("does not change files with an invalid sigil") do
       expect(
         autocorrect_source(<<~RUBY)
           # frozen_string_literal: true
@@ -57,10 +57,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
     end
   end
 
-  describe('always require a sigil') do
-    it_should_behave_like 'offense for an invalid sigil'
+  describe("always require a sigil") do
+    it_should_behave_like "offense for an invalid sigil"
 
-    it 'enforces that the sigil must be at the beginning of the file' do
+    it "enforces that the sigil must be at the beginning of the file" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).
@@ -70,14 +70,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
       RUBY
     end
 
-    it 'allows Sorbet sigil' do
+    it "allows Sorbet sigil" do
       expect_no_offenses(<<~RUBY)
         # typed: true
         class Foo; end
       RUBY
     end
 
-    it 'allows empty spaces at the beginning of the file' do
+    it "allows empty spaces at the beginning of the file" do
       expect_no_offenses(<<~RUBY)
 
         # typed: true
@@ -85,10 +85,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
       RUBY
     end
 
-    describe('autocorrect') do
-      it_should_behave_like 'no autocorrect on files with sigil'
+    describe("autocorrect") do
+      it_should_behave_like "no autocorrect on files with sigil"
 
-      it('autocorrects by adding typed: false to file without sigil') do
+      it("autocorrects by adding typed: false to file without sigil") do
         expect(
           autocorrect_source(<<~RUBY)
             # frozen_string_literal: true
@@ -102,7 +102,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
           RUBY
       end
 
-      it('adds the sigil after the shebang line, if present') do
+      it("adds the sigil after the shebang line, if present") do
         expect(
           autocorrect_source(<<~RUBY)
             #!/usr/bin/env ruby

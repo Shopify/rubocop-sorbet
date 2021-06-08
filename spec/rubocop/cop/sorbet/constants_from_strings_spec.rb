@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ConstantsFromStrings, :config) do
   subject(:cop) { described_class.new(config) }
@@ -10,36 +10,36 @@ RSpec.describe(RuboCop::Cop::Sorbet::ConstantsFromStrings, :config) do
       "and impossible to analyze. Replace `#{method_name}` with a case/when or a hash."
   end
 
-  describe('offenses') do
-    it('disallows constantize') do
+  describe("offenses") do
+    it("disallows constantize") do
       expect_offense(<<~RUBY)
         klass = "Foo".constantize
                       ^^^^^^^^^^^ #{message('constantize')}
       RUBY
     end
 
-    it('disallows const_get with receiver') do
+    it("disallows const_get with receiver") do
       expect_offense(<<~RUBY)
         klass = Object.const_get("Foo")
                        ^^^^^^^^^ #{message('const_get')}
       RUBY
     end
 
-    it('disallows const_get without receiver') do
+    it("disallows const_get without receiver") do
       expect_offense(<<~RUBY)
         klass = const_get("Foo")
                 ^^^^^^^^^ #{message('const_get')}
       RUBY
     end
 
-    it('disallows constants with receiver') do
+    it("disallows constants with receiver") do
       expect_offense(<<~RUBY)
         klass = Object.constants.select { |c| c.name == "Foo" }
                        ^^^^^^^^^ #{message('constants')}
       RUBY
     end
 
-    it('disallows constants without receiver') do
+    it("disallows constants without receiver") do
       expect_offense(<<~RUBY)
         klass = constants.select { |c| c.name == "Foo" }
                 ^^^^^^^^^ #{message('constants')}

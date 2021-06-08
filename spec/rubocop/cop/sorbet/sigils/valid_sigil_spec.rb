@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
   subject(:cop) { described_class.new(config) }
 
-  shared_examples_for 'no offense for missing sigils by default' do
-    it('does not require a sigil by default') do
+  shared_examples_for "no offense for missing sigils by default" do
+    it("does not require a sigil by default") do
       expect_no_offenses(<<~RUBY)
         # frozen_string_literal: true
         class Foo; end
       RUBY
     end
 
-    it('does not make offense if there is a valid sigil') do
+    it("does not make offense if there is a valid sigil") do
       expect_no_offenses(<<~RUBY)
         # frozen_string_literal: true
         # typed: strong
@@ -22,8 +22,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  shared_examples_for 'offense for an invalid sigil' do
-    it 'enforces that the Sorbet sigil must not be empty' do
+  shared_examples_for "offense for an invalid sigil" do
+    it "enforces that the Sorbet sigil must not be empty" do
       expect_offense(<<~RUBY)
         # Hello world!
         # typed:
@@ -32,7 +32,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
 
-    it 'enforces that the Sorbet sigil must be a valid strictness' do
+    it "enforces that the Sorbet sigil must be a valid strictness" do
       expect_offense(<<~RUBY)
         # Hello world!
         # typed: foobar
@@ -42,8 +42,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  shared_examples_for 'no autocorrect on files with sigil' do
-    it('does not change files with a sigil') do
+  shared_examples_for "no autocorrect on files with sigil" do
+    it("does not change files with a sigil") do
       expect(
         autocorrect_source(<<~RUBY)
           # frozen_string_literal: true
@@ -58,7 +58,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
         RUBY
     end
 
-    it('does not change files with an invalid sigil') do
+    it("does not change files with an invalid sigil") do
       expect(
         autocorrect_source(<<~RUBY)
           # frozen_string_literal: true
@@ -74,28 +74,28 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  describe('RequireSigilOnAllFiles: false') do
+  describe("RequireSigilOnAllFiles: false") do
     let(:cop_config) do
       {
-        'Enabled' => true,
-        'RequireSigilOnAllFiles' => false,
+        "Enabled" => true,
+        "RequireSigilOnAllFiles" => false,
       }
     end
-    it_should_behave_like 'no offense for missing sigils by default'
-    it_should_behave_like 'offense for an invalid sigil'
-    it_should_behave_like 'no autocorrect on files with sigil'
+    it_should_behave_like "no offense for missing sigils by default"
+    it_should_behave_like "offense for an invalid sigil"
+    it_should_behave_like "no autocorrect on files with sigil"
   end
 
-  describe('RequireSigilOnAllFiles: true') do
+  describe("RequireSigilOnAllFiles: true") do
     let(:cop_config) do
       {
-        'Enabled' => true,
-        'RequireSigilOnAllFiles' => true,
+        "Enabled" => true,
+        "RequireSigilOnAllFiles" => true,
       }
     end
-    it_should_behave_like 'offense for an invalid sigil'
+    it_should_behave_like "offense for an invalid sigil"
 
-    it 'enforces that the Sorbet sigil must exist' do
+    it "enforces that the Sorbet sigil must exist" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).
@@ -103,7 +103,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
 
-    it 'enforces that the sigil must be at the beginning of the file' do
+    it "enforces that the sigil must be at the beginning of the file" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).
@@ -113,14 +113,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
 
-    it 'allows Sorbet sigil' do
+    it "allows Sorbet sigil" do
       expect_no_offenses(<<~RUBY)
         # typed: true
         class Foo; end
       RUBY
     end
 
-    it 'allows empty spaces at the beginning of the file' do
+    it "allows empty spaces at the beginning of the file" do
       expect_no_offenses(<<~RUBY)
 
         # typed: true
@@ -128,10 +128,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
 
-    describe('autocorrect') do
-      it_should_behave_like 'no autocorrect on files with sigil'
+    describe("autocorrect") do
+      it_should_behave_like "no autocorrect on files with sigil"
 
-      it('autocorrects by adding typed: false to file without sigil') do
+      it("autocorrects by adding typed: false to file without sigil") do
         expect(
           autocorrect_source(<<~RUBY)
             # frozen_string_literal: true
@@ -147,17 +147,17 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  describe('SuggestedStrictness: true') do
+  describe("SuggestedStrictness: true") do
     let(:cop_config) do
       {
-        'Enabled' => true,
-        'RequireSigilOnAllFiles' => true,
-        'SuggestedStrictness' => true,
+        "Enabled" => true,
+        "RequireSigilOnAllFiles" => true,
+        "SuggestedStrictness" => true,
       }
     end
-    it_should_behave_like 'offense for an invalid sigil'
+    it_should_behave_like "offense for an invalid sigil"
 
-    it 'suggest the default strictness if the sigil is missing' do
+    it "suggest the default strictness if the sigil is missing" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: true` to start (you can also use `rubocop -a` to automatically add this).
@@ -165,10 +165,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
 
-    describe('autocorrect') do
-      it_should_behave_like 'no autocorrect on files with sigil'
+    describe("autocorrect") do
+      it_should_behave_like "no autocorrect on files with sigil"
 
-      it('autocorrects by adding typed: true to file without sigil') do
+      it("autocorrects by adding typed: true to file without sigil") do
         expect(
           autocorrect_source(<<~RUBY)
             # frozen_string_literal: true
@@ -184,17 +184,17 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  describe('SuggestedStrictness: strict') do
+  describe("SuggestedStrictness: strict") do
     let(:cop_config) do
       {
-        'Enabled' => true,
-        'RequireSigilOnAllFiles' => true,
-        'SuggestedStrictness' => 'strict',
+        "Enabled" => true,
+        "RequireSigilOnAllFiles" => true,
+        "SuggestedStrictness" => "strict",
       }
     end
-    it_should_behave_like 'offense for an invalid sigil'
+    it_should_behave_like "offense for an invalid sigil"
 
-    it 'suggest the default strictness if the sigil is missing' do
+    it "suggest the default strictness if the sigil is missing" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: strict` to start (you can also use `rubocop -a` to automatically add this).
@@ -202,10 +202,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
 
-    describe('autocorrect') do
-      it_should_behave_like 'no autocorrect on files with sigil'
+    describe("autocorrect") do
+      it_should_behave_like "no autocorrect on files with sigil"
 
-      it('autocorrects by adding typed: strict to file without sigil') do
+      it("autocorrects by adding typed: strict to file without sigil") do
         expect(
           autocorrect_source(<<~RUBY)
             # frozen_string_literal: true
@@ -221,17 +221,17 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  describe('MinimumStrictness: true') do
+  describe("MinimumStrictness: true") do
     let(:cop_config) do
       {
-        'Enabled' => true,
-        'MinimumStrictness' => true,
+        "Enabled" => true,
+        "MinimumStrictness" => true,
       }
     end
-    it_should_behave_like 'no offense for missing sigils by default'
-    it_should_behave_like 'offense for an invalid sigil'
+    it_should_behave_like "no offense for missing sigils by default"
+    it_should_behave_like "offense for an invalid sigil"
 
-    it 'makes offense if the strictness is below the minimum' do
+    it "makes offense if the strictness is below the minimum" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         # typed: false
@@ -241,17 +241,17 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  describe('MinimumStrictness: strict') do
+  describe("MinimumStrictness: strict") do
     let(:cop_config) do
       {
-        'Enabled' => true,
-        'MinimumStrictness' => 'strict',
+        "Enabled" => true,
+        "MinimumStrictness" => "strict",
       }
     end
-    it_should_behave_like 'no offense for missing sigils by default'
-    it_should_behave_like 'offense for an invalid sigil'
+    it_should_behave_like "no offense for missing sigils by default"
+    it_should_behave_like "offense for an invalid sigil"
 
-    it 'makes offense if the strictness is below the minimum' do
+    it "makes offense if the strictness is below the minimum" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         # typed: true
@@ -261,18 +261,18 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  describe('SuggestedStrictness: true, MinimumStrictness: false') do
+  describe("SuggestedStrictness: true, MinimumStrictness: false") do
     let(:cop_config) do
       {
-        'Enabled' => true,
-        'RequireSigilOnAllFiles' => true,
-        'MinimumStrictness' => 'false',
-        'SuggestedStrictness' => 'true',
+        "Enabled" => true,
+        "RequireSigilOnAllFiles" => true,
+        "MinimumStrictness" => "false",
+        "SuggestedStrictness" => "true",
       }
     end
-    it_should_behave_like 'offense for an invalid sigil'
+    it_should_behave_like "offense for an invalid sigil"
 
-    it 'suggest the default strictness if the sigil is missing' do
+    it "suggest the default strictness if the sigil is missing" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: true` to start (you can also use `rubocop -a` to automatically add this).
@@ -280,10 +280,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
 
-    describe('autocorrect') do
-      it_should_behave_like 'no autocorrect on files with sigil'
+    describe("autocorrect") do
+      it_should_behave_like "no autocorrect on files with sigil"
 
-      it('autocorrects by adding typed: true to file without sigil') do
+      it("autocorrects by adding typed: true to file without sigil") do
         expect(
           autocorrect_source(<<~RUBY)
             # frozen_string_literal: true
@@ -299,18 +299,18 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  describe('SuggestedStrictness: false, MinimumStrictness: ignore') do
+  describe("SuggestedStrictness: false, MinimumStrictness: ignore") do
     let(:cop_config) do
       {
-        'Enabled' => true,
-        'RequireSigilOnAllFiles' => true,
-        'MinimumStrictness' => 'ignore',
-        'SuggestedStrictness' => 'false',
+        "Enabled" => true,
+        "RequireSigilOnAllFiles" => true,
+        "MinimumStrictness" => "ignore",
+        "SuggestedStrictness" => "false",
       }
     end
-    it_should_behave_like 'offense for an invalid sigil'
+    it_should_behave_like "offense for an invalid sigil"
 
-    it 'suggest the default strictness if the sigil is missing' do
+    it "suggest the default strictness if the sigil is missing" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: false` to start (you can also use `rubocop -a` to automatically add this).
@@ -318,10 +318,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
 
-    describe('autocorrect') do
-      it_should_behave_like 'no autocorrect on files with sigil'
+    describe("autocorrect") do
+      it_should_behave_like "no autocorrect on files with sigil"
 
-      it('autocorrects by adding typed: false to file without sigil') do
+      it("autocorrects by adding typed: false to file without sigil") do
         expect(
           autocorrect_source(<<~RUBY)
             # frozen_string_literal: true
@@ -337,18 +337,18 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
-  describe('SuggestedStrictness: invalid_value, MinimumStrictness: true') do
+  describe("SuggestedStrictness: invalid_value, MinimumStrictness: true") do
     let(:cop_config) do
       {
-        'Enabled' => true,
-        'RequireSigilOnAllFiles' => true,
-        'MinimumStrictness' => 'true',
-        'SuggestedStrictness' => 'invalid_value',
+        "Enabled" => true,
+        "RequireSigilOnAllFiles" => true,
+        "MinimumStrictness" => "true",
+        "SuggestedStrictness" => "invalid_value",
       }
     end
-    it_should_behave_like 'offense for an invalid sigil'
+    it_should_behave_like "offense for an invalid sigil"
 
-    it 'suggest the default strictness if the sigil is missing' do
+    it "suggest the default strictness if the sigil is missing" do
       expect_offense(<<~RUBY)
         # frozen_string_literal: true
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: true` to start (you can also use `rubocop -a` to automatically add this).
@@ -356,10 +356,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
       RUBY
     end
 
-    describe('autocorrect') do
-      it_should_behave_like 'no autocorrect on files with sigil'
+    describe("autocorrect") do
+      it_should_behave_like "no autocorrect on files with sigil"
 
-      it('autocorrects by adding typed: true to file without sigil') do
+      it("autocorrects by adding typed: true to file without sigil") do
         expect(
           autocorrect_source(<<~RUBY)
             # frozen_string_literal: true

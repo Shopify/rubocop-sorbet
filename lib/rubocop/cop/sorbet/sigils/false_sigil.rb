@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'rubocop'
-require_relative 'has_sigil'
+require "rubocop"
+require_relative "has_sigil"
 
 module RuboCop
   module Cop
@@ -9,7 +9,7 @@ module RuboCop
       # This cop makes the Sorbet `false` sigil mandatory in all files.
       class FalseSigil < HasSigil
         def minimum_strictness
-          'false'
+          "false"
         end
       end
     end

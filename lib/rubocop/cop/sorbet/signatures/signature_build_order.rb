@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'rubocop'
-require_relative 'signature_cop'
+require "rubocop"
+require_relative "signature_cop"
 
 begin
-  require 'unparser'
+  require "unparser"
 rescue LoadError
   nil
 end
@@ -41,7 +41,7 @@ module RuboCop
           message = "Sig builders must be invoked in the following order: #{expected_order.join(', ')}."
 
           unless can_autocorrect?
-            message += ' For autocorrection, add the `unparser` gem to your project.'
+            message += " For autocorrection, add the `unparser` gem to your project."
           end
 
           add_offense(

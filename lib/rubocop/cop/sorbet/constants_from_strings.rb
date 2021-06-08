@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rubocop'
+require "rubocop"
 
 module RuboCop
   module Cop

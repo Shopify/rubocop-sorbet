@@ -1,7 +1,7 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-require 'rubocop'
+require "rubocop"
 
 module RuboCop
   module Cop
@@ -22,7 +22,7 @@ module RuboCop
       #     requires_ancestor Minitest::Assertions
       #   end
       class OneAncestorPerLine < RuboCop::Cop::Cop
-        MSG = 'Cannot require more than one ancestor per line'
+        MSG = "Cannot require more than one ancestor per line"
 
         def_node_search :requires_ancestors, <<~PATTERN
           (send nil? :requires_ancestor ...)

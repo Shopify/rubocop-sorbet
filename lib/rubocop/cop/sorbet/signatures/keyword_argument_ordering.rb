@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'rubocop'
-require_relative 'signature_cop'
+require "rubocop"
+require_relative "signature_cop"
 
 module RuboCop
   module Cop
@@ -41,7 +41,7 @@ module RuboCop
 
             add_offense(
               param,
-              message: 'Optional keyword arguments must be at the end of the parameter list.'
+              message: "Optional keyword arguments must be at the end of the parameter list."
             )
           end
         end

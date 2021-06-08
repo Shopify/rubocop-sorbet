@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'rubocop'
-require 'stringio'
-require_relative 'signature_cop'
+require "rubocop"
+require "stringio"
+require_relative "signature_cop"
 
 module RuboCop
   module Cop
@@ -64,7 +64,7 @@ module RuboCop
               method = node.children[1]
               symbol = node.children[2]
               suggest.params << symbol.value if symbol && (method == :attr_writer || method == :attr_accessor)
-              suggest.returns = 'void' if method == :attr_writer
+              suggest.returns = "void" if method == :attr_writer
             end
 
             corrector.insert_before(node.loc.expression, suggest.to_autocorrect)
@@ -91,11 +91,11 @@ module RuboCop
         end
 
         def param_type_placeholder
-          cop_config['ParameterTypePlaceholder'] || 'T.untyped'
+          cop_config["ParameterTypePlaceholder"] || "T.untyped"
         end
 
         def return_type_placeholder
-          cop_config['ReturnTypePlaceholder'] || 'T.untyped'
+          cop_config["ReturnTypePlaceholder"] || "T.untyped"
         end
 
         class SigSuggestion
@@ -111,11 +111,11 @@ module RuboCop
 
           def to_autocorrect
             out = StringIO.new
-            out << 'sig { '
+            out << "sig { "
             out << generate_params
             out << generate_return
             out << " }\n"
-            out << ' ' * @indent # preserve indent for the next line
+            out << " " * @indent # preserve indent for the next line
             out.string
           end
 
@@ -124,17 +124,17 @@ module RuboCop
           def generate_params
             return if @params.empty?
             out = StringIO.new
-            out << 'params('
+            out << "params("
             out << @params.map do |param|
               "#{param}: #{@param_placeholder}"
             end.join(", ")
-            out << ').'
+            out << ")."
             out.string
           end
 
           def generate_return
             return "returns(#{@return_placeholder})" if @returns.nil?
-            return @returns if @returns == 'void'
+            return @returns if @returns == "void"
             "returns(#{@returns})"
           end
         end

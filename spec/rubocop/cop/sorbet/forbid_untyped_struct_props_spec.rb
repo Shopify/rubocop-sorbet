@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
   subject(:cop) { described_class.new(config) }
 
-  it 'adds offense when const is T.untyped' do
+  it "adds offense when const is T.untyped" do
     expect_offense(<<~RUBY)
       class MyClass < T::Struct
         const :foo, T.untyped
@@ -14,7 +14,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
     RUBY
   end
 
-  it 'adds offense when const is T.nilable(T.untyped)' do
+  it "adds offense when const is T.nilable(T.untyped)" do
     expect_offense(<<~RUBY)
       class MyClass < T::Struct
         const :foo, T.nilable(T.untyped)
@@ -23,7 +23,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
     RUBY
   end
 
-  it 'adds offense when prop is T.untyped' do
+  it "adds offense when prop is T.untyped" do
     expect_offense(<<~RUBY)
       class MyClass < T::Struct
         prop :foo, T.untyped
@@ -32,7 +32,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
     RUBY
   end
 
-  it 'adds offense when prop is T.nilable(T.untyped)' do
+  it "adds offense when prop is T.nilable(T.untyped)" do
     expect_offense(<<~RUBY)
       class MyClass < T::Struct
         prop :foo, T.nilable(T.untyped)
@@ -41,7 +41,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
     RUBY
   end
 
-  it 'adds offense when prop is T.nilable(T.untyped) and has other options' do
+  it "adds offense when prop is T.nilable(T.untyped) and has other options" do
     expect_offense(<<~RUBY)
       class MyClass < T::Struct
         prop :foo, T.nilable(T.untyped), immutable: true
@@ -50,7 +50,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
     RUBY
   end
 
-  it 'adds offense when multiple props are untyped' do
+  it "adds offense when multiple props are untyped" do
     expect_offense(<<~RUBY)
       class MyClass < T::Struct
         const :foo, T.untyped
@@ -67,7 +67,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
     RUBY
   end
 
-  it 'does not add offense when class is not subclass of T::Struct' do
+  it "does not add offense when class is not subclass of T::Struct" do
     expect_no_offenses(<<~RUBY)
       class MyClass < SomethingElse
         const :foo, Integer
@@ -78,7 +78,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
     RUBY
   end
 
-  it 'does not add offense when props have types' do
+  it "does not add offense when props have types" do
     expect_no_offenses(<<~RUBY)
       class MyClass < T::Struct
         const :foo, Integer

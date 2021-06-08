@@ -1,33 +1,33 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
   subject(:cop) { described_class.new(config) }
 
-  describe('require a signature for each method') do
-    it 'makes no offense if a top-level method has a signature' do
+  describe("require a signature for each method") do
+    it "makes no offense if a top-level method has a signature" do
       expect_no_offenses(<<~RUBY)
         sig { void }
         def foo; end
       RUBY
     end
 
-    it 'makes offense if a top-level method has no signature' do
+    it "makes offense if a top-level method has no signature" do
       expect_offense(<<~RUBY)
         def foo; end
         ^^^^^^^^^^^^ Each method is required to have a signature.
       RUBY
     end
 
-    it 'does not check signature validity' do # Validity will be checked by Sorbet
+    it "does not check signature validity" do # Validity will be checked by Sorbet
       expect_no_offenses(<<~RUBY)
         sig { foo(bar).baz }
         def foo; end
       RUBY
     end
 
-    it 'makes no offense if a method has a signature' do
+    it "makes no offense if a method has a signature" do
       expect_no_offenses(<<~RUBY)
         class Foo
           sig { void }
@@ -36,7 +36,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it 'makes offense if a method has no signature' do
+    it "makes offense if a method has no signature" do
       expect_offense(<<~RUBY)
         class Foo
           def foo; end
@@ -45,7 +45,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it 'handles signature overloads' do
+    it "handles signature overloads" do
       expect_no_offenses(<<~RUBY)
         class Foo
           sig { void }
@@ -62,7 +62,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it 'handles scopes correctly' do
+    it "handles scopes correctly" do
       expect_offense(<<~RUBY)
         module Foo
           sig { void }
@@ -105,7 +105,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it 'makes no offense if a singleton method has a signature' do
+    it "makes no offense if a singleton method has a signature" do
       expect_no_offenses(<<~RUBY)
         class Foo
           sig { void }
@@ -114,7 +114,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it 'makes offense if a singleton method has no signature' do
+    it "makes offense if a singleton method has no signature" do
       expect_offense(<<~RUBY)
         class Foo
           def self.foo; end
@@ -123,7 +123,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it 'makes no offense if an accessor has a signature' do
+    it "makes no offense if an accessor has a signature" do
       expect_no_offenses(<<~RUBY)
         class Foo
           sig { returns(String) }
@@ -136,7 +136,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it 'makes offense if an accessor has no signature' do
+    it "makes offense if an accessor has no signature" do
       expect_offense(<<~RUBY)
         class Foo
           attr_reader :foo
@@ -149,7 +149,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it 'does not check the signature for accessors' do # Validity will be checked by Sorbet
+    it "does not check the signature for accessors" do # Validity will be checked by Sorbet
       expect_no_offenses(<<~RUBY)
         class Foo
           sig { void }
@@ -158,7 +158,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it('supports visibility modifiers') do
+    it("supports visibility modifiers") do
       expect_no_offenses(<<~RUBY)
         sig { void }
         private def foo; end
@@ -174,8 +174,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    shared_examples_for('autocorrect with config') do
-      it('autocorrects methods by adding signature stubs') do
+    shared_examples_for("autocorrect with config") do
+      it("autocorrects methods by adding signature stubs") do
         expect(
           autocorrect_source(<<~RUBY)
             def foo; end
@@ -201,7 +201,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
           RUBY
       end
 
-      it('autocorrects accessors by adding signature stubs') do
+      it("autocorrects accessors by adding signature stubs") do
         expect(
           autocorrect_source(<<~RUBY)
             class Foo
@@ -223,31 +223,31 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       end
     end
 
-    describe('autocorrect') do
-      it_should_behave_like 'autocorrect with config'
+    describe("autocorrect") do
+      it_should_behave_like "autocorrect with config"
     end
 
-    describe('autocorrect with default values') do
+    describe("autocorrect with default values") do
       let(:cop_config) do
         {
-          'Enabled' => true,
-          'ParameterTypePlaceholder' => 'T.untyped',
-          'ReturnTypePlaceholder' => 'T.untyped',
+          "Enabled" => true,
+          "ParameterTypePlaceholder" => "T.untyped",
+          "ReturnTypePlaceholder" => "T.untyped",
         }
       end
-      it_should_behave_like 'autocorrect with config'
+      it_should_behave_like "autocorrect with config"
     end
 
-    describe('autocorrect with custom values') do
+    describe("autocorrect with custom values") do
       let(:cop_config) do
         {
-          'Enabled' => true,
-          'ParameterTypePlaceholder' => 'PARAM',
-          'ReturnTypePlaceholder' => 'RET',
+          "Enabled" => true,
+          "ParameterTypePlaceholder" => "PARAM",
+          "ReturnTypePlaceholder" => "RET",
         }
       end
 
-      it('autocorrects methods by adding signature stubs') do
+      it("autocorrects methods by adding signature stubs") do
         expect(
           autocorrect_source(<<~RUBY)
             def foo; end
@@ -282,7 +282,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
           RUBY
       end
 
-      it('autocorrects accessors by adding signature stubs') do
+      it("autocorrects accessors by adding signature stubs") do
         expect(
           autocorrect_source(<<~RUBY)
             class Foo
