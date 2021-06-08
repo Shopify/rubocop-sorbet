@@ -14,35 +14,35 @@ RSpec.describe(RuboCop::Cop::Sorbet::ConstantsFromStrings, :config) do
     it("disallows constantize") do
       expect_offense(<<~RUBY)
         klass = "Foo".constantize
-                      ^^^^^^^^^^^ #{message('constantize')}
+                      ^^^^^^^^^^^ #{message("constantize")}
       RUBY
     end
 
     it("disallows const_get with receiver") do
       expect_offense(<<~RUBY)
         klass = Object.const_get("Foo")
-                       ^^^^^^^^^ #{message('const_get')}
+                       ^^^^^^^^^ #{message("const_get")}
       RUBY
     end
 
     it("disallows const_get without receiver") do
       expect_offense(<<~RUBY)
         klass = const_get("Foo")
-                ^^^^^^^^^ #{message('const_get')}
+                ^^^^^^^^^ #{message("const_get")}
       RUBY
     end
 
     it("disallows constants with receiver") do
       expect_offense(<<~RUBY)
         klass = Object.constants.select { |c| c.name == "Foo" }
-                       ^^^^^^^^^ #{message('constants')}
+                       ^^^^^^^^^ #{message("constants")}
       RUBY
     end
 
     it("disallows constants without receiver") do
       expect_offense(<<~RUBY)
         klass = constants.select { |c| c.name == "Foo" }
-                ^^^^^^^^^ #{message('constants')}
+                ^^^^^^^^^ #{message("constants")}
       RUBY
     end
   end

@@ -104,7 +104,7 @@ module RuboCop
               add_offense(
                 token,
                 location: token.pos,
-                message: "Magic comments should be in the following order: #{PREFERRED_ORDER.values.join(', ')}."
+                message: "Magic comments should be in the following order: #{PREFERRED_ORDER.values.join(", ")}."
               )
             end
           end

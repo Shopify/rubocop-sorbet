@@ -52,7 +52,7 @@ task generate_cops_documentation: :yard_for_generate_documentation do
     config = config.for_cop(cop)
     safe_auto_correct = config.fetch("SafeAutoCorrect", true)
     autocorrect = if cop.new.support_autocorrect?
-      "Yes #{'(Unsafe)' unless safe_auto_correct}"
+      "Yes #{"(Unsafe)" unless safe_auto_correct}"
     else
       "No"
     end
@@ -155,7 +155,7 @@ task generate_cops_documentation: :yard_for_generate_documentation do
           val.map { |config| format_table_value(config) }.join(", ")
         end
       else
-        "`#{val.nil? ? '<none>' : val}`"
+        "`#{val.nil? ? "<none>" : val}`"
       end
     value.gsub("#{Dir.pwd}/", "").rstrip
   end
