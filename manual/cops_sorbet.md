@@ -410,28 +410,6 @@ module SomeModule
 end
 ```
 
-## Sorbet/ParametersOrderingInSignature
-
-Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
---- | --- | --- | --- | ---
-Enabled | Yes | No | 0.2.0 | -
-
-This cop checks for inconsistent ordering of parameters between the
-signature and the method definition. The sorbet-runtime gem raises
-when such inconsistency occurs.
-
-### Examples
-
-```ruby
-# bad
-sig { params(a: Integer, b: String).void }
-def foo(b:, a:); end
-
-# good
-sig { params(a: Integer, b: String).void }
-def foo(a:, b:); end
-```
-
 ## Sorbet/SignatureBuildOrder
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

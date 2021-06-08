@@ -15,7 +15,6 @@ require_relative 'sorbet/rbi/single_line_rbi_class_module_definitions'
 require_relative 'sorbet/signatures/allow_incompatible_override'
 require_relative 'sorbet/signatures/checked_true_in_signature'
 require_relative 'sorbet/signatures/keyword_argument_ordering'
-require_relative 'sorbet/signatures/parameters_ordering_in_signature'
 require_relative 'sorbet/signatures/signature_build_order'
 require_relative 'sorbet/signatures/enforce_signatures'
 

@@ -127,11 +127,6 @@ Sorbet/OneAncestorPerLine:
   Enabled: false
   VersionAdded: '0.6.0'
 
-Sorbet/ParametersOrderingInSignature:
-  Description: 'Enforces same parameter order between a method and its signature.'
-  Enabled: true
-  VersionAdded: 0.2.0
-
 Sorbet/SignatureBuildOrder:
   Description: >-
                   Enforces the order of parts in a signature.

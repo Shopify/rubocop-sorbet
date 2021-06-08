@@ -23,7 +23,6 @@ In the following section you find all available cops:
 * [Sorbet/IgnoreSigil](cops_sorbet.md#sorbetignoresigil)
 * [Sorbet/KeywordArgumentOrdering](cops_sorbet.md#sorbetkeywordargumentordering)
 * [Sorbet/OneAncestorPerLine](cops_sorbet.md#sorbetoneancestorperline)
-* [Sorbet/ParametersOrderingInSignature](cops_sorbet.md#sorbetparametersorderinginsignature)
 * [Sorbet/SignatureBuildOrder](cops_sorbet.md#sorbetsignaturebuildorder)
 * [Sorbet/SignatureCop](cops_sorbet.md#sorbetsignaturecop)
 * [Sorbet/SingleLineRbiClassModuleDefinitions](cops_sorbet.md#sorbetsinglelinerbiclassmoduledefinitions)
