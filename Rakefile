@@ -11,11 +11,7 @@ RSpec::Core::RakeTask.new(:spec) do |spec|
   spec.pattern = FileList["spec/**/*_spec.rb"]
 end
 
-task(default: %i[
-  documentation_syntax_check
-  generate_cops_documentation
-  spec
-])
+task(default: [:documentation_syntax_check, :generate_cops_documentation, :spec])
 
 desc("Generate a new cop with a template")
 task :new_cop, [:cop] do |_task, args|
