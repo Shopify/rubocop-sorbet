@@ -1,7 +1,7 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-require 'rubocop'
+require "rubocop"
 
 # Correct `send` expressions in include statements by constant literals.
 #
@@ -27,7 +27,7 @@ module RuboCop
   module Cop
     module Sorbet
       class ForbidIncludeConstLiteral < RuboCop::Cop::Cop
-        MSG = 'Includes must only contain constant literals'
+        MSG = "Includes must only contain constant literals"
 
         attr_accessor :used_names
 

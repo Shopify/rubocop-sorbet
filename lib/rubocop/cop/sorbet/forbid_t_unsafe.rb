@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rubocop'
+require "rubocop"
 
 module RuboCop
   module Cop
@@ -15,7 +15,7 @@ module RuboCop
       #   # good
       #   foo
       class ForbidTUnsafe < RuboCop::Cop::Cop
-        def_node_matcher(:t_unsafe?, '(send (const nil? :T) :unsafe _)')
+        def_node_matcher(:t_unsafe?, "(send (const nil? :T) :unsafe _)")
 
         def on_send(node)
           add_offense(node, message: "Do not use `T.unsafe`.") if t_unsafe?(node)

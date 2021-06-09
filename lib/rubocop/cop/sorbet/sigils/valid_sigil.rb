@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rubocop'
+require "rubocop"
 
 module RuboCop
   module Cop
@@ -48,7 +48,7 @@ module RuboCop
 
         protected
 
-        STRICTNESS_LEVELS = %w(ignore false true strict strong)
+        STRICTNESS_LEVELS = ["ignore", "false", "true", "strict", "strong"]
         SIGIL_REGEX = /#\s+typed:(?:\s+([\w]+))?/
 
         # extraction
@@ -74,7 +74,7 @@ module RuboCop
             add_offense(
               token,
               location: token.pos,
-              message: 'No Sorbet sigil found in file. ' \
+              message: "No Sorbet sigil found in file. " \
                 "Try a `typed: #{strictness}` to start (you can also use `rubocop -a` to automatically add this)."
             )
           end
@@ -87,7 +87,7 @@ module RuboCop
           return suggested_strictness unless minimum_strictness
 
           # special case: if you're using Sorbet/IgnoreSigil without config, we should recommend `ignore`
-          return "ignore" if minimum_strictness == "ignore" && cop_config['SuggestedStrictness'].nil?
+          return "ignore" if minimum_strictness == "ignore" && cop_config["SuggestedStrictness"].nil?
 
           # if a minimum strictness is set (eg. you're using Sorbet/FalseSigil)
           # we want to compare the minimum strictness and suggested strictness. this is because
@@ -106,7 +106,7 @@ module RuboCop
           add_offense(
             sigil,
             location: sigil.pos,
-            message: 'Sorbet sigil should not be empty.'
+            message: "Sorbet sigil should not be empty."
           )
           false
         end
@@ -142,18 +142,18 @@ module RuboCop
 
         # Default is `false`
         def require_sigil_on_all_files?
-          !!cop_config['RequireSigilOnAllFiles']
+          !!cop_config["RequireSigilOnAllFiles"]
         end
 
         # Default is `'false'`
         def suggested_strictness
-          config = cop_config['SuggestedStrictness'].to_s
-          STRICTNESS_LEVELS.include?(config) ? config : 'false'
+          config = cop_config["SuggestedStrictness"].to_s
+          STRICTNESS_LEVELS.include?(config) ? config : "false"
         end
 
         # Default is `nil`
         def minimum_strictness
-          config = cop_config['MinimumStrictness'].to_s
+          config = cop_config["MinimumStrictness"].to_s
           config if STRICTNESS_LEVELS.include?(config)
         end
       end

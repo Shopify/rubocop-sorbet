@@ -1,7 +1,7 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-require 'rubocop'
+require "rubocop"
 
 module RuboCop
   module Cop
@@ -23,7 +23,7 @@ module RuboCop
       #     prop :bar, T.nilable(String)
       #   end
       class ForbidUntypedStructProps < RuboCop::Cop::Cop
-        MSG = 'Struct props cannot be T.untyped'
+        MSG = "Struct props cannot be T.untyped"
 
         def_node_matcher :t_struct, <<~PATTERN
           (const (const nil? :T) :Struct)

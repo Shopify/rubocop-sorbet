@@ -25,7 +25,7 @@ module RuboCop
       class ForbidExtendTSigHelpersInShims < RuboCop::Cop::Cop
         include RangeHelp
 
-        MSG = 'Extending T::Sig or T::Helpers in a shim is unnecessary'
+        MSG = "Extending T::Sig or T::Helpers in a shim is unnecessary"
         RESTRICT_ON_SEND = [:extend]
 
         def_node_matcher :extend_t_sig?, <<~PATTERN

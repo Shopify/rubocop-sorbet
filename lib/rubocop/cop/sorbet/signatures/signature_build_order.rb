@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'rubocop'
-require_relative 'signature_cop'
+require "rubocop"
+require_relative "signature_cop"
 
 begin
-  require 'unparser'
+  require "unparser"
 rescue LoadError
   nil
 end
@@ -28,7 +28,7 @@ module RuboCop
           ].each_with_index.to_h.freeze
 
         def_node_search(:root_call, <<~PATTERN)
-          (send nil? {#{ORDER.keys.map(&:inspect).join(' ')}} ...)
+          (send nil? {#{ORDER.keys.map(&:inspect).join(" ")}} ...)
         PATTERN
 
         def on_signature(node)
@@ -38,10 +38,10 @@ module RuboCop
           expected_order = calls.sort_by { |call| ORDER[call] }
           return if expected_order == calls
 
-          message = "Sig builders must be invoked in the following order: #{expected_order.join(', ')}."
+          message = "Sig builders must be invoked in the following order: #{expected_order.join(", ")}."
 
           unless can_autocorrect?
-            message += ' For autocorrection, add the `unparser` gem to your project.'
+            message += " For autocorrection, add the `unparser` gem to your project."
           end
 
           add_offense(

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rubocop'
+require "rubocop"
 
 module RuboCop
   module Cop
@@ -69,10 +69,10 @@ module RuboCop
         FROZEN_REGEX = /#\s+frozen_string_literal:(?:\s+([\w]+))?/
 
         PREFERRED_ORDER = {
-          CODING_REGEX => 'encoding',
-          SIGIL_REGEX => 'typed',
-          INDENT_REGEX => 'warn_indent',
-          FROZEN_REGEX => 'frozen_string_literal',
+          CODING_REGEX => "encoding",
+          SIGIL_REGEX => "typed",
+          INDENT_REGEX => "warn_indent",
+          FROZEN_REGEX => "frozen_string_literal",
         }.freeze
 
         MAGIC_REGEX = Regexp.union(*PREFERRED_ORDER.keys)
@@ -104,7 +104,7 @@ module RuboCop
               add_offense(
                 token,
                 location: token.pos,
-                message: "Magic comments should be in the following order: #{PREFERRED_ORDER.values.join(', ')}."
+                message: "Magic comments should be in the following order: #{PREFERRED_ORDER.values.join(", ")}."
               )
             end
           end

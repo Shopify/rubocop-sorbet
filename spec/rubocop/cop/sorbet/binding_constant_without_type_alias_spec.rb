@@ -1,24 +1,24 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) do
   subject(:cop) { described_class.new(config) }
 
   def message
     "It looks like you're trying to bind a type to a constant. " \
-    'To do this, you must alias the type using `T.type_alias`.'
+    "To do this, you must alias the type using `T.type_alias`."
   end
 
   def deprecation
     "It looks like you're using the old `T.type_alias` syntax. " \
-    '`T.type_alias` now expects a block.' \
+    "`T.type_alias` now expects a block." \
     'Run Sorbet with the options "--autocorrect --error-white-list=5043" ' \
-    'to automatically upgrade to the new syntax.'
+    "to automatically upgrade to the new syntax."
   end
 
-  describe('offenses') do
-    it('disallows binding the return value of T.any, T.all, and others, without using T.type_alias') do
+  describe("offenses") do
+    it("disallows binding the return value of T.any, T.all, and others, without using T.type_alias") do
       expect_offense(<<~RUBY)
         A = T.any(String, Integer)
             ^^^^^^^^^^^^^^^^^^^^^^ #{message}
@@ -39,7 +39,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
       RUBY
     end
 
-    it('allows binding the return of T.any, T.all, etc when using T.type_alias') do
+    it("allows binding the return of T.any, T.all, etc when using T.type_alias") do
       expect_no_offenses(<<~RUBY)
         A = T.type_alias { T.any(String, Integer) }
         B = T.type_alias { T.all(String, Integer) }
@@ -52,26 +52,26 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
       RUBY
     end
 
-    it('allows assigning T.let to a constant') do
+    it("allows assigning T.let to a constant") do
       expect_no_offenses(<<~RUBY)
         A = T.let(None.new, Optional[T.untyped])
         B = T.let(C, T.proc.void)
       RUBY
     end
 
-    it('allows assigning type_member to a constant') do
+    it("allows assigning type_member to a constant") do
       expect_no_offenses(<<~RUBY)
         A = type_member(fixed: T.untyped)
       RUBY
     end
 
-    it('allows assigning type_template to a constant') do
+    it("allows assigning type_template to a constant") do
       expect_no_offenses(<<~RUBY)
         A = type_template(fixed: T.untyped)
       RUBY
     end
 
-    it('allow using Class.new or Module.new with extend T::Sig') do
+    it("allow using Class.new or Module.new with extend T::Sig") do
       expect_no_offenses(<<~RUBY)
         Foo = Class.new do
           A = T.let(42, T.any(Integer, Float))
@@ -99,7 +99,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
       RUBY
     end
 
-    it('allows using the return value of T.any, T.all, etc in a signature definition') do
+    it("allows using the return value of T.any, T.all, etc in a signature definition") do
       expect_no_offenses(<<~RUBY)
         sig { params(foo: T.any(String, Integer)).void }
         def a(foo); end
@@ -127,9 +127,9 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
       RUBY
     end
 
-    it('autocorrects to T.type_alias') do
-      expect(autocorrect_source('Foo = T.any(String, Integer)'))
-        .to(eq('Foo = T.type_alias { T.any(String, Integer) }'))
+    it("autocorrects to T.type_alias") do
+      expect(autocorrect_source("Foo = T.any(String, Integer)"))
+        .to(eq("Foo = T.type_alias { T.any(String, Integer) }"))
     end
 
     it("doesn't crash when assigning constants by destructuring") do
@@ -138,7 +138,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
       RUBY
     end
 
-    it('disallows usage of the old T.type_alias() syntax') do
+    it("disallows usage of the old T.type_alias() syntax") do
       expect_offense(<<~RUBY)
         A = T.type_alias(T.any(String, Integer))
             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{deprecation}

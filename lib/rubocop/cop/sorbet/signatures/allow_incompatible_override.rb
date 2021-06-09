@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rubocop'
+require "rubocop"
 
 module RuboCop
   module Cop
@@ -49,8 +49,8 @@ module RuboCop
           return unless allow_incompatible_override?(node)
           add_offense(
             node.children[2],
-            message: 'Usage of `allow_incompatible` suggests a violation of the Liskov Substitution Principle. '\
-            'Instead, strive to write interfaces which respect subtyping principles and remove `allow_incompatible`',
+            message: "Usage of `allow_incompatible` suggests a violation of the Liskov Substitution Principle. "\
+            "Instead, strive to write interfaces which respect subtyping principles and remove `allow_incompatible`",
           )
         end
       end

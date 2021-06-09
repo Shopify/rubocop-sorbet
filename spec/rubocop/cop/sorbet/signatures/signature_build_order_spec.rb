@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
   subject(:cop) { described_class.new(config) }
 
-  describe('offenses') do
-    it('allows the correct order') do
+  describe("offenses") do
+    it("allows the correct order") do
       expect_no_offenses(<<~RUBY)
         sig { abstract.params(x: Integer).returns(Integer) }
 
@@ -22,7 +22,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
       RUBY
     end
 
-    it('allows using multiline sigs') do
+    it("allows using multiline sigs") do
       expect_no_offenses(<<~RUBY)
         sig do
           abstract
@@ -32,8 +32,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
       RUBY
     end
 
-    it('enforces orders of builder calls') do
-      message = 'Sig builders must be invoked in the following order: type_parameters, params, void.'
+    it("enforces orders of builder calls") do
+      message = "Sig builders must be invoked in the following order: type_parameters, params, void."
       expect_offense(<<~RUBY)
         sig { void.type_parameters(:U).params(x: T.type_parameter(:U)) }
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{message}
@@ -41,8 +41,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
     end
   end
 
-  describe('autocorrect') do
-    it('autocorrects sigs in the correct order') do
+  describe("autocorrect") do
+    it("autocorrects sigs in the correct order") do
       source = <<~RUBY
         sig { void.type_parameters(:U).params(x: T.type_parameter(:U)) }
       RUBY
@@ -52,7 +52,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
         RUBY
     end
 
-    it('autocorrects sigs with generic types properly') do
+    it("autocorrects sigs with generic types properly") do
       source = <<~RUBY
         sig { void.type_parameters(:U).params(x: T.type_parameter(:U), y: T::Hash[String, Integer]) }
       RUBY
@@ -63,13 +63,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
     end
   end
 
-  describe('without the unparser gem') do
-    it('catches the errors and suggests using Unparser for the correction') do
+  describe("without the unparser gem") do
+    it("catches the errors and suggests using Unparser for the correction") do
       original_unparser = Unparser
       Object.send(:remove_const, :Unparser) # What does "constant" even mean?
       message =
-        'Sig builders must be invoked in the following order: type_parameters, params, void. ' \
-        'For autocorrection, add the `unparser` gem to your project.'
+        "Sig builders must be invoked in the following order: type_parameters, params, void. " \
+        "For autocorrection, add the `unparser` gem to your project."
 
       expect_offense(<<~RUBY)
         sig { void.type_parameters(:U).params(x: T.type_parameter(:U)) }

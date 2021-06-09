@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
   subject(:cop) { described_class.new(config) }
 
-  describe('no offences') do
-    it 'adds no offences when there are no requires_ancestor calls' do
+  describe("no offences") do
+    it "adds no offences when there are no requires_ancestor calls" do
       expect_no_offenses(<<~RUBY)
         module MyModule
           def hello_world; end
@@ -14,7 +14,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
       RUBY
     end
 
-    it 'adds no offences when just one ancestor is required per line' do
+    it "adds no offences when just one ancestor is required per line" do
       expect_no_offenses(<<~RUBY)
         module MyModule
           requires_ancestor Kernel
@@ -24,7 +24,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
       RUBY
     end
 
-    it 'adds no offences when an abstract class does not require any ancestors' do
+    it "adds no offences when an abstract class does not require any ancestors" do
       expect_no_offenses(<<~RUBY)
         class MyClass
           extend T::Sig
@@ -37,7 +37,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
       RUBY
     end
 
-    it 'adds no offences when an abstract class has just one required ancestor per line' do
+    it "adds no offences when an abstract class has just one required ancestor per line" do
       expect_no_offenses(<<~RUBY)
         class MyClass
           extend T::Sig
@@ -55,8 +55,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
     end
   end
 
-  describe('offenses') do
-    it 'adds offences when more than one ancestor is required on a line' do
+  describe("offenses") do
+    it "adds offences when more than one ancestor is required on a line" do
       expect_offense(<<~RUBY)
         module MyModule
           requires_ancestor Kernel, Minitest::Assertions, SomeOtherModule, Foo::Bar
@@ -65,7 +65,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
       RUBY
     end
 
-    it 'adds offences when a number of ancestors are formatted across multiple lines' do
+    it "adds offences when a number of ancestors are formatted across multiple lines" do
       expect_offense(<<~RUBY)
         module MyModule
           requires_ancestor Kernel, Minitest::Assertions,
@@ -75,7 +75,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
       RUBY
     end
 
-    it 'adds offences to abstract classes that use more than one ancestor per line' do
+    it "adds offences to abstract classes that use more than one ancestor per line" do
       expect_offense(<<~RUBY)
         class MyClass
           extend T::Sig
@@ -90,7 +90,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
       RUBY
     end
 
-    it 'adds an offence to a module inside a not-abstract class' do
+    it "adds an offence to a module inside a not-abstract class" do
       expect_offense(<<~RUBY)
         class Foo
           # not abstract
@@ -103,7 +103,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
       RUBY
     end
 
-    it 'adds an offence to a module inside a not-abstract class' do
+    it "adds an offence to a module inside a not-abstract class" do
       expect_offense(<<~RUBY)
         class Foo
           extend T::Helpers
@@ -119,8 +119,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
     end
   end
 
-  describe('Autocorrect') do
-    it 'autocorrects the source to have requires_ancestor only call one ancestor per line' do
+  describe("Autocorrect") do
+    it "autocorrects the source to have requires_ancestor only call one ancestor per line" do
       source = <<~RUBY
         module MyModule
           requires_ancestor Kernel, Minitest::Assertions, SomeOtherModule, Foo::Bar
@@ -137,7 +137,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
         RUBY
     end
 
-    it 'autocorrects when a large number of calls are formatted across multiple lines' do
+    it "autocorrects when a large number of calls are formatted across multiple lines" do
       source = <<~RUBY
         module MyModule
           requires_ancestor Kernel, Minitest::Assertions,
@@ -155,7 +155,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
         RUBY
     end
 
-    it 'does not try to autocorrect otherwise valid code' do
+    it "does not try to autocorrect otherwise valid code" do
       source = <<~RUBY
         module MyModule
           requires_ancestor Kernel, Minitest::Assertions,
@@ -181,7 +181,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
         RUBY
     end
 
-    it 'autocorrects abstract classes correctly' do
+    it "autocorrects abstract classes correctly" do
       source = <<~RUBY
         class MyClass
           extend T::Sig

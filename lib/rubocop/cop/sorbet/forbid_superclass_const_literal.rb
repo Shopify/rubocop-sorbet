@@ -1,7 +1,7 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
-require 'rubocop'
+require "rubocop"
 
 # Correct superclass `send` expressions by constant literals.
 #
@@ -25,7 +25,7 @@ module RuboCop
   module Cop
     module Sorbet
       class ForbidSuperclassConstLiteral < RuboCop::Cop::Cop
-        MSG = 'Superclasses must only contain constant literals'
+        MSG = "Superclasses must only contain constant literals"
 
         def_node_matcher :not_lit_const_superclass?, <<-PATTERN
           (class

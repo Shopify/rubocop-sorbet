@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
   subject(:cop) { described_class.new(config) }
 
-  it('makes no offense on empty files') do
+  it("makes no offense on empty files") do
     expect_no_offenses(<<~RUBY)
     RUBY
   end
 
-  it('makes no offense with no magic comments') do
+  it("makes no offense with no magic comments") do
     expect_no_offenses(<<~RUBY)
       class Foo; end
     RUBY
   end
 
-  it('makes no offense with random magic comments') do
+  it("makes no offense with random magic comments") do
     expect_no_offenses(<<~RUBY)
       # foo: 1
       # bar: true
@@ -25,14 +25,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
     RUBY
   end
 
-  it('makes no offense with only one magic comment') do
+  it("makes no offense with only one magic comment") do
     expect_no_offenses(<<~RUBY)
       # typed: true
       class Foo; end
     RUBY
   end
 
-  it('makes no offense when the magic comments are correctly ordered') do
+  it("makes no offense when the magic comments are correctly ordered") do
     expect_no_offenses(<<~RUBY)
       # encoding: utf-8
       # coding: utf-8
@@ -43,7 +43,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
     RUBY
   end
 
-  it('makes no offense when the magic comments are correctly ordered with random comments in the middle') do
+  it("makes no offense when the magic comments are correctly ordered with random comments in the middle") do
     expect_no_offenses(<<~RUBY)
       # coding: utf-8
       # typed: true
@@ -55,7 +55,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
     RUBY
   end
 
-  it('makes offense when two magic comments are not correctly ordered') do
+  it("makes offense when two magic comments are not correctly ordered") do
     expect_offense(<<~RUBY)
       # frozen_string_literal: true
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: encoding, typed, warn_indent, frozen_string_literal.
@@ -65,7 +65,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
     RUBY
   end
 
-  it('makes offense when all magic comments are not correctly ordered') do
+  it("makes offense when all magic comments are not correctly ordered") do
     expect_offense(<<~RUBY)
       # encoding: utf-8
       ^^^^^^^^^^^^^^^^^ Magic comments should be in the following order: encoding, typed, warn_indent, frozen_string_literal.
@@ -81,8 +81,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
     RUBY
   end
 
-  describe('autocorrect') do
-    it('autocorrects two magic comments in the correct order') do
+  describe("autocorrect") do
+    it("autocorrects two magic comments in the correct order") do
       source = <<~RUBY
         # frozen_string_literal: true
         # typed: true
@@ -96,7 +96,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
         RUBY
     end
 
-    it('autocorrects all magic comments in the correct order') do
+    it("autocorrects all magic comments in the correct order") do
       source = <<~RUBY
         # encoding: utf-8
         # frozen_string_literal: true
@@ -116,7 +116,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
         RUBY
     end
 
-    it('autocorrects all magic comments in the correct order even with random comments in the middle') do
+    it("autocorrects all magic comments in the correct order even with random comments in the middle") do
       source = <<~RUBY
         # encoding: utf-8
         # foo
@@ -144,7 +144,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
         RUBY
     end
 
-    it('autocorrects magic comments while removing blank lines') do
+    it("autocorrects magic comments while removing blank lines") do
       source = <<~RUBY
         # frozen_string_literal: true
 
@@ -165,7 +165,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
         RUBY
     end
 
-    it('autocorrects magic comments while removing blank lines and preserving other blank lines') do
+    it("autocorrects magic comments while removing blank lines and preserving other blank lines") do
       source = <<~RUBY
         # frozen_string_literal: true
 
@@ -189,7 +189,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
         RUBY
     end
 
-    it('autocorrects magic comments while preserving comments') do
+    it("autocorrects magic comments while preserving comments") do
       source = <<~RUBY
         # frozen_string_literal: true
         #

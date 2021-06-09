@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
   subject(:cop) { described_class.new(config) }
 
-  it 'adds offense when an include is a send node' do
+  it "adds offense when an include is a send node" do
     expect_offense(<<~RUBY)
       class MyClass
         include Rails.application.routes.url_helpers
@@ -14,7 +14,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'adds offense when an include is a qualified send node' do
+  it "adds offense when an include is a qualified send node" do
     expect_offense(<<~RUBY)
       class MyClass
         mod = ThatMod
@@ -24,7 +24,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'adds offense when an include is a qualified send node' do
+  it "adds offense when an include is a qualified send node" do
     expect_offense(<<~RUBY)
       class MyClass
         include Polaris::Engine.helpers
@@ -33,7 +33,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'adds offense when a prepend is a send node' do
+  it "adds offense when a prepend is a send node" do
     expect_offense(<<~RUBY)
       class MyClass
         prepend Polaris::Engine.helpers
@@ -42,7 +42,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'adds offense when an extend is a send node' do
+  it "adds offense when an extend is a send node" do
     expect_offense(<<~RUBY)
       class MyClass
         extend Polaris::Engine.helpers
@@ -51,7 +51,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'adds offense when a module includes with a send node' do
+  it "adds offense when a module includes with a send node" do
     expect_offense(<<~RUBY)
       module MyModule
         extend Polaris::Engine.helpers
@@ -60,7 +60,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'adds offense when a singleton class includes with a send node' do
+  it "adds offense when a singleton class includes with a send node" do
     expect_offense(<<~RUBY)
       module FilterHelper
         class << self
@@ -72,14 +72,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'does not add offense when there is no include' do
+  it "does not add offense when there is no include" do
     expect_no_offenses(<<~RUBY)
       class MyClass
       end
     RUBY
   end
 
-  it 'does not add offense when the include is a qualified name' do
+  it "does not add offense when the include is a qualified name" do
     expect_no_offenses(<<~RUBY)
       class MyClass
         include MyModule::MyParent
@@ -87,7 +87,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'does not add offense when the include is a constant literal' do
+  it "does not add offense when the include is a constant literal" do
     expect_no_offenses(<<~RUBY)
       MyInclude = Rails.application.routes.url_helpers
       class MyClass
@@ -96,7 +96,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'does not add offense when an anonymous class includes with a send node' do
+  it "does not add offense when an anonymous class includes with a send node" do
     expect_no_offenses(<<~RUBY)
       UrlHelpers =
         Class.new do
@@ -105,7 +105,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'does not add offense when include is called inside a method' do
+  it "does not add offense when include is called inside a method" do
     expect_no_offenses(<<~RUBY)
       def foo
         m = Module.new
@@ -114,7 +114,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'does not add offense when a module extend self' do
+  it "does not add offense when a module extend self" do
     expect_no_offenses(<<~RUBY)
       module Foo
         extend self
@@ -122,7 +122,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  it 'does not add offense when a class extend self' do
+  it "does not add offense when a class extend self" do
     expect_no_offenses(<<~RUBY)
       class Foo
         extend self

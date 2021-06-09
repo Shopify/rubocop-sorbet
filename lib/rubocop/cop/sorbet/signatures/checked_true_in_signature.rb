@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'rubocop'
-require_relative 'signature_cop'
+require "rubocop"
+require_relative "signature_cop"
 
 module RuboCop
   module Cop
@@ -27,10 +27,10 @@ module RuboCop
         PATTERN
 
         MESSAGE =
-          'Using `checked(true)` in a method signature definition is not allowed. ' \
-            '`checked(true)` is the default behavior for modules/classes with runtime checks enabled. ' \
-            'To enable typechecking at runtime for this module, regardless of global settings, ' \
-            '`include(WaffleCone::RuntimeChecks)` to this module and set other methods to `checked(false)`.'
+          "Using `checked(true)` in a method signature definition is not allowed. " \
+            "`checked(true)` is the default behavior for modules/classes with runtime checks enabled. " \
+            "To enable typechecking at runtime for this module, regardless of global settings, " \
+            "`include(WaffleCone::RuntimeChecks)` to this module and set other methods to `checked(false)`."
         private_constant(:MESSAGE)
 
         def on_signature(node)
