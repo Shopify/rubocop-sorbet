@@ -49,10 +49,7 @@ Sorbet/FalseSigil:
   VersionAdded: 0.3.3
   SuggestedStrictness: "false"
   Include:
-  - "**/*.rb"
-  - "**/*.rbi"
-  - "**/*.rake"
-  - "**/*.ru"
+  - "**/*.{rb,rbi,rake,ru}"
   Exclude:
   - bin/**/*
   - db/**/*.rb
@@ -105,12 +102,24 @@ Sorbet/HasSigil:
   SuggestedStrictness: "false"
   MinimumStrictness: "false"
   VersionAdded: 0.3.3
+  Include:
+  - "**/*.{rb,rbi,rake,ru}"
+  Exclude:
+  - bin/**/*
+  - db/**/*.rb
+  - script/**/*
 
 Sorbet/IgnoreSigil:
   Description: 'All files must be at least at strictness `ignore`.'
   Enabled: false
   SuggestedStrictness: "ignore"
   VersionAdded: 0.3.3
+  Include:
+  - "**/*.{rb,rbi,rake,ru}"
+  Exclude:
+  - bin/**/*
+  - db/**/*.rb
+  - script/**/*
 
 Sorbet/KeywordArgumentOrdering:
   Description: >-
@@ -149,18 +158,36 @@ Sorbet/StrictSigil:
   Enabled: false
   SuggestedStrictness: "strict"
   VersionAdded: 0.3.3
+  Include:
+  - "**/*.{rb,rbi,rake,ru}"
+  Exclude:
+  - bin/**/*
+  - db/**/*.rb
+  - script/**/*
 
 Sorbet/StrongSigil:
   Description: 'All files must be at least at strictness `strong`.'
   Enabled: false
   SuggestedStrictness: "strong"
   VersionAdded: 0.3.3
+  Include:
+  - "**/*.{rb,rbi,rake,ru}"
+  Exclude:
+  - bin/**/*
+  - db/**/*.rb
+  - script/**/*
 
 Sorbet/TrueSigil:
   Description: 'All files must be at least at strictness `true`.'
   Enabled: false
   SuggestedStrictness: "true"
   VersionAdded: 0.3.3
+  Include:
+  - "**/*.{rb,rbi,rake,ru}"
+  Exclude:
+  - bin/**/*
+  - db/**/*.rb
+  - script/**/*
 
 Sorbet/ValidSigil:
   Description: 'All files must have a valid sigil.'
@@ -169,3 +196,9 @@ Sorbet/ValidSigil:
   SuggestedStrictness: "false"
   MinimumStrictness: "false"
   VersionAdded: 0.3.3
+  Include:
+  - "**/*.{rb,rbi,rake,ru}"
+  Exclude:
+  - bin/**/*
+  - db/**/*.rb
+  - script/**/*
