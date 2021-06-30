@@ -52,13 +52,38 @@ module RuboCop
             _, _, block = conditional.child_nodes
             expected_class = node.parent_module_name
 
+            if block.source.include?("T.unsafe(self).")
+              corrector.replace(block, block.source.gsub("T.unsafe(self)", "T.bind(self, #{expected_class})"))
+              return
+            end
+
             bind = if block.begin_type?
               indentation = " " * block.child_nodes.first.loc.column
               "T.bind(self, #{expected_class})\n#{indentation}"
-            elsif block.child_nodes.empty? && !block.ivar_type?
+            elsif block.send_type? && recursive_receiver_is_self?(block)
               "T.bind(self, #{expected_class})."
             else
-              "T.bind(self, #{expected_class}); "
+              do_end_lambda = conditional.source.include?("do") && conditional.source.include?("end")
+
+              unless do_end_lambda
+                # We are converting a one line lambda into a multiline
+                # Remove the space after the `{`
+                if /{\s/.match?(conditional.source)
+                  corrector.remove_preceding(block, 1)
+                end
+
+                # Remove the last space and `}` and re-add it with a line break
+                # and the correct indentation
+                base_indentation = " " * node.loc.column
+                chars_to_remove = /\s}/.match?(conditional.source) ? 2 : 1
+                corrector.remove_trailing(conditional, chars_to_remove)
+                corrector.insert_after(block, "\n#{base_indentation}}")
+              end
+
+              # Add the T.bind
+              indentation = " " * (node.loc.column + 2)
+              line_start = do_end_lambda ? "" : "\n#{indentation}"
+              "#{line_start}T.bind(self, #{expected_class})\n#{indentation}"
             end
 
             corrector.insert_before(block, bind)
@@ -81,10 +106,12 @@ module RuboCop
             end
           end
 
-          return if conditional.nil? || conditional.child_nodes.empty?
+          return if conditional.nil? || conditional.array_type? || conditional.child_nodes.empty?
+
+          return unless conditional.arguments.empty?
 
           type, _, block = conditional.child_nodes
-          return unless type.lambda_or_proc?
+          return unless type.lambda_or_proc? || type.block_literal?
 
           expected_class = node.parent_module_name
           return if expected_class.nil?
@@ -94,6 +121,18 @@ module RuboCop
               node,
               message: "Callback conditionals should be bound to the right type. Use T.bind(self, #{expected_class})"
             )
+          end
+        end
+
+        private
+
+        def recursive_receiver_is_self?(node)
+          return false unless node.send_type?
+
+          if node.receiver.nil?
+            true
+          else
+            recursive_receiver_is_self?(node.receiver)
           end
         end
       end

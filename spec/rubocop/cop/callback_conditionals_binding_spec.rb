@@ -48,10 +48,26 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       RUBY
     end
 
+    it("does not verify lambdas with arguments") do
+      expect_no_offenses(<<~RUBY)
+        class Post < ApplicationRecord
+          validates :it, presence: true, if: -> (post) { check(post) }
+        end
+      RUBY
+    end
+
     it("does not verify callbacks using validator instances") do
       expect_no_offenses(<<~RUBY)
         class Post < ApplicationRecord
           validates_with PostValidator.new
+        end
+      RUBY
+    end
+
+    it("allows callbacks using arrays for conditionals") do
+      expect_no_offenses(<<~RUBY)
+        class Post < ApplicationRecord
+          before_create :do_it, if: [:should?, :ready?]
         end
       RUBY
     end
@@ -109,7 +125,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
 
       corrected_source = <<~CORRECTED
         class Post < ApplicationRecord
-          before_create :do_it, if: -> { T.bind(self, Post); should? && ready? }
+          before_create :do_it, if: -> {
+            T.bind(self, Post)
+            should? && ready?
+          }
         end
       CORRECTED
 
@@ -120,6 +139,22 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       source = <<~RUBY
         class Post < ApplicationRecord
           before_create :do_it, if: -> { should? }
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        class Post < ApplicationRecord
+          before_create :do_it, if: -> { T.bind(self, Post).should? }
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("autocorrects conditionals using T.unsafe") do
+      source = <<~RUBY
+        class Post < ApplicationRecord
+          before_create :do_it, if: -> { T.unsafe(self).should? }
         end
       RUBY
 
@@ -180,7 +215,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         class Post
           extend Something
 
-          validates :it, presence: true, if: -> { should? && ready? }
+          validates :it, presence: true, if: -> {should? && ready?}
         end
       RUBY
 
@@ -188,7 +223,78 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         class Post
           extend Something
 
-          validates :it, presence: true, if: -> { T.bind(self, Post); should? && ready? }
+          validates :it, presence: true, if: -> {
+            T.bind(self, Post)
+            should? && ready?
+          }
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("autocorrects to multiline if the receiver of the send node is not self") do
+      source = <<~RUBY
+        class Post
+          extend Something
+
+          validates :it, presence: true, if: -> { %w(first second).include?(name) }
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        class Post
+          extend Something
+
+          validates :it, presence: true, if: -> {
+            T.bind(self, Post)
+            %w(first second).include?(name)
+          }
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("doesn't try to add more lines if already a do end block") do
+      source = <<~RUBY
+        class Post
+          extend Something
+
+          validates :it, presence: true, if: -> do
+            should? && ready?
+          end
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        class Post
+          extend Something
+
+          validates :it, presence: true, if: -> do
+            T.bind(self, Post)
+            should? && ready?
+          end
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("corrects chained methods to a single statement") do
+      source = <<~RUBY
+        class Post
+          extend Something
+
+          validates :it, presence: true, if: -> { something.present? }
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        class Post
+          extend Something
+
+          validates :it, presence: true, if: -> { T.bind(self, Post).something.present? }
         end
       CORRECTED
 
@@ -198,13 +304,32 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
     it("does not try to chain if the condition is an instance variable") do
       source = <<~RUBY
         class Post
-          validates :it, presence: true, if: -> { @ready }
+          validates :it, presence: true, if: lambda { @ready }
         end
       RUBY
 
       corrected_source = <<~CORRECTED
         class Post
-          validates :it, presence: true, if: -> { T.bind(self, Post); @ready }
+          validates :it, presence: true, if: lambda {
+            T.bind(self, Post)
+            @ready
+          }
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("accepts proc as block") do
+      source = <<~RUBY
+        class Post
+          validates :it, presence: true, if: proc { should? }
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        class Post
+          validates :it, presence: true, if: proc { T.bind(self, Post).should? }
         end
       CORRECTED
 
