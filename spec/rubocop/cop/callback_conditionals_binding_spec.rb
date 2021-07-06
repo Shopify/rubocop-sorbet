@@ -151,22 +151,6 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect(autocorrect_source(source)).to(eq(corrected_source))
     end
 
-    it("autocorrects conditionals using T.unsafe") do
-      source = <<~RUBY
-        class Post < ApplicationRecord
-          before_create :do_it, if: -> { T.unsafe(self).should? }
-        end
-      RUBY
-
-      corrected_source = <<~CORRECTED
-        class Post < ApplicationRecord
-          before_create :do_it, if: -> { T.bind(self, Post).should? }
-        end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
-    end
-
     it("autocorrects multi line blocks with a single statement") do
       source = <<~RUBY
         class Post < ApplicationRecord
@@ -314,6 +298,46 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
             T.bind(self, Post)
             @ready
           }
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("does not use fully qualified names for corrections") do
+      source = <<~RUBY
+        module First
+          module Second
+            class Post
+              validates :it, presence: true, if: -> { should? }
+            end
+          end
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        module First
+          module Second
+            class Post
+              validates :it, presence: true, if: -> { T.bind(self, Post).should? }
+            end
+          end
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("uses fully qualified name if defined on the same line") do
+      source = <<~RUBY
+        class First::Second::Post
+          validates :it, presence: true, if: -> { should? }
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        class First::Second::Post
+          validates :it, presence: true, if: -> { T.bind(self, First::Second::Post).should? }
         end
       CORRECTED
 

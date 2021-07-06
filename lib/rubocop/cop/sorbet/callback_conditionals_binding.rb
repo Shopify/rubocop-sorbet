@@ -50,11 +50,16 @@ module RuboCop
             end
 
             _, _, block = conditional.child_nodes
-            expected_class = node.parent_module_name
 
-            if block.source.include?("T.unsafe(self).")
-              corrector.replace(block, block.source.gsub("T.unsafe(self)", "T.bind(self, #{expected_class})"))
-              return
+            # Find the class node and check if it includes a namespace on the
+            # same line e.g.: Namespace::Class, which will require the fully
+            # qualified name
+            klass = node.ancestors.find(&:class_type?)
+
+            expected_class = if klass.children.first.children.first.nil?
+              node.parent_module_name.split("::").last
+            else
+              node.parent_module_name
             end
 
             bind = if block.begin_type?
@@ -113,7 +118,14 @@ module RuboCop
           type, _, block = conditional.child_nodes
           return unless type.lambda_or_proc? || type.block_literal?
 
-          expected_class = node.parent_module_name
+          klass = node.ancestors.find(&:class_type?)
+
+          expected_class = if klass&.children&.first&.children&.first.nil?
+            node.parent_module_name&.split("::")&.last
+          else
+            node.parent_module_name
+          end
+
           return if expected_class.nil?
 
           unless block.source.include?("T.bind(self, #{expected_class})")
