@@ -344,6 +344,34 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect(autocorrect_source(source)).to(eq(corrected_source))
     end
 
+    it("finds the right class when there are multiple inside a namespace") do
+      source = <<~RUBY
+        module First
+          class Article
+            validates :that, if: -> { must? }
+          end
+
+          class Second::Post
+            validates :it, presence: true, if: -> { should? }
+          end
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        module First
+          class Article
+            validates :that, if: -> { T.bind(self, Article).must? }
+          end
+
+          class Second::Post
+            validates :it, presence: true, if: -> { T.bind(self, Second::Post).should? }
+          end
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
     it("accepts proc as block") do
       source = <<~RUBY
         class Post
