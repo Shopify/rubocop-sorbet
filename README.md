@@ -60,6 +60,15 @@ RuboCop::RakeTask.new do |task|
 end
 ```
 
+### Rubocop rules for RBI files
+
+Put this into your `.rubocop.yml`:
+
+```yaml
+inherit_gem:
+  rubocop-sorbet: config/rbi.yml
+```
+
 ## The Cops
 All cops are located under [`lib/rubocop/cop/sorbet`](lib/rubocop/cop/sorbet), and contain examples/documentation.
 
