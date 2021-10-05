@@ -64,7 +64,10 @@ end
 
 # good
 class Post < ApplicationRecord
-  before_create :do_it, if: -> { T.bind(self, Post).should_do_it? }
+  before_create :do_it, if: -> {
+    T.bind(self, Post)
+    should_do_it?
+  }
 
   def should_do_it?
     true
@@ -199,7 +202,7 @@ This cop makes the Sorbet `false` sigil mandatory in all files.
 Name | Default value | Configurable values
 --- | --- | ---
 SuggestedStrictness | `false` | String
-Include | `**/*.rb`, `**/*.rbi`, `**/*.rake`, `**/*.ru` | Array
+Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 ## Sorbet/ForbidExtendTSigHelpersInShims
@@ -256,12 +259,12 @@ This cop makes sure that RBI files are always located under sorbet/rbi/.
 
 ```ruby
 # bad
-lib/some_file.rbi
-other_file.rbi
+# lib/some_file.rbi
+# other_file.rbi
 
 # good
-sorbet/rbi/some_file.rbi
-sorbet/rbi/any/path/for/file.rbi
+# sorbet/rbi/some_file.rbi
+# sorbet/rbi/any/path/for/file.rbi
 ```
 
 ### Configurable attributes
@@ -348,6 +351,8 @@ Name | Default value | Configurable values
 --- | --- | ---
 SuggestedStrictness | `false` | String
 MinimumStrictness | `false` | String
+Include | `**/*.{rb,rbi,rake,ru}` | Array
+Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 ## Sorbet/IgnoreSigil
 
@@ -362,6 +367,8 @@ This cop makes the Sorbet `ignore` sigil mandatory in all files.
 Name | Default value | Configurable values
 --- | --- | ---
 SuggestedStrictness | `ignore` | String
+Include | `**/*.{rb,rbi,rake,ru}` | Array
+Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 ## Sorbet/KeywordArgumentOrdering
 
@@ -467,6 +474,8 @@ This cop makes the Sorbet `strict` sigil mandatory in all files.
 Name | Default value | Configurable values
 --- | --- | ---
 SuggestedStrictness | `strict` | String
+Include | `**/*.{rb,rbi,rake,ru}` | Array
+Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 ## Sorbet/StrongSigil
 
@@ -481,6 +490,8 @@ This cop makes the Sorbet `strong` sigil mandatory in all files.
 Name | Default value | Configurable values
 --- | --- | ---
 SuggestedStrictness | `strong` | String
+Include | `**/*.{rb,rbi,rake,ru}` | Array
+Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 ## Sorbet/TrueSigil
 
@@ -495,6 +506,8 @@ This cop makes the Sorbet `true` sigil mandatory in all files.
 Name | Default value | Configurable values
 --- | --- | ---
 SuggestedStrictness | `true` | String
+Include | `**/*.{rb,rbi,rake,ru}` | Array
+Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 ## Sorbet/ValidSigil
 
@@ -520,3 +533,5 @@ Name | Default value | Configurable values
 RequireSigilOnAllFiles | `false` | Boolean
 SuggestedStrictness | `false` | String
 MinimumStrictness | `false` | String
+Include | `**/*.{rb,rbi,rake,ru}` | Array
+Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
