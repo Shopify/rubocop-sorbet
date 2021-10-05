@@ -144,7 +144,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
 
       corrected_source = <<~CORRECTED
         class Post < ApplicationRecord
-          before_create :do_it, if: -> { T.bind(self, Post).should? }
+          before_create :do_it, if: -> {
+            T.bind(self, Post)
+            should?
+          }
         end
       CORRECTED
 
@@ -163,7 +166,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       corrected_source = <<~CORRECTED
         class Post < ApplicationRecord
           before_create :do_it, if: -> do
-            T.bind(self, Post).should?
+            T.bind(self, Post)
+            should?
           end
         end
       CORRECTED
@@ -278,7 +282,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         class Post
           extend Something
 
-          validates :it, presence: true, if: -> { T.bind(self, Post).something.present? }
+          validates :it, presence: true, if: -> {
+            T.bind(self, Post)
+            something.present?
+          }
         end
       CORRECTED
 
@@ -319,7 +326,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         module First
           module Second
             class Post
-              validates :it, presence: true, if: -> { T.bind(self, Post).should? }
+              validates :it, presence: true, if: -> {
+                T.bind(self, Post)
+                should?
+              }
             end
           end
         end
@@ -337,7 +347,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
 
       corrected_source = <<~CORRECTED
         class First::Second::Post
-          validates :it, presence: true, if: -> { T.bind(self, First::Second::Post).should? }
+          validates :it, presence: true, if: -> {
+            T.bind(self, First::Second::Post)
+            should?
+          }
         end
       CORRECTED
 
@@ -360,11 +373,17 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       corrected_source = <<~CORRECTED
         module First
           class Article
-            validates :that, if: -> { T.bind(self, Article).must? }
+            validates :that, if: -> {
+              T.bind(self, Article)
+              must?
+            }
           end
 
           class Second::Post
-            validates :it, presence: true, if: -> { T.bind(self, Second::Post).should? }
+            validates :it, presence: true, if: -> {
+              T.bind(self, Second::Post)
+              should?
+            }
           end
         end
       CORRECTED
@@ -381,7 +400,30 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
 
       corrected_source = <<~CORRECTED
         class Post
-          validates :it, presence: true, if: proc { T.bind(self, Post).should? }
+          validates :it, presence: true, if: proc {
+            T.bind(self, Post)
+            should?
+          }
+        end
+      CORRECTED
+
+      expect(autocorrect_source(source)).to(eq(corrected_source))
+    end
+
+    it("does not attempt to correct blocks that already have a T.bind") do
+      source = <<~RUBY
+        module Namespace
+          class Post
+            validates :it, presence: true, if: -> { T.bind(self, Namespace::Post).should? }
+          end
+        end
+      RUBY
+
+      corrected_source = <<~CORRECTED
+        module Namespace
+          class Post
+            validates :it, presence: true, if: -> { T.bind(self, Namespace::Post).should? }
+          end
         end
       CORRECTED
 
