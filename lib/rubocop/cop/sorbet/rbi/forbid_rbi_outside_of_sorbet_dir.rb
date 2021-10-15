@@ -7,12 +7,12 @@ module RuboCop
       #
       # @example
       #   # bad
-      #   lib/some_file.rbi
-      #   other_file.rbi
+      #   # lib/some_file.rbi
+      #   # other_file.rbi
       #
       #   # good
-      #   sorbet/rbi/some_file.rbi
-      #   sorbet/rbi/any/path/for/file.rbi
+      #   # sorbet/rbi/some_file.rbi
+      #   # sorbet/rbi/any/path/for/file.rbi
       class ForbidRBIOutsideOfSorbetDir < RuboCop::Cop::Cop
         include RangeHelp
 

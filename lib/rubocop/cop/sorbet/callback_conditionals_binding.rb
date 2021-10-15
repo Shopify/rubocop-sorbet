@@ -19,7 +19,10 @@ module RuboCop
       #
       #   # good
       #   class Post < ApplicationRecord
-      #     before_create :do_it, if: -> { T.bind(self, Post).should_do_it? }
+      #     before_create :do_it, if: -> {
+      #       T.bind(self, Post)
+      #       should_do_it?
+      #     }
       #
       #     def should_do_it?
       #       true
@@ -63,34 +66,27 @@ module RuboCop
               klass.identifier.source
             end
 
-            bind = if block.begin_type?
-              indentation = " " * block.child_nodes.first.loc.column
-              "T.bind(self, #{expected_class})\n#{indentation}"
-            elsif block.send_type? && recursive_receiver_is_self?(block)
-              "T.bind(self, #{expected_class})."
-            else
-              do_end_lambda = conditional.source.include?("do") && conditional.source.include?("end")
+            do_end_lambda = conditional.source.include?("do") && conditional.source.include?("end")
 
-              unless do_end_lambda
-                # We are converting a one line lambda into a multiline
-                # Remove the space after the `{`
-                if /{\s/.match?(conditional.source)
-                  corrector.remove_preceding(block, 1)
-                end
-
-                # Remove the last space and `}` and re-add it with a line break
-                # and the correct indentation
-                base_indentation = " " * node.loc.column
-                chars_to_remove = /\s}/.match?(conditional.source) ? 2 : 1
-                corrector.remove_trailing(conditional, chars_to_remove)
-                corrector.insert_after(block, "\n#{base_indentation}}")
+            unless do_end_lambda
+              # We are converting a one line lambda into a multiline
+              # Remove the space after the `{`
+              if /{\s/.match?(conditional.source)
+                corrector.remove_preceding(block, 1)
               end
 
-              # Add the T.bind
-              indentation = " " * (node.loc.column + 2)
-              line_start = do_end_lambda ? "" : "\n#{indentation}"
-              "#{line_start}T.bind(self, #{expected_class})\n#{indentation}"
+              # Remove the last space and `}` and re-add it with a line break
+              # and the correct indentation
+              base_indentation = " " * node.loc.column
+              chars_to_remove = /\s}/.match?(conditional.source) ? 2 : 1
+              corrector.remove_trailing(conditional, chars_to_remove)
+              corrector.insert_after(block, "\n#{base_indentation}}")
             end
+
+            # Add the T.bind
+            indentation = " " * (node.loc.column + 2)
+            line_start = do_end_lambda ? "" : "\n#{indentation}"
+            bind = "#{line_start}T.bind(self, #{expected_class})\n#{indentation}"
 
             corrector.insert_before(block, bind)
           end
@@ -129,23 +125,11 @@ module RuboCop
 
           return if expected_class.nil?
 
-          unless block.source.include?("T.bind(self, #{expected_class})")
+          unless block.source.include?("T.bind(self")
             add_offense(
               node,
               message: "Callback conditionals should be bound to the right type. Use T.bind(self, #{expected_class})"
             )
-          end
-        end
-
-        private
-
-        def recursive_receiver_is_self?(node)
-          return false unless node.send_type?
-
-          if node.receiver.nil?
-            true
-          else
-            recursive_receiver_is_self?(node.receiver)
           end
         end
       end
