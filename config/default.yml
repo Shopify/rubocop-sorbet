@@ -38,6 +38,11 @@ Sorbet/EnforceSigilOrder:
   Enabled: true
   VersionAdded: 0.3.4
 
+Sorbet/sigils/EnforceSingleSigil:
+  Description: 'Ensures that there is only one Sorbet sigil in a file.'
+  Enabled: true
+  VersionAdded: '<<next>>'
+
 Sorbet/EnforceSignatures:
   Description: 'Ensures all methods have a valid signature.'
   Enabled: false
