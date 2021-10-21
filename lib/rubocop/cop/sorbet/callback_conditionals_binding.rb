@@ -7,7 +7,7 @@ module RuboCop
       # so that they are type checked properly.
       #
       # Auto-correction is unsafe because other libraries define similar style callbacks as Rails, but don't always need
-      # binding to the attached class. Auto-correcting those usages can lead to false positives and auto-corretion
+      # binding to the attached class. Auto-correcting those usages can lead to false positives and auto-correction
       # introduces new typing errors.
       #
       # @example
