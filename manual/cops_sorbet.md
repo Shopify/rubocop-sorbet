@@ -193,6 +193,33 @@ You can configure the placeholders used by changing the following options:
 * `ParameterTypePlaceholder`: placeholders used for parameter types (default: 'T.untyped')
 * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
 
+## Sorbet/EnforceSingleSigil
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | <<next>> | -
+
+This cop checks that there is only one Sorbet sigil in a given file
+
+For example, the following class with two sigils
+
+```ruby
+# typed: true
+# typed: true
+# frozen_string_literal: true
+class Foo; end
+```
+
+Will be corrected as:
+
+```ruby
+# typed: true
+# frozen_string_literal: true
+class Foo; end
+```
+
+Other comments or magic comments are left in place.
+
 ## Sorbet/FalseSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
