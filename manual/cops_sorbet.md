@@ -45,10 +45,14 @@ FooOrBar = T.type_alias { T.any(Foo, Bar) }
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | 0.7.0 | -
+Disabled | No | Yes  | 0.7.0 | -
 
 This cop ensures that callback conditionals are bound to the right type
 so that they are type checked properly.
+
+Auto-correction is unsafe because other libraries define similar style callbacks as Rails, but don't always need
+binding to the attached class. Auto-correcting those usages can lead to false positives and auto-corretion
+introduces new typing errors.
 
 ### Examples
 

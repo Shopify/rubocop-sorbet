@@ -16,7 +16,8 @@ Sorbet/BindingConstantWithoutTypeAlias:
 
 Sorbet/CallbackConditionalsBinding:
   Description: 'Ensures callback conditionals are bound to the right type.'
-  Enabled: true
+  Enabled: false
+  Safe: false
   VersionAdded: 0.7.0
 
 Sorbet/CheckedTrueInSignature:
