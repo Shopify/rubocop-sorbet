@@ -278,13 +278,17 @@ Disabled | Yes | No | 0.2.0 | 0.5.0
 
 No documentation
 
-## Sorbet/ForbidRBIOutsideOfSorbetDir
+## Sorbet/ForbidRBIOutsideOfAllowedPaths
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
 Enabled | Yes | No | 0.6.1 | -
 
-This cop makes sure that RBI files are always located under sorbet/rbi/.
+This cop makes sure that RBI files are always located under the defined allowed paths
+
+Options:
+
+* `AllowedPaths`: A list of the paths where RBI files are allowed (default: ["sorbet/rbi/**"])
 
 ### Examples
 
@@ -302,6 +306,7 @@ This cop makes sure that RBI files are always located under sorbet/rbi/.
 
 Name | Default value | Configurable values
 --- | --- | ---
+AllowedPaths | `sorbet/rbi/**` | Array
 Include | `**/*.rbi` | Array
 
 ## Sorbet/ForbidSuperclassConstLiteral

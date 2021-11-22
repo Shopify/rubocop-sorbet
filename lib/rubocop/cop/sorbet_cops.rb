@@ -9,7 +9,7 @@ require_relative "sorbet/callback_conditionals_binding"
 require_relative "sorbet/forbid_t_unsafe"
 
 require_relative "sorbet/rbi/forbid_extend_t_sig_helpers_in_shims"
-require_relative "sorbet/rbi/forbid_rbi_outside_of_sorbet_dir"
+require_relative "sorbet/rbi/forbid_rbi_outside_of_allowed_paths"
 require_relative "sorbet/rbi/single_line_rbi_class_module_definitions"
 
 require_relative "sorbet/signatures/allow_incompatible_override"
