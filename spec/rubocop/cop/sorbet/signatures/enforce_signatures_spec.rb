@@ -149,6 +149,42 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
+    it "makes no offense if the signature is declared with T::Sig::WithoutRuntime.sig" do
+      expect_no_offenses(<<~RUBY)
+        class Foo
+          T::Sig::WithoutRuntime.sig { void }
+          def foo; end
+        end
+      RUBY
+    end
+
+    it "makes no offense if the signature is declared with T::Sig.sig" do
+      expect_no_offenses(<<~RUBY)
+        class Foo
+          T::Sig.sig { void }
+          def foo; end
+        end
+      RUBY
+    end
+
+    it "makes offense if the signature on an unknown receiver" do
+      expect_offense(<<~RUBY)
+        class Foo
+          T::Sig::WithRuntime.sig { void }
+          def foo; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+
+          T::SomeSig.sig { void }
+          def foo; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+
+          Sig.sig { void }
+          def foo; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+        end
+      RUBY
+    end
+
     it "does not check the signature for accessors" do # Validity will be checked by Sorbet
       expect_no_offenses(<<~RUBY)
         class Foo
