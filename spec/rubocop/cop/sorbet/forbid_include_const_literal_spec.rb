@@ -129,4 +129,22 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
       end
     RUBY
   end
+
+  describe("autocorrect") do
+    it("autocorrects by prefixing the include with `T.unsafe(self)`") do
+      source = <<~RUBY
+        class Foo
+          include Rails.application.routes.url_helpers
+          include(Migration[2.0])
+        end
+      RUBY
+      expect(autocorrect_source(source))
+        .to(eq(<<~RUBY))
+          class Foo
+            T.unsafe(self).include Rails.application.routes.url_helpers
+            T.unsafe(self).include(Migration[2.0])
+          end
+        RUBY
+    end
+  end
 end

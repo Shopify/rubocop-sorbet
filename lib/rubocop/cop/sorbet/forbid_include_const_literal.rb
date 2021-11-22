@@ -52,6 +52,15 @@ module RuboCop
           return unless [:module, :class, :sclass].include?(parent.type)
           add_offense(node)
         end
+
+        def autocorrect(node)
+          lambda do |corrector|
+            corrector.replace(
+              node.source_range,
+              "T.unsafe(self).#{node.source}"
+            )
+          end
+        end
       end
     end
   end
