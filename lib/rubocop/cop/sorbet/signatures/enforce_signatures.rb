@@ -48,8 +48,8 @@ module RuboCop
           check_node(node) if accessor?(node)
         end
 
-        def on_block(node)
-          @last_sig_for_scope[scope(node)] = node if signature?(node)
+        def on_signature(node)
+          @last_sig_for_scope[scope(node)] = node
         end
 
         def autocorrect(node)
