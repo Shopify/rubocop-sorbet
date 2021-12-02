@@ -181,9 +181,15 @@ Layout/TrailingWhitespace:
 
 ## Lint
 
+Lint/DuplicateMethods:
+  Enabled: true
+
 Lint/EmptyFile:
   Enabled: true
   AllowComments: false
+
+Lint/SyntaxError:
+  Enabled: true
 
 ## Sorbet
 
