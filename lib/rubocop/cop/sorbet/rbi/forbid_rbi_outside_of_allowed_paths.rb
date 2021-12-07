@@ -21,25 +21,37 @@ module RuboCop
         include RangeHelp
 
         def investigate(processed_source)
+          paths = allowed_paths
+
+          if paths.nil?
+            add_offense(
+              nil,
+              location: source_range(processed_source.buffer, 1, 0),
+              message: "AllowedPaths expects an array"
+            )
+            return
+          elsif paths.empty?
+            add_offense(
+              nil,
+              location: source_range(processed_source.buffer, 1, 0),
+              message: "AllowedPaths cannot be empty"
+            )
+            return
+          end
+
           add_offense(
             nil,
             location: source_range(processed_source.buffer, 1, 0),
-            message: message
-          ) if allowed_paths.none? { |pattern| File.fnmatch(pattern, processed_source.file_path) }
+            message: "RBI file path should match one of: #{paths.join(", ")}"
+          ) if paths.none? { |pattern| File.fnmatch(pattern, processed_source.file_path) }
         end
 
         private
 
         def allowed_paths
-          cop_config["AllowedPaths"]&.compact || []
-        end
-
-        def message
-          if allowed_paths.empty?
-            "RBI files should be located in an allowed path, but AllowedPaths is empty or nil"
-          else
-            "RBI file path should match one of: #{allowed_paths.join(", ")}"
-          end
+          paths = cop_config["AllowedPaths"]
+          return nil unless paths.is_a?(Array)
+          paths.compact
         end
       end
     end
