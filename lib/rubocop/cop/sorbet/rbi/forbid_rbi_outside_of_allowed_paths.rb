@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "pathname"
+
 module RuboCop
   module Cop
     module Sorbet
@@ -39,11 +41,15 @@ module RuboCop
             return
           end
 
+          # When executed the path to the source file is absolute.
+          # We need to remove the exec path directory prefix before matching with the filename regular expressions.
+          rel_path = processed_source.file_path.sub("#{Dir.pwd}/", "")
+
           add_offense(
             nil,
             location: source_range(processed_source.buffer, 1, 0),
             message: "RBI file path should match one of: #{paths.join(", ")}"
-          ) if paths.none? { |pattern| File.fnmatch(pattern, processed_source.file_path) }
+          ) if paths.none? { |pattern| File.fnmatch(pattern, rel_path) }
         end
 
         private

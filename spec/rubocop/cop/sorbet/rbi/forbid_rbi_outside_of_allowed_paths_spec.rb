@@ -30,6 +30,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
         expect(cop.offenses.empty?).to(be(true))
       end
     end
+
+    context "with a the absolute path to the file" do
+      let(:filename) { "#{Dir.pwd}/sorbet/rbi/some/dir/file.rbi" }
+
+      it "makes no offense if an RBI file is inside the sorbet/rbi/** directory" do
+        expect(cop.offenses.empty?).to(be(true))
+      end
+    end
   end
 
   describe "with custom configuration and one allowed path" do
@@ -53,6 +61,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       let(:filename) { "some/allowed/directory/file.rbi" }
 
       it "makes no offense if an RBI file is inside an allowed path" do
+        expect(cop.offenses.empty?).to(be(true))
+      end
+    end
+
+    context "with a the absolute path to the file" do
+      let(:filename) { "#{Dir.pwd}/some/allowed/directory/file.rbi" }
+
+      it "makes no offense if an RBI file is inside the sorbet/rbi/** directory" do
         expect(cop.offenses.empty?).to(be(true))
       end
     end
