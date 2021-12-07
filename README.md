@@ -1,7 +1,5 @@
 # Rubocop-Sorbet
 
-[![Build Status](https://travis-ci.org/Shopify/rubocop-sorbet.svg?branch=master)](https://travis-ci.org/Shopify/rubocop-sorbet)
-
 A collection of Rubocop rules for Sorbet.
 
 ## Installation
