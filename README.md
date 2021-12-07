@@ -1,7 +1,5 @@
 # Rubocop-Sorbet
 
-[![Build Status](https://travis-ci.org/Shopify/rubocop-sorbet.svg?branch=master)](https://travis-ci.org/Shopify/rubocop-sorbet)
-
 A collection of Rubocop rules for Sorbet.
 
 ## Installation
@@ -17,7 +15,7 @@ or, if you use `Bundler`, add this line your application's `Gemfile`:
 gem 'rubocop-sorbet', require: false
 ```
 
-Note: in order to use the [Sorbet/SignatureBuildOrder](https://github.com/Shopify/rubocop-sorbet/blob/master/manual/cops_sorbet.md#sorbetsignaturebuildorder) cop autocorrect feature, it is necessary
+Note: in order to use the [Sorbet/SignatureBuildOrder](https://github.com/Shopify/rubocop-sorbet/blob/main/manual/cops_sorbet.md#sorbetsignaturebuildorder) cop autocorrect feature, it is necessary
 to install `unparser` in addition to `rubocop-sorbet`.
 
 ```ruby
@@ -111,8 +109,8 @@ bundle exec rake generate_cops_documentation
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://github.com/Shopify/rubocop-sorbet/blob/master/LICENSE.txt).
+The gem is available as open source under the terms of the [MIT License](https://github.com/Shopify/rubocop-sorbet/blob/main/LICENSE.txt).
 
 ## Code of Conduct
 
-Everyone interacting in the Rubocop::Sorbet project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/Shopify/rubocop-sorbet/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the Rubocop::Sorbet project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/Shopify/rubocop-sorbet/blob/main/CODE_OF_CONDUCT.md).
