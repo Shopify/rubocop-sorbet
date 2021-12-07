@@ -24,7 +24,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
     end
 
     context "with an .rbi file inside of sorbet/rbi/**" do
-      let(:filename) { "sorbet/rbi/ome/dir/file.rbi" }
+      let(:filename) { "sorbet/rbi/some/dir/file.rbi" }
 
       it "makes no offense if an RBI file is inside the sorbet/rbi/** directory" do
         expect(cop.offenses.empty?).to(be(true))
