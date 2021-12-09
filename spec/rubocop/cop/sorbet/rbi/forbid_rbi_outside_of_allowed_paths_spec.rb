@@ -24,7 +24,15 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
     end
 
     context "with an .rbi file inside of sorbet/rbi/**" do
-      let(:filename) { "sorbet/rbi/ome/dir/file.rbi" }
+      let(:filename) { "sorbet/rbi/some/dir/file.rbi" }
+
+      it "makes no offense if an RBI file is inside the sorbet/rbi/** directory" do
+        expect(cop.offenses.empty?).to(be(true))
+      end
+    end
+
+    context "with a the absolute path to the file" do
+      let(:filename) { "#{Dir.pwd}/sorbet/rbi/some/dir/file.rbi" }
 
       it "makes no offense if an RBI file is inside the sorbet/rbi/** directory" do
         expect(cop.offenses.empty?).to(be(true))
@@ -53,6 +61,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       let(:filename) { "some/allowed/directory/file.rbi" }
 
       it "makes no offense if an RBI file is inside an allowed path" do
+        expect(cop.offenses.empty?).to(be(true))
+      end
+    end
+
+    context "with a the absolute path to the file" do
+      let(:filename) { "#{Dir.pwd}/some/allowed/directory/file.rbi" }
+
+      it "makes no offense if an RBI file is inside the sorbet/rbi/** directory" do
         expect(cop.offenses.empty?).to(be(true))
       end
     end
@@ -97,7 +113,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is set to an empty list" do
         expect(cop.offenses.size).to(eq(1))
         expect(cop.messages).to(eq(
-          ["RBI files should be located in an allowed path, but AllowedPaths is empty or nil"]
+          ["AllowedPaths cannot be empty"]
         ))
       end
     end
@@ -115,7 +131,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is set to nil" do
         expect(cop.offenses.size).to(eq(1))
         expect(cop.messages).to(eq(
-          ["RBI files should be located in an allowed path, but AllowedPaths is empty or nil"]
+          ["AllowedPaths expects an array"]
         ))
       end
     end
@@ -133,7 +149,25 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is a list containing only nil" do
         expect(cop.offenses.size).to(eq(1))
         expect(cop.messages).to(eq(
-          ["RBI files should be located in an allowed path, but AllowedPaths is empty or nil"]
+          ["AllowedPaths cannot be empty"]
+        ))
+      end
+    end
+
+    context "with a bad value for AllowedPaths" do
+      let(:cop_config) do
+        {
+          "Enabled" => true,
+          "AllowedPaths" => "sorbet/rbi/**",
+        }
+      end
+
+      let(:filename) { "some/directory/file.rbi" }
+
+      it "makes an offense if AllowedPaths is not an array" do
+        expect(cop.offenses.size).to(eq(1))
+        expect(cop.messages).to(eq(
+          ["AllowedPaths expects an array"]
         ))
       end
     end
