@@ -199,6 +199,9 @@ Sorbet:
 Sorbet/EnforceSigilOrder:
   Enabled: true
 
+Sorbet/EnforceSingleSigil:
+  Enabled: true
+
 Sorbet/ForbidExtendTSigHelpersInShims:
   Enabled: true
 
