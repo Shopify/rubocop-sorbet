@@ -188,7 +188,7 @@ Lint/EmptyFile:
   Enabled: true
   AllowComments: false
 
-Lint/SyntaxError:
+Lint/Syntax:
   Enabled: true
 
 ## Sorbet
