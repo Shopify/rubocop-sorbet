@@ -545,6 +545,31 @@ SuggestedStrictness | `true` | String
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
+## Sorbet/TypeAliasName
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | 0.6.6 | -
+
+This cop ensures all constants used as `T.type_alias` are using CamelCase.
+
+### Examples
+
+```ruby
+# bad
+FOO_OR_BAR = T.type_alias { T.any(Foo, Bar) }
+
+# good
+FooOrBar = T.type_alias { T.any(Foo, Bar) }
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Include | `**/*.{rb,rbi,rake,ru}` | Array
+Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
+
 ## Sorbet/ValidSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
