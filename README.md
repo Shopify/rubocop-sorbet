@@ -60,12 +60,14 @@ end
 
 ### Rubocop rules for RBI files
 
-Put this into your `.rubocop.yml`:
+To enable the cops related to RBI files under the `sorbet/rbi/` directory, put this in `sorbet/rbi/.rubocop.yml`:
 
 ```yaml
 inherit_gem:
   rubocop-sorbet: config/rbi.yml
 ```
+
+This will turn off default cops for `**/*.rbi` files and enable the RBI specific cops.
 
 ## The Cops
 All cops are located under [`lib/rubocop/cop/sorbet`](lib/rubocop/cop/sorbet), and contain examples/documentation.
