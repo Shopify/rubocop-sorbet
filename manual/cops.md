@@ -34,3 +34,8 @@ In the following section you find all available cops:
 * [Sorbet/ValidSigil](cops_sorbet.md#sorbetvalidsigil)
 
 <!-- END_COP_LIST -->
+
+In addition to the cops defined in this gem, it also modifies the behaviour of some other cops
+defined in other RuboCop gems:
+
+* [Style/MutableConstant](https://docs.rubocop.org/rubocop/cops_style.html#stylemutableconstant): In addition to the default behaviour, RuboCop Sorbet makes this cop `T.let` aware, so that `CONST = T.let([1, 2, 3], T::Array[Integer])` is also treated as a mutable literal constant value.
