@@ -62,12 +62,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) d
     it("allows assigning type_member to a constant") do
       expect_no_offenses(<<~RUBY)
         A = type_member(fixed: T.untyped)
+        A = type_member { { fixed: T.class_of(::ActiveRecord::Base) } }
       RUBY
     end
 
     it("allows assigning type_template to a constant") do
       expect_no_offenses(<<~RUBY)
         A = type_template(fixed: T.untyped)
+        A = type_template { { fixed: T.class_of(::ActiveRecord::Base) } }
       RUBY
     end
 
