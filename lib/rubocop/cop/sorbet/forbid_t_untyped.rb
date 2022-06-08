@@ -10,10 +10,13 @@ module RuboCop
       # @example
       #
       #   # bad
-      #   T.untyped(foo)
+      #   sig { params(my_argument: T.untyped).void }
+      #   def foo(my_argument); end
       #
       #   # good
-      #   foo
+      #   sig { params(my_argument: String).void }
+      #   def foo(my_argument); end
+      #
       class ForbidTUntyped < RuboCop::Cop::Cop
         def_node_matcher(:t_untyped?, "(send (const nil? :T) :untyped)")
 
