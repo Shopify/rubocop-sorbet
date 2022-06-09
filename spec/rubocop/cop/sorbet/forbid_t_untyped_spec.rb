@@ -39,7 +39,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTUntyped, :config) do
     it "adds offense" do
       expect_offense(<<~RUBY)
         def foo(x)
-          T.bind(self, Y::Array[T.untyped])
+          T.bind(self, T::Array[T.untyped])
                                 ^^^^^^^^^ Do not use `T.untyped`.
         end
       RUBY
