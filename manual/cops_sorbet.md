@@ -274,7 +274,7 @@ Include | `**/*.rbi` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | 0.2.0 | 0.5.0
+Disabled | Yes | Yes  | 0.2.0 | 0.5.0
 
 No documentation
 
@@ -284,7 +284,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | No | 0.6.1 | -
 
-This cop makes sure that RBI files are always located under the defined allowed paths
+This cop makes sure that RBI files are always located under the defined allowed paths.
 
 Options:
 
@@ -339,6 +339,26 @@ T.unsafe(foo)
 
 # good
 foo
+```
+
+## Sorbet/ForbidTUntyped
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | 0.6.9 | 0.7.0
+
+This cop disallows using `T.untyped` anywhere.
+
+### Examples
+
+```ruby
+# bad
+sig { params(my_argument: T.untyped).void }
+def foo(my_argument); end
+
+# good
+sig { params(my_argument: String).void }
+def foo(my_argument); end
 ```
 
 ## Sorbet/ForbidUntypedStructProps
