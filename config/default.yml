@@ -94,6 +94,12 @@ Sorbet/ForbidSuperclassConstLiteral:
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'
   Enabled: false
+  VersionAdded: 0.6.9
+  VersionChanged: 0.6.9
+
+Sorbet/ForbidTUntyped:
+  Description: 'This cop disallows using `T.untyped` anywhere.'
+  Enabled: false
   VersionAdded: 0.7.0
   VersionChanged: 0.7.0
 
