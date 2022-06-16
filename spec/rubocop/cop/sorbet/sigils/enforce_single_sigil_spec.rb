@@ -23,6 +23,15 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSingleSigil, :config) do
         class Foo; end
       RUBY
     end
+
+    it("makes no offense with only one sigil and other sigil in the middle of a comment") do
+      expect_no_offenses(<<~RUBY)
+        # typed: true
+        #
+        # Something something `# typed: true`
+        class Foo; end
+      RUBY
+    end
   end
 
   describe("offenses") do
