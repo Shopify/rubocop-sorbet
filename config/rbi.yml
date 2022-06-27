@@ -232,6 +232,9 @@ Sorbet/ValidSigil:
 
 ## Style
 
+Style/BlockDelimiters:
+  Enabled: true
+
 Style/ClassAndModuleChildren:
   Enabled: true
   EnforcedStyle: compact
