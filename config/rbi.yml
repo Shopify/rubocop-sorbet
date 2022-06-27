@@ -129,6 +129,7 @@ Layout/ParameterAlignment:
 
 Layout/RedundantLineBreak:
   Enabled: true
+  InspectBlocks: true
 
 Layout/SpaceAfterColon:
   Enabled: true
