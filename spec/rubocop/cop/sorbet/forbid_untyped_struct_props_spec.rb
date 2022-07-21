@@ -14,6 +14,15 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
     RUBY
   end
 
+  it "adds offense when const is T.untyped in ImmutableStruct" do
+    expect_offense(<<~RUBY)
+      class MyClass < T::ImmutableStruct
+        const :foo, T.untyped
+                    ^^^^^^^^^ Struct props cannot be T.untyped
+      end
+    RUBY
+  end
+
   it "adds offense when const is T.nilable(T.untyped)" do
     expect_offense(<<~RUBY)
       class MyClass < T::Struct

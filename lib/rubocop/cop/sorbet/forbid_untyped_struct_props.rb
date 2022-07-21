@@ -29,6 +29,10 @@ module RuboCop
           (const (const nil? :T) :Struct)
         PATTERN
 
+        def_node_matcher :t_immutable_struct, <<~PATTERN
+          (const (const nil? :T) :ImmutableStruct)
+        PATTERN
+
         def_node_matcher :t_untyped, <<~PATTERN
           (send (const nil? :T) :untyped)
         PATTERN
@@ -38,7 +42,7 @@ module RuboCop
         PATTERN
 
         def_node_matcher :subclass_of_t_struct?, <<~PATTERN
-          (class (const ...) #t_struct ...)
+          (class (const ...) {#t_struct #t_immutable_struct} ...)
         PATTERN
 
         def_node_search :untyped_props, <<~PATTERN
