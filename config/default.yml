@@ -25,6 +25,11 @@ Sorbet/CheckedTrueInSignature:
   Enabled: true
   VersionAdded: 0.2.0
 
+Sorbet/ClassAndModuleChildren:
+  Description: 'Checks style of children classes and modules.'
+  Enabled: true
+  VersionAdded: 0.2.0
+
 Sorbet/ConstantsFromStrings:
   Description: >-
                   Forbids constant access through meta-programming.
