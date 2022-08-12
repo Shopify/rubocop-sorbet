@@ -368,19 +368,19 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 Enabled | Yes | No | 0.4.0 | -
 
 This cop disallows use of `T.untyped` or `T.nilable(T.untyped)`
-as a prop type for `T::Struct`.
+as a prop type for `T::Struct` or `T::ImmutableStruct`.
 
 ### Examples
 
 ```ruby
 # bad
-class SomeClass
+class SomeClass < T::Struct
   const :foo, T.untyped
   prop :bar, T.nilable(T.untyped)
 end
 
 # good
-class SomeClass
+class SomeClass < T::Struct
   const :foo, Integer
   prop :bar, T.nilable(String)
 end
