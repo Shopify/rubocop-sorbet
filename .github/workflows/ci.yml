@@ -22,5 +22,7 @@ jobs:
           bundler-cache: true
       - name: Lint Ruby files
         run: bin/rubocop
+      - name: Verify documentation is up to date
+        run: bundle exec rake generate_cops_documentation
       - name: Run tests
         run: bin/rspec
