@@ -138,6 +138,29 @@ end
 { "User" => User }.fetch(class_name)
 ```
 
+## Sorbet/EmptyLineAfterSig
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | 0.7.0 | -
+
+This cop checks for blank lines after signatures.
+
+It also suggests an autocorrect
+
+### Examples
+
+```ruby
+# bad
+sig { void }
+
+def foo; end
+
+# good
+sig { void }
+def foo; end
+```
+
 ## Sorbet/EnforceSigilOrder
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

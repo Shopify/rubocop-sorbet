@@ -10,6 +10,7 @@ In the following section you find all available cops:
 * [Sorbet/CallbackConditionalsBinding](cops_sorbet.md#sorbetcallbackconditionalsbinding)
 * [Sorbet/CheckedTrueInSignature](cops_sorbet.md#sorbetcheckedtrueinsignature)
 * [Sorbet/ConstantsFromStrings](cops_sorbet.md#sorbetconstantsfromstrings)
+* [Sorbet/EmptyLineAfterSig](cops_sorbet.md#sorbetemptylineaftersig)
 * [Sorbet/EnforceSigilOrder](cops_sorbet.md#sorbetenforcesigilorder)
 * [Sorbet/EnforceSignatures](cops_sorbet.md#sorbetenforcesignatures)
 * [Sorbet/EnforceSingleSigil](cops_sorbet.md#sorbetenforcesinglesigil)
