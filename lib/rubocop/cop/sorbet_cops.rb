@@ -19,6 +19,7 @@ require_relative "sorbet/signatures/checked_true_in_signature"
 require_relative "sorbet/signatures/keyword_argument_ordering"
 require_relative "sorbet/signatures/signature_build_order"
 require_relative "sorbet/signatures/enforce_signatures"
+require_relative "sorbet/signatures/empty_line_after_sig"
 
 require_relative "sorbet/sigils/valid_sigil"
 require_relative "sorbet/sigils/has_sigil"
