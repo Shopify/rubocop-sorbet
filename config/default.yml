@@ -78,6 +78,7 @@ Sorbet/ForbidRBIOutsideOfAllowedPaths:
   Enabled: true
   VersionAdded: 0.6.1
   AllowedPaths:
+  - "rbi/**"
   - "sorbet/rbi/**"
   Include:
   - "**/*.rbi"

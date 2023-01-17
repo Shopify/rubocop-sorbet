@@ -14,12 +14,20 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
   end
 
   describe "with default configuration" do
-    context "with an .rbi file outside of sorbet/rbi/**" do
+    context "with an .rbi file outside of AllowedPaths" do
       let(:filename) { "some/dir/file.rbi" }
 
       it "makes an offense if an RBI file is outside of sorbet/rbi/**" do
         expect(cop.offenses.size).to(eq(1))
-        expect(cop.messages).to(eq(["RBI file path should match one of: sorbet/rbi/**"]))
+        expect(cop.messages).to(eq(["RBI file path should match one of: rbi/**, sorbet/rbi/**"]))
+      end
+    end
+
+    context "with an .rbi file inside of rbi/**" do
+      let(:filename) { "rbi/some/dir/file.rbi" }
+
+      it "makes no offense if an RBI file is inside the rbi/** directory" do
+        expect(cop.offenses.empty?).to(be(true))
       end
     end
 
