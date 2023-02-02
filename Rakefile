@@ -22,10 +22,7 @@ task :new_cop, [:cop] do |_task, args|
     exit!
   end
 
-  github_user = %x(git config github.user).chop
-  github_user = "Shopify" if github_user.empty?
-
-  generator = RuboCop::Cop::Generator.new(cop_name, github_user)
+  generator = RuboCop::Cop::Generator.new(cop_name)
 
   generator.write_source
   generator.write_spec
