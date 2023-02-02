@@ -32,6 +32,20 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
       RUBY
     end
 
+    it("doesn't break on incomplete signatures") do
+      expect_no_offenses(<<~RUBY)
+        sig {}
+      RUBY
+
+      expect_no_offenses(<<~RUBY)
+        sig { params(a: Integer) }
+      RUBY
+
+      expect_no_offenses(<<~RUBY)
+        sig { abstract }
+      RUBY
+    end
+
     it("enforces orders of builder calls") do
       message = "Sig builders must be invoked in the following order: type_parameters, params, void."
       expect_offense(<<~RUBY)
