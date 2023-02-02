@@ -156,6 +156,16 @@ Sorbet/OneAncestorPerLine:
   Enabled: false
   VersionAdded: '0.6.0'
 
+Sorbet/ForbidExtendTSig:
+  Description: >-
+    Forbid the usage of redundant `extend T::Sig`.
+
+    Only for use in applications that monkey patch `Module.include(T::Sig)` directly,
+    where it is useful to reduce noise.
+  Enabled: false
+  Safe: false
+  VersionAdded: '<<next>>'
+
 Sorbet/SignatureBuildOrder:
   Description: >-
                   Enforces the order of parts in a signature.

@@ -497,6 +497,33 @@ module SomeModule
 end
 ```
 
+## Sorbet/RedundantExtendTSig
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | - | -
+
+Forbids the use of redundant `extend T::Sig`. Only for use in
+applications that monkey patch `Module.include(T::Sig)` globally,
+which would make it redundant.
+
+### Examples
+
+```ruby
+# bad
+class Greeter
+  extend T::Sig
+  sig { void }
+  def say_hello = puts "hello"
+end
+
+# good
+class Greeter
+  sig { void }
+  def say_hello = puts "hello"
+end
+```
+
 ## Sorbet/SignatureBuildOrder
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
