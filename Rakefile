@@ -29,5 +29,8 @@ task :new_cop, [:cop] do |_task, args|
   generator.inject_require(root_file_path: "lib/rubocop/cop/sorbet_cops.rb")
   generator.inject_config(config_file_path: "config/default.yml")
 
-  puts generator.todo
+  # We don't use Rubocop's changelog automation workflow
+  todo_without_changelog_instruction = generator.todo
+    .sub(/$\s+4\. Run.*changelog.*for your new cop\.$/m, "")
+  puts todo_without_changelog_instruction
 end
