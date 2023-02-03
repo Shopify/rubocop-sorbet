@@ -3,7 +3,7 @@ name: "rubocop-sorbet"
 type: "ruby"
 
 up:
-  - ruby: "2.5.5"
+  - ruby: "3.2.0"
   - "bundler"
 
 commands:
