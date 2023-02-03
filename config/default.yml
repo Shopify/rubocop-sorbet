@@ -156,7 +156,7 @@ Sorbet/OneAncestorPerLine:
   Enabled: false
   VersionAdded: '0.6.0'
 
-Sorbet/ForbidExtendTSig:
+Sorbet/RedundantExtendTSig:
   Description: >-
     Forbid the usage of redundant `extend T::Sig`.
 

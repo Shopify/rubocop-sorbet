@@ -501,7 +501,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | - | -
+Disabled | No | Yes  | <<next>> | -
 
 Forbids the use of redundant `extend T::Sig`. Only for use in
 applications that monkey patch `Module.include(T::Sig)` globally,
