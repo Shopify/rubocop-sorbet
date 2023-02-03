@@ -511,16 +511,16 @@ which would make it redundant.
 
 ```ruby
 # bad
-class Greeter
+class Example
   extend T::Sig
   sig { void }
-  def say_hello = puts "hello"
+  def no_op; end
 end
 
 # good
-class Greeter
+class Example
   sig { void }
-  def say_hello = puts "hello"
+  def no_op; end
 end
 ```
 
