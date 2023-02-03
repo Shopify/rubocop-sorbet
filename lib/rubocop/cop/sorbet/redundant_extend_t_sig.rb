@@ -13,16 +13,16 @@ module RuboCop
       #
       # @example
       #   # bad
-      #   class Greeter
+      #   class Example
       #     extend T::Sig
       #     sig { void }
-      #     def say_hello = puts "hello"
+      #     def no_op; end
       #   end
       #
       #   # good
-      #   class Greeter
+      #   class Example
       #     sig { void }
-      #     def say_hello = puts "hello"
+      #     def no_op; end
       #   end
       #
       class RedundantExtendTSig < RuboCop::Cop::Cop
