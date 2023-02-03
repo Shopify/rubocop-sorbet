@@ -3,10 +3,19 @@
 inherit_gem:
   rubocop-shopify: rubocop.yml
 
+require:
+  - rubocop/cop/internal_affairs
+
 AllCops:
   TargetRubyVersion: 2.5
   Exclude:
     - vendor/**/*
+
+InternalAffairs:
+  Enabled: false
+
+InternalAffairs/InheritDeprecatedCopClass:
+  Enabled: true
 
 Naming/FileName:
   Exclude:
