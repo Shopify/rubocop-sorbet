@@ -220,7 +220,7 @@ You can configure the placeholders used by changing the following options:
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | <<next>> | -
+Enabled | Yes | Yes  | 0.7.0 | -
 
 This cop checks that there is only one Sorbet sigil in a given file
 
@@ -501,7 +501,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | No | Yes  | <<next>> | -
+Disabled | No | Yes  | 0.7.0 | -
 
 Forbids the use of redundant `extend T::Sig`. Only for use in
 applications that monkey patch `Module.include(T::Sig)` globally,
