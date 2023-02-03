@@ -13,6 +13,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
+    it "makes no offense if a top-level method has a signature" do
+      expect_no_offenses(<<~RUBY)
+        sig(:final) { void }
+        def foo; end
+      RUBY
+    end
+
     it "makes offense if a top-level method has no signature" do
       expect_offense(<<~RUBY)
         def foo; end

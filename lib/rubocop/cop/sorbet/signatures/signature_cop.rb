@@ -15,6 +15,7 @@ module RuboCop
           (block (send
             {nil? #with_runtime? #without_runtime?}
             :sig
+            (sym :final)?
           ) (args) ...)
         PATTERN
 
