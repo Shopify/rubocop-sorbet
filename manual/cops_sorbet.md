@@ -259,6 +259,31 @@ SuggestedStrictness | `false` | String
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
+## Sorbet/FetchWhenMust
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | No | Yes (Unsafe) | <<next>> | -
+
+Checks for `T.must(object[key])` and recommends `object.fetch(key)` instead.
+
+### Examples
+
+```ruby
+# bad
+T.must(object[key])
+
+# good
+object.fetch(key)
+
+# good
+object[key]
+
+# good
+# If `object` does not `respond_to? :fetch`, or if using `Hash` `default_proc`
+T.must(object[key]) # rubocop:disable Sorbet/FetchWhenMust
+```
+
 ## Sorbet/ForbidExtendTSigHelpersInShims
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

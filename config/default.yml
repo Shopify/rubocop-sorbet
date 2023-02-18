@@ -66,6 +66,17 @@ Sorbet/FalseSigil:
   - db/**/*.rb
   - script/**/*
 
+Sorbet/FetchWhenMust:
+  Description: >-
+    Checks for `T.must(object[key])` and recommends `object.fetch(key)` instead.
+
+    While usually safe, false positives are possible if `object` does not respond to `fetch`,
+    or if `Hash#default_proc` (or similar) is being used.
+  Enabled: pending
+  VersionAdded: '<<next>>'
+  Safe: false
+  SafeAutoCorrect: false
+
 Sorbet/ForbidExtendTSigHelpersInShims:
   Description: 'Forbid the use of `extend T::Sig` and `extend T::Helpers` in RBI shims'
   Enabled: true
