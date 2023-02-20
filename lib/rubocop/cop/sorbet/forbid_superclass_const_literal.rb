@@ -24,21 +24,19 @@ module RuboCop
       # ```ruby
       # class ApiClientEligibility < Struct.new(:api_client, :match_results, :shop)
       # ```
-      class ForbidSuperclassConstLiteral < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+
+      class ForbidSuperclassConstLiteral < RuboCop::Cop::Base
         MSG = "Superclasses must only contain constant literals"
 
-        # @!method not_lit_const_superclass?(node)
-        def_node_matcher :not_lit_const_superclass?, <<-PATTERN
-          (class
-            (const ...)
-            (send ...)
-            ...
-          )
+        # @!method dynamic_superclass?(node)
+        def_node_matcher :dynamic_superclass?, <<-PATTERN
+          (class (const ...) $(send ...) ...)
         PATTERN
 
         def on_class(node)
-          return unless not_lit_const_superclass?(node)
-          add_offense(node.child_nodes[1])
+          dynamic_superclass?(node) do |superclass|
+            add_offense(superclass)
+          end
         end
       end
     end
