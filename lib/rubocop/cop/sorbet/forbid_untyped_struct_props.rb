@@ -27,12 +27,7 @@ module RuboCop
 
         # @!method t_struct(node)
         def_node_matcher :t_struct, <<~PATTERN
-          (const (const nil? :T) :Struct)
-        PATTERN
-
-        # @!method t_immutable_struct(node)
-        def_node_matcher :t_immutable_struct, <<~PATTERN
-          (const (const nil? :T) :ImmutableStruct)
+          (const (const nil? :T) {:Struct :ImmutableStruct})
         PATTERN
 
         # @!method t_untyped(node)
@@ -47,19 +42,20 @@ module RuboCop
 
         # @!method subclass_of_t_struct?(node)
         def_node_matcher :subclass_of_t_struct?, <<~PATTERN
-          (class (const ...) {#t_struct #t_immutable_struct} ...)
+          (class (const ...) #t_struct ...)
         PATTERN
 
         # @!method untyped_props(node)
+        # Search for untyped prop/const declarations and capture their types
         def_node_search :untyped_props, <<~PATTERN
-          (send nil? {:prop :const} _ {#t_untyped #t_nilable_untyped} ...)
+          (send nil? {:prop :const} _ ${#t_untyped #t_nilable_untyped} ...)
         PATTERN
 
         def on_class(node)
           return unless subclass_of_t_struct?(node)
 
-          untyped_props(node).each do |untyped_prop|
-            add_offense(untyped_prop.child_nodes[1])
+          untyped_props(node).each do |prop_type|
+            add_offense(prop_type)
           end
         end
       end
