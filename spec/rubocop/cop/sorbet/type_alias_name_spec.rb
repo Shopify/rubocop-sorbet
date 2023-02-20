@@ -16,6 +16,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::TypeAliasName, :config) do
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
         CONSTANT_NAME = T.type_alias { T.any(A, B) }
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+        PARENT::CONSTANT_NAME = T.type_alias { T.any(A, B) }
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
       RB
     end
 
@@ -26,6 +28,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::TypeAliasName, :config) do
         Constant = T.type_alias { Foo }
         ConstantName = T.type_alias { T.any(A, B) }
         HTTP = T.type_alias { Foo }
+        PARENT_NAME::ConstantName = T.type_alias { Foo }
       RB
     end
 
