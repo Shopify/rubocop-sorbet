@@ -25,7 +25,9 @@ module RuboCop
       #     def no_op; end
       #   end
       #
-      class RedundantExtendTSig < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class RedundantExtendTSig < RuboCop::Cop::Base
+        extend AutoCorrector
+
         MSG = "Do not redundantly `extend T::Sig` when it is already included in all modules."
         RESTRICT_ON_SEND = [:extend].freeze
 
@@ -37,11 +39,7 @@ module RuboCop
         def on_send(node)
           return unless extend_t_sig?(node)
 
-          add_offense(node)
-        end
-
-        def autocorrect(node)
-          lambda do |corrector|
+          add_offense(node) do |corrector|
             corrector.remove(node)
           end
         end
