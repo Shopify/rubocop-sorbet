@@ -22,32 +22,24 @@ module RuboCop
       #     sig { returns(String) }
       #     def foo; end
       #   end
-      class ForbidExtendTSigHelpersInShims < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class ForbidExtendTSigHelpersInShims < RuboCop::Cop::Base
+        extend AutoCorrector
         include RangeHelp
 
         MSG = "Extending T::Sig or T::Helpers in a shim is unnecessary"
-        RESTRICT_ON_SEND = [:extend]
+        RESTRICT_ON_SEND = [:extend].freeze
 
-        # @!method extend_t_sig?(node)
-        def_node_matcher :extend_t_sig?, <<~PATTERN
-          (send nil? :extend (const (const nil? :T) :Sig))
+        # @!method extend_t_sig_or_helpers?(node)
+        def_node_matcher :extend_t_sig_or_helpers?, <<~PATTERN
+          (send nil? :extend (const (const nil? :T) {:Sig :Helpers}))
         PATTERN
-
-        # @!method extend_t_helpers?(node)
-        def_node_matcher :extend_t_helpers?, <<~PATTERN
-          (send nil? :extend (const (const nil? :T) :Helpers))
-        PATTERN
-
-        def autocorrect(node)
-          -> (corrector) do
-            corrector.remove(
-              range_by_whole_lines(node.source_range, include_final_newline: true)
-            )
-          end
-        end
 
         def on_send(node)
-          add_offense(node) if extend_t_helpers?(node) || extend_t_sig?(node)
+          extend_t_sig_or_helpers?(node) do
+            add_offense(node) do |corrector|
+              corrector.remove(range_by_whole_lines(node.source_range, include_final_newline: true))
+            end
+          end
         end
       end
     end

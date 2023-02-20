@@ -16,6 +16,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigHelpersInShims, :config) do
           def foo; end
         end
       RBI
+
+      expect_correction(<<~RBI)
+        module MyModule
+
+          sig { returns(String) }
+          def foo; end
+        end
+      RBI
     end
 
     it "adds an offence when an extend T::Sig or extend T::Helpers call uses parenthesis syntax" do
@@ -30,6 +38,36 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigHelpersInShims, :config) do
           def foo; end
         end
       RBI
+
+      expect_correction(<<~RBI)
+        module MyModule
+
+          sig { returns(String) }
+          def foo; end
+        end
+      RBI
+    end
+
+    it "adds an offense when extend T::Sig or extend T::Helpers are extended in otherwise empty classes or modules" do
+      expect_offense(<<~RBI)
+        module MyModule
+          extend(T::Sig)
+          ^^^^^^^^^^^^^^ Extending T::Sig or T::Helpers in a shim is unnecessary
+        end
+
+        class MyClass
+          extend(T::Helpers)
+          ^^^^^^^^^^^^^^^^^^ Extending T::Sig or T::Helpers in a shim is unnecessary
+        end
+      RBI
+
+      expect_correction(<<~RBI)
+        module MyModule
+        end
+
+        class MyClass
+        end
+      RBI
     end
   end
 
@@ -42,65 +80,6 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigHelpersInShims, :config) do
           def foo; end
         end
       RBI
-    end
-  end
-
-  describe("autocorrect") do
-    it "autocorrects usages of extend T::Sig and extend T::Helpers by removing them" do
-      source = <<~RBI
-        module MyModule
-          extend T::Sig
-          extend T::Helpers
-          extend ActiveSupport::Concern
-
-          sig { returns(String) }
-          def foo; end
-        end
-      RBI
-      expect(autocorrect_source(source))
-        .to(eq(<<~RBI))
-          module MyModule
-            extend ActiveSupport::Concern
-
-            sig { returns(String) }
-            def foo; end
-          end
-        RBI
-    end
-
-    it "autocorrects usages of extend(T::Sig) and extend(T::Helpers) by removing them" do
-      source = <<~RBI
-        module MyModule
-          extend(T::Sig)
-          extend(T::Helpers)
-          extend ActiveSupport::Concern
-
-          sig { returns(String) }
-          def foo; end
-        end
-      RBI
-      expect(autocorrect_source(source))
-        .to(eq(<<~RBI))
-          module MyModule
-            extend ActiveSupport::Concern
-
-            sig { returns(String) }
-            def foo; end
-          end
-        RBI
-    end
-
-    it "autocorrects by removing extend T::Sig or T::Helpers from an otherwise empty class" do
-      source = <<~RBI
-        module MyModule
-          extend(T::Sig)
-        end
-      RBI
-      expect(autocorrect_source(source))
-        .to(eq(<<~RBI))
-          module MyModule
-          end
-        RBI
     end
   end
 end
