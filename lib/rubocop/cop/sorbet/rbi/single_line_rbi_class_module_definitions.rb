@@ -14,31 +14,25 @@ module RuboCop
       #
       #   # good
       #   module SomeModule; end
-      class SingleLineRbiClassModuleDefinitions < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class SingleLineRbiClassModuleDefinitions < RuboCop::Cop::Base
+        extend AutoCorrector
+
         MSG = "Empty class/module definitions in RBI files should be on a single line."
 
         def on_module(node)
-          process_node(node)
-        end
-
-        def on_class(node)
-          process_node(node)
-        end
-
-        def autocorrect(node)
-          -> (corrector) { corrector.replace(node, convert_newlines(node.source)) }
-        end
-
-        protected
-
-        def convert_newlines(source)
-          source.sub(/[\r\n]+\s*[\r\n]*/, "; ")
-        end
-
-        def process_node(node)
           return if node.body
           return if node.single_line?
-          add_offense(node)
+
+          add_offense(node) do |corrector|
+            corrector.replace(node, convert_newlines_to_semicolons(node.source))
+          end
+        end
+        alias_method :on_class, :on_module
+
+        private
+
+        def convert_newlines_to_semicolons(source)
+          source.sub(/[\r\n]+\s*[\r\n]*/, "; ")
         end
       end
     end

@@ -12,6 +12,24 @@ RSpec.describe(RuboCop::Cop::Sorbet::SingleLineRbiClassModuleDefinitions, :confi
 
         module SecondModule
         ^^^^^^^^^^^^^^^^^^^ Empty class/module definitions in RBI files should be on a single line.
+
+
+        end
+
+        module ThirdModule
+          def some_method
+          end
+        end
+      RBI
+
+      expect_correction(<<~RBI)
+        module MyModule; end
+
+        module SecondModule; end
+
+        module ThirdModule
+          def some_method
+          end
         end
       RBI
     end
@@ -25,6 +43,12 @@ RSpec.describe(RuboCop::Cop::Sorbet::SingleLineRbiClassModuleDefinitions, :confi
         class AnotherClass < SomeParentClass
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Empty class/module definitions in RBI files should be on a single line.
         end
+      RBI
+
+      expect_correction(<<~RBI)
+        class MyClass; end
+
+        class AnotherClass < SomeParentClass; end
       RBI
     end
   end
@@ -57,69 +81,6 @@ RSpec.describe(RuboCop::Cop::Sorbet::SingleLineRbiClassModuleDefinitions, :confi
           end
         end
       RBI
-    end
-  end
-
-  describe("autocorrect") do
-    it "autocorrects multi-line module definitions to a single line" do
-      source = <<~RBI
-        module MyModule
-        end
-
-        module AnotherModule
-
-
-        end
-      RBI
-      expect(autocorrect_source(source))
-        .to(eq(<<~RBI))
-          module MyModule; end
-
-          module AnotherModule; end
-        RBI
-    end
-
-    it "autocorrects multi-line class definitions to a single line" do
-      source = <<~RBI
-        class MyClass
-
-
-
-
-        end
-
-        class AnotherClass < SomeClass
-        end
-      RBI
-      expect(autocorrect_source(source))
-        .to(eq(<<~RBI))
-          class MyClass; end
-
-          class AnotherClass < SomeClass; end
-        RBI
-    end
-
-    it "autocorrects multi-line definitions and ignores non-empty modules" do
-      source = <<~RBI
-        module MyModule
-          def hello_world
-          end
-        end
-
-        module ModuleWithWhitespace
-
-
-        end
-      RBI
-      expect(autocorrect_source(source))
-        .to(eq(<<~RBI))
-          module MyModule
-            def hello_world
-            end
-          end
-
-          module ModuleWithWhitespace; end
-        RBI
     end
   end
 end
