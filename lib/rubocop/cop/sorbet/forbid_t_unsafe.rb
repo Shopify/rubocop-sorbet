@@ -15,11 +15,14 @@ module RuboCop
       #   # good
       #   foo
       class ForbidTUnsafe < RuboCop::Cop::Base
+        MSG = "Do not use `T.unsafe`."
+        RESTRICT_ON_SEND = [:unsafe].freeze
+
         # @!method t_unsafe?(node)
         def_node_matcher(:t_unsafe?, "(send (const nil? :T) :unsafe _)")
 
         def on_send(node)
-          add_offense(node, message: "Do not use `T.unsafe`.") if t_unsafe?(node)
+          add_offense(node) if t_unsafe?(node)
         end
       end
     end
