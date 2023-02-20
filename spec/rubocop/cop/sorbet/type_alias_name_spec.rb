@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::TypeAliasName, :config) do
-  subject(:cop) { described_class.new(config) }
-
   MSG = "Type alias constant name should be in CamelCase"
 
   describe("offenses") do

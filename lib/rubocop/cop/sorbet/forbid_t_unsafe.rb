@@ -14,7 +14,8 @@ module RuboCop
       #
       #   # good
       #   foo
-      class ForbidTUnsafe < RuboCop::Cop::Cop
+      class ForbidTUnsafe < RuboCop::Cop::Base
+        # @!method t_unsafe?(node)
         def_node_matcher(:t_unsafe?, "(send (const nil? :T) :unsafe _)")
 
         def on_send(node)

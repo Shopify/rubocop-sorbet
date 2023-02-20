@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ConstantsFromStrings, :config) do
-  subject(:cop) { described_class.new(config) }
-
   def message(method_name)
     "Don't use `#{method_name}`, it makes the code harder to understand, less editor-friendly, " \
       "and impossible to analyze. Replace `#{method_name}` with a case/when or a hash."

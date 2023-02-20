@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidSuperclassConstLiteral, :config) do
-  subject(:cop) { described_class.new(config) }
-
   it "adds offense when a superclass is a send node" do
     expect_offense(<<~RUBY)
       class MyClass < Struct.new(:foo, :bar, :baz); end

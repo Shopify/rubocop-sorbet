@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
-  subject(:cop) { described_class.new(config) }
-
   shared_examples_for "no offense for missing sigils by default" do
     it("does not require a sigil by default") do
       expect_no_offenses(<<~RUBY)

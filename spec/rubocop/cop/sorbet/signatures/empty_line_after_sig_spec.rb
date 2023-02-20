@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
-  subject(:cop) { described_class.new(config) }
-
   describe("no offenses") do
     it "makes no offense when signarure and method are next to eachother" do
       expect_no_offenses(<<~RUBY)

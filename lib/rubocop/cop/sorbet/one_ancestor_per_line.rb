@@ -21,17 +21,20 @@ module RuboCop
       #     requires_ancestor Kernel
       #     requires_ancestor Minitest::Assertions
       #   end
-      class OneAncestorPerLine < RuboCop::Cop::Cop
+      class OneAncestorPerLine < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         MSG = "Cannot require more than one ancestor per line"
 
+        # @!method requires_ancestors(node)
         def_node_search :requires_ancestors, <<~PATTERN
           (send nil? :requires_ancestor ...)
         PATTERN
 
+        # @!method more_than_one_ancestor(node)
         def_node_matcher :more_than_one_ancestor, <<~PATTERN
           (send nil? :requires_ancestor const const+)
         PATTERN
 
+        # @!method abstract?(node)
         def_node_search :abstract?, <<~PATTERN
           (send nil? :abstract!)
         PATTERN

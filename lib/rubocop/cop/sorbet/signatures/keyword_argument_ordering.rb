@@ -35,9 +35,9 @@ module RuboCop
           out_of_kwoptarg = false
 
           parameters.reverse.each do |param|
-            out_of_kwoptarg = true unless param.type == :kwoptarg || param.type == :blockarg || param.type == :kwrestarg
+            out_of_kwoptarg = true unless param.kwoptarg_type? || param.blockarg_type? || param.kwrestarg_type?
 
-            next unless param.type == :kwoptarg && out_of_kwoptarg
+            next unless param.kwoptarg_type? && out_of_kwoptarg
 
             add_offense(
               param,

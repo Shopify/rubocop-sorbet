@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
-  subject(:cop) { described_class.new(config) }
-
   it("makes no offense on empty files") do
     expect_no_offenses(<<~RUBY)
     RUBY

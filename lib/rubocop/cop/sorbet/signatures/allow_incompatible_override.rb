@@ -18,7 +18,8 @@ module RuboCop
       #
       #   # good
       #   sig.override
-      class AllowIncompatibleOverride < RuboCop::Cop::Cop
+      class AllowIncompatibleOverride < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+        # @!method sig?(node)
         def_node_search(:sig?, <<-PATTERN)
           (
             send
@@ -32,10 +33,12 @@ module RuboCop
           !node.nil?
         end
 
+        # @!method allow_incompatible?(node)
         def_node_search(:allow_incompatible?, <<-PATTERN)
           (pair (sym :allow_incompatible) (true))
         PATTERN
 
+        # @!method allow_incompatible_override?(node)
         def_node_matcher(:allow_incompatible_override?, <<-PATTERN)
           (
             send

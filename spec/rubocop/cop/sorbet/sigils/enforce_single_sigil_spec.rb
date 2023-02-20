@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe(RuboCop::Cop::Sorbet::EnforceSingleSigil, :config) do
-  let(:config) { RuboCop::Config.new }
-
   describe("no offenses") do
     it("makes no offense on empty files") do
       expect_no_offenses(<<~RUBY)

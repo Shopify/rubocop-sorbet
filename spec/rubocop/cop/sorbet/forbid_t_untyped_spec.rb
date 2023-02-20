@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidTUntyped, :config) do
-  subject(:cop) { described_class.new(config) }
-
   context "a simple usage" do
     it "adds an offense" do
       expect_offense(<<~RUBY)

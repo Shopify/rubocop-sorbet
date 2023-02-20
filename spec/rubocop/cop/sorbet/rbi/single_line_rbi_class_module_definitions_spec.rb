@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::SingleLineRbiClassModuleDefinitions, :config) do
-  subject(:cop) { described_class.new(config) }
-
   describe("offences") do
     it "registers an offense when an empty module definition is split across multiple lines" do
       expect_offense(<<~RBI)

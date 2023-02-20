@@ -7,6 +7,7 @@ module RuboCop
     module Sorbet
       module MutableConstantSorbetAwareBehaviour
         def self.prepended(base)
+          # @!method t_let(node)
           base.def_node_matcher(:t_let, <<~PATTERN)
             (send (const nil? :T) :let $_constant _type)
           PATTERN

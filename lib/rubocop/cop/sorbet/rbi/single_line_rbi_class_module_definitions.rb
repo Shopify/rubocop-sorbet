@@ -14,7 +14,7 @@ module RuboCop
       #
       #   # good
       #   module SomeModule; end
-      class SingleLineRbiClassModuleDefinitions < RuboCop::Cop::Cop
+      class SingleLineRbiClassModuleDefinitions < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         MSG = "Empty class/module definitions in RBI files should be on a single line."
 
         def on_module(node)

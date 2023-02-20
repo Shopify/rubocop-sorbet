@@ -32,7 +32,7 @@ module RuboCop
       #       true
       #     end
       #   end
-      class CallbackConditionalsBinding < RuboCop::Cop::Cop
+      class CallbackConditionalsBinding < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         CALLBACKS = [
           :validate, :validates, :validates_with, :before_validation, :around_validation, :before_create,
           :before_save, :before_destroy, :before_update, :after_create, :after_save, :after_destroy,

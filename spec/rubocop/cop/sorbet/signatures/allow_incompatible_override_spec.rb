@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::AllowIncompatibleOverride, :config) do
-  subject(:cop) { described_class.new(config) }
-
   def message
     "Usage of `allow_incompatible` suggests a violation of the Liskov Substitution Principle. "\
     "Instead, strive to write interfaces which respect subtyping principles and remove `allow_incompatible`"

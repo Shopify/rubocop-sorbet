@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::OneAncestorPerLine, :config) do
-  subject(:cop) { described_class.new(config) }
-
   describe("no offences") do
     it "adds no offences when there are no requires_ancestor calls" do
       expect_no_offenses(<<~RUBY)

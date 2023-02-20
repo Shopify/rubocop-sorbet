@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
-  subject(:cop) { described_class.new(config) }
-
   describe("offenses") do
     it("allows the correct order") do
       expect_no_offenses(<<~RUBY)

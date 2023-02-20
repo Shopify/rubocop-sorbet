@@ -3,34 +3,35 @@
 
 require "rubocop"
 
-# Correct `send` expressions in include statements by constant literals.
-#
-# Sorbet, the static checker, is not (yet) able to support constructs on the
-# following form:
-#
-# ```ruby
-# class MyClass
-#   include send_expr
-# end
-# ```
-#
-# Multiple occurences of this can be found in Shopify's code base like:
-#
-# ```ruby
-# include Rails.application.routes.url_helpers
-# ```
-# or
-# ```ruby
-# include Polaris::Engine.helpers
-# ```
 module RuboCop
   module Cop
     module Sorbet
-      class ForbidIncludeConstLiteral < RuboCop::Cop::Cop
+      # Correct `send` expressions in include statements by constant literals.
+      #
+      # Sorbet, the static checker, is not (yet) able to support constructs on the
+      # following form:
+      #
+      # ```ruby
+      # class MyClass
+      #   include send_expr
+      # end
+      # ```
+      #
+      # Multiple occurences of this can be found in Shopify's code base like:
+      #
+      # ```ruby
+      # include Rails.application.routes.url_helpers
+      # ```
+      # or
+      # ```ruby
+      # include Polaris::Engine.helpers
+      # ```
+      class ForbidIncludeConstLiteral < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         MSG = "Includes must only contain constant literals"
 
         attr_accessor :used_names
 
+        # @!method not_lit_const_include?(node)
         def_node_matcher :not_lit_const_include?, <<-PATTERN
           (send nil? {:include :extend :prepend}
             $_
