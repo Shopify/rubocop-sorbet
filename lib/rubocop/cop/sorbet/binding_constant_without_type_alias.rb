@@ -15,119 +15,89 @@ module RuboCop
       #
       #   # good
       #   FooOrBar = T.type_alias { T.any(Foo, Bar) }
-      class BindingConstantWithoutTypeAlias < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
-        # @!method binding_unaliased_type?(node)
-        def_node_matcher(:binding_unaliased_type?, <<-PATTERN)
-          (casgn _ _ [#not_nil? #not_t_let? #not_dynamic_type_creation_with_block? #not_generic_parameter_decl? #method_needing_aliasing_on_t?])
-        PATTERN
+      class BindingConstantWithoutTypeAlias < RuboCop::Cop::Base
+        extend AutoCorrector
 
-        # @!method using_type_alias?(node)
-        def_node_matcher(:using_type_alias?, <<-PATTERN)
-          (block
-            (send
-              (const nil? :T) :type_alias)
-              _
-              _
-          )
-        PATTERN
+        MSG = "It looks like you're trying to bind a type to a constant. " \
+          "To do this, you must alias the type using `T.type_alias`."
+        WITHOUT_BLOCK_MSG = "It looks like you're using the old `T.type_alias` syntax. " \
+          "`T.type_alias` now expects a block." \
+          'Run Sorbet with the options "--autocorrect --error-white-list=5043" ' \
+          "to automatically upgrade to the new syntax."
 
-        # @!method using_deprecated_type_alias_syntax?(node)
-        def_node_matcher(:using_deprecated_type_alias_syntax?, <<-PATTERN)
-          (
-            send
-            (const nil? :T)
+        # @!method type_alias_without_block(node)
+        def_node_matcher :type_alias_without_block, <<~PATTERN
+          (send
+            (const {nil? cbase} :T)
             :type_alias
-            _
+            $_
           )
         PATTERN
 
-        # @!method t_let?(node)
-        def_node_matcher(:t_let?, <<-PATTERN)
-          (
-            send
-            (const nil? :T)
-            :let
-            _
-            _
-          )
-        PATTERN
-
-        # @!method dynamic_type_creation_with_block?(node)
-        def_node_matcher(:dynamic_type_creation_with_block?, <<-PATTERN)
+        # @!method type_alias_with_block?(node)
+        def_node_matcher :type_alias_with_block?, <<~PATTERN
           (block
             (send
-              const :new ...)
-              _
-              _
+              (const {nil? cbase} :T)
+            :type_alias)
+            ...
           )
         PATTERN
 
-        # @!method generic_parameter_decl_call?(node)
-        def_node_matcher(:generic_parameter_decl_call?, <<-PATTERN)
-          (
-            send nil? {:type_template :type_member} ...
+        # @!method requires_type_alias?(node)
+        def_node_matcher :requires_type_alias?, <<~PATTERN
+          (send
+            (const {nil? cbase} :T)
+            {
+              :all
+              :any
+              :class_of
+              :nilable
+              :noreturn
+              :proc
+              :self_type
+              :untyped
+            }
+            ...
           )
         PATTERN
-
-        # @!method generic_parameter_decl_block_call?(node)
-        def_node_matcher(:generic_parameter_decl_block_call?, <<-PATTERN)
-          (block
-            (send nil? {:type_template :type_member} ...) ...
-          )
-        PATTERN
-
-        # @!method method_needing_aliasing_on_t?(node)
-        def_node_search(:method_needing_aliasing_on_t?, <<-PATTERN)
-          (
-            send
-            (const nil? :T)
-            {:any :all :noreturn :class_of :untyped :nilable :self_type :enum :proc}
-             ...
-          )
-        PATTERN
-
-        def not_t_let?(node)
-          !t_let?(node)
-        end
-
-        def not_dynamic_type_creation_with_block?(node)
-          !dynamic_type_creation_with_block?(node)
-        end
-
-        def not_generic_parameter_decl?(node)
-          !generic_parameter_decl_call?(node) && !generic_parameter_decl_block_call?(node)
-        end
-
-        def not_nil?(node)
-          !node.nil?
-        end
 
         def on_casgn(node)
-          return unless binding_unaliased_type?(node) && !using_type_alias?(node.children[2])
-          if using_deprecated_type_alias_syntax?(node.children[2])
-            add_offense(
-              node.children[2],
-              message: "It looks like you're using the old `T.type_alias` syntax. " \
-              "`T.type_alias` now expects a block." \
-              'Run Sorbet with the options "--autocorrect --error-white-list=5043" ' \
-              "to automatically upgrade to the new syntax."
-            )
-            return
+          expression = node.expression
+          return if expression.nil? # multiple assignment
+
+          type_alias_without_block(expression) do |type|
+            return add_offense(expression, message: WITHOUT_BLOCK_MSG) do |corrector|
+              corrector.replace(expression, "T.type_alias { #{type.source} }")
+            end
           end
-          add_offense(
-            node.children[2],
-            message: "It looks like you're trying to bind a type to a constant. " \
-            "To do this, you must alias the type using `T.type_alias`."
-          )
+
+          return if type_alias_with_block?(expression)
+
+          requires_type_alias?(send_leaf(expression)) do
+            return add_offense(expression) do |corrector|
+              corrector.replace(expression, "T.type_alias { #{expression.source} }")
+            end
+          end
         end
 
-        def autocorrect(node)
-          lambda do |corrector|
-            corrector.replace(
-              node.source_range,
-              "T.type_alias { #{node.source} }"
-            )
-          end
+        private
+
+        # Given nested send nodes, returns the leaf with explicit receiver.
+        #
+        # i.e. in Ruby
+        #
+        #     a.b.c.d.e.f
+        #     ^^^
+        #
+        # i.e. in AST
+        #
+        #     (send (send (send (send (send (send nil :a) :b) :c) :d) :e) :f)
+        #                             ^^^^^^^^^^^^^^^^^^^^^^^
+        #
+        def send_leaf(node)
+          node = node.receiver while node&.receiver&.send_type?
+          node
         end
       end
     end
