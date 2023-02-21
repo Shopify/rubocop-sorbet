@@ -25,10 +25,11 @@ module RuboCop
       #     def no_op; end
       #   end
       #
-      class RedundantExtendTSig < RuboCop::Cop::Cop
+      class RedundantExtendTSig < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         MSG = "Do not redundantly `extend T::Sig` when it is already included in all modules."
         RESTRICT_ON_SEND = [:extend].freeze
 
+        # @!method extend_t_sig?(node)
         def_node_matcher :extend_t_sig?, <<~PATTERN
           (send _ :extend (const (const {nil? | cbase} :T) :Sig))
         PATTERN

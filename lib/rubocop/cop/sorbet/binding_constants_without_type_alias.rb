@@ -15,11 +15,13 @@ module RuboCop
       #
       #   # good
       #   FooOrBar = T.type_alias { T.any(Foo, Bar) }
-      class BindingConstantWithoutTypeAlias < RuboCop::Cop::Cop
+      class BindingConstantWithoutTypeAlias < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+        # @!method binding_unaliased_type?(node)
         def_node_matcher(:binding_unaliased_type?, <<-PATTERN)
           (casgn _ _ [#not_nil? #not_t_let? #not_dynamic_type_creation_with_block? #not_generic_parameter_decl? #method_needing_aliasing_on_t?])
         PATTERN
 
+        # @!method using_type_alias?(node)
         def_node_matcher(:using_type_alias?, <<-PATTERN)
           (block
             (send
@@ -29,6 +31,7 @@ module RuboCop
           )
         PATTERN
 
+        # @!method using_deprecated_type_alias_syntax?(node)
         def_node_matcher(:using_deprecated_type_alias_syntax?, <<-PATTERN)
           (
             send
@@ -38,6 +41,7 @@ module RuboCop
           )
         PATTERN
 
+        # @!method t_let?(node)
         def_node_matcher(:t_let?, <<-PATTERN)
           (
             send
@@ -48,6 +52,7 @@ module RuboCop
           )
         PATTERN
 
+        # @!method dynamic_type_creation_with_block?(node)
         def_node_matcher(:dynamic_type_creation_with_block?, <<-PATTERN)
           (block
             (send
@@ -57,18 +62,21 @@ module RuboCop
           )
         PATTERN
 
+        # @!method generic_parameter_decl_call?(node)
         def_node_matcher(:generic_parameter_decl_call?, <<-PATTERN)
           (
             send nil? {:type_template :type_member} ...
           )
         PATTERN
 
+        # @!method generic_parameter_decl_block_call?(node)
         def_node_matcher(:generic_parameter_decl_block_call?, <<-PATTERN)
           (block
             (send nil? {:type_template :type_member} ...) ...
           )
         PATTERN
 
+        # @!method method_needing_aliasing_on_t?(node)
         def_node_search(:method_needing_aliasing_on_t?, <<-PATTERN)
           (
             send

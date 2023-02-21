@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) do
-  subject(:cop) { described_class.new(config) }
-
   def message
     "It looks like you're trying to bind a type to a constant. " \
     "To do this, you must alias the type using `T.type_alias`."

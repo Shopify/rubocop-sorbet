@@ -20,7 +20,7 @@ module RuboCop
       #   # rbi/external_interface.rbi
       #   # sorbet/rbi/some_file.rbi
       #   # sorbet/rbi/any/path/for/file.rbi
-      class ForbidRBIOutsideOfAllowedPaths < RuboCop::Cop::Cop
+      class ForbidRBIOutsideOfAllowedPaths < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         include RangeHelp
 
         def investigate(processed_source)
@@ -56,7 +56,7 @@ module RuboCop
         private
 
         def allowed_paths
-          paths = cop_config["AllowedPaths"]
+          paths = cop_config["AllowedPaths"] # rubocop:todo InternalAffairs/UndefinedConfig
           return nil unless paths.is_a?(Array)
           paths.compact
         end

@@ -32,6 +32,7 @@ module RuboCop
           @last_sig_for_scope = {}
         end
 
+        # @!method accessor?(node)
         def_node_matcher(:accessor?, <<-PATTERN)
           (send nil? {:attr_reader :attr_writer :attr_accessor} ...)
         PATTERN

@@ -3,11 +3,20 @@
 inherit_gem:
   rubocop-shopify: rubocop.yml
 
+require:
+  - rubocop/cop/internal_affairs
+
 AllCops:
   TargetRubyVersion: 2.5
   Exclude:
     - vendor/**/*
 
+InternalAffairs:
+  Enabled: true
+
 Naming/FileName:
   Exclude:
   - lib/rubocop-sorbet.rb
+
+Layout/LineLength:
+  IgnoreCopDirectives: true

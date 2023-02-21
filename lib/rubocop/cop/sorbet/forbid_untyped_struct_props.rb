@@ -22,29 +22,35 @@ module RuboCop
       #     const :foo, Integer
       #     prop :bar, T.nilable(String)
       #   end
-      class ForbidUntypedStructProps < RuboCop::Cop::Cop
+      class ForbidUntypedStructProps < RuboCop::Cop::Base
         MSG = "Struct props cannot be T.untyped"
 
+        # @!method t_struct(node)
         def_node_matcher :t_struct, <<~PATTERN
           (const (const nil? :T) :Struct)
         PATTERN
 
+        # @!method t_immutable_struct(node)
         def_node_matcher :t_immutable_struct, <<~PATTERN
           (const (const nil? :T) :ImmutableStruct)
         PATTERN
 
+        # @!method t_untyped(node)
         def_node_matcher :t_untyped, <<~PATTERN
           (send (const nil? :T) :untyped)
         PATTERN
 
+        # @!method t_nilable_untyped(node)
         def_node_matcher :t_nilable_untyped, <<~PATTERN
           (send (const nil? :T) :nilable {#t_untyped #t_nilable_untyped})
         PATTERN
 
+        # @!method subclass_of_t_struct?(node)
         def_node_matcher :subclass_of_t_struct?, <<~PATTERN
           (class (const ...) {#t_struct #t_immutable_struct} ...)
         PATTERN
 
+        # @!method untyped_props(node)
         def_node_search :untyped_props, <<~PATTERN
           (send nil? {:prop :const} _ {#t_untyped #t_nilable_untyped} ...)
         PATTERN

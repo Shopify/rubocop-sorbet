@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidUntypedStructProps, :config) do
-  subject(:cop) { described_class.new(config) }
-
   it "adds offense when const is T.untyped" do
     expect_offense(<<~RUBY)
       class MyClass < T::Struct

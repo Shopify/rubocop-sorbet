@@ -299,7 +299,26 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | Yes  | 0.2.0 | 0.5.0
 
-No documentation
+Correct `send` expressions in include statements by constant literals.
+
+Sorbet, the static checker, is not (yet) able to support constructs on the
+following form:
+
+```ruby
+class MyClass
+  include send_expr
+end
+```
+
+Multiple occurences of this can be found in Shopify's code base like:
+
+```ruby
+include Rails.application.routes.url_helpers
+```
+or
+```ruby
+include Polaris::Engine.helpers
+```
 
 ## Sorbet/ForbidRBIOutsideOfAllowedPaths
 
@@ -339,7 +358,24 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | No | 0.2.0 | 0.6.1
 
-No documentation
+Correct superclass `send` expressions by constant literals.
+
+Sorbet, the static checker, is not (yet) able to support constructs on the
+following form:
+
+```ruby
+class Foo < send_expr; end
+```
+
+Multiple occurences of this can be found in Shopify's code base like:
+
+```ruby
+class ShopScope < Component::TrustedIdScope[ShopIdentity::ShopId]
+```
+or
+```ruby
+class ApiClientEligibility < Struct.new(:api_client, :match_results, :shop)
+```
 
 ### Configurable attributes
 

@@ -22,16 +22,18 @@ module RuboCop
       #     sig { returns(String) }
       #     def foo; end
       #   end
-      class ForbidExtendTSigHelpersInShims < RuboCop::Cop::Cop
+      class ForbidExtendTSigHelpersInShims < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         include RangeHelp
 
         MSG = "Extending T::Sig or T::Helpers in a shim is unnecessary"
         RESTRICT_ON_SEND = [:extend]
 
+        # @!method extend_t_sig?(node)
         def_node_matcher :extend_t_sig?, <<~PATTERN
           (send nil? :extend (const (const nil? :T) :Sig))
         PATTERN
 
+        # @!method extend_t_helpers?(node)
         def_node_matcher :extend_t_helpers?, <<~PATTERN
           (send nil? :extend (const (const nil? :T) :Helpers))
         PATTERN

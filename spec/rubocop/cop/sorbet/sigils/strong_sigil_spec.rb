@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::StrongSigil, :config) do
-  subject(:cop) { described_class.new(config) }
-
   describe("always require a ignore sigil") do
     it "makes offense if the strongness is not at least `strong`" do
       expect_offense(<<~RUBY)

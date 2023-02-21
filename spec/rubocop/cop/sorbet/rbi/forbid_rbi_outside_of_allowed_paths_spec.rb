@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
-  subject(:cop) { described_class.new(config) }
-
   let(:source) { "print 1" }
   let(:processed_source) { parse_source(source) }
 

@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::CheckedTrueInSignature, :config) do
-  subject(:cop) { described_class.new(config) }
-
   def message
     "Using `checked(true)` in a method signature definition is not allowed. " \
       "`checked(true)` is the default behavior for modules/classes with runtime checks enabled. " \

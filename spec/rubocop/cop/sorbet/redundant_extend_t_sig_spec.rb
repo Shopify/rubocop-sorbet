@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe(RuboCop::Cop::Sorbet::RedundantExtendTSig, :config) do
-  let(:config) { RuboCop::Config.new }
   let(:message) { "Do not redundantly `extend T::Sig` when it is already included in all modules." }
 
   shared_examples "block form" do |label, header|

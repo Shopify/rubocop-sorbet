@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
-  subject(:cop) { described_class.new(config) }
-
   describe("require a signature for each method") do
     it "makes no offense if a top-level method has a signature" do
       expect_no_offenses(<<~RUBY)
@@ -52,7 +50,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it "handles signature overloads" do
+    it "registers no offenses on signature overloads" do
       expect_no_offenses(<<~RUBY)
         class Foo
           sig { void }
@@ -69,7 +67,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
-    it "handles scopes correctly" do
+    it "registers offenses even when methods with the same name have sigs in other scopes" do
       expect_offense(<<~RUBY)
         module Foo
           sig { void }

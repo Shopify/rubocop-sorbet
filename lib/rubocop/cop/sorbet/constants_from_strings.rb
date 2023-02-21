@@ -33,7 +33,8 @@ module RuboCop
       #
       #   # good
       #   { "User" => User }.fetch(class_name)
-      class ConstantsFromStrings < ::RuboCop::Cop::Cop
+      class ConstantsFromStrings < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+        # @!method constant_from_string?(node)
         def_node_matcher(:constant_from_string?, <<-PATTERN)
           (send _ {:constantize :constants :const_get} ...)
         PATTERN

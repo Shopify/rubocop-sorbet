@@ -14,9 +14,10 @@ module RuboCop
       #
       #   # good
       #   FooOrBar = T.type_alias { T.any(Foo, Bar) }
-      class TypeAliasName < RuboCop::Cop::Cop
+      class TypeAliasName < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         MSG = "Type alias constant name should be in CamelCase"
 
+        # @!method casgn_type_alias?(node)
         def_node_matcher(:casgn_type_alias?, <<-PATTERN)
           (casgn
             _

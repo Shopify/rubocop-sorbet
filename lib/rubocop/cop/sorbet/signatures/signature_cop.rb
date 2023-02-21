@@ -8,9 +8,10 @@ module RuboCop
       # Abstract cop specific to Sorbet signatures
       #
       # You can subclass it to use the `on_signature` trigger and the `signature?` node matcher.
-      class SignatureCop < RuboCop::Cop::Cop
+      class SignatureCop < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         @registry = Cop.registry # So we can properly subclass this cop
 
+        # @!method signature?(node)
         def_node_matcher(:signature?, <<~PATTERN)
           (block (send
             {nil? #with_runtime? #without_runtime?}
@@ -19,10 +20,12 @@ module RuboCop
           ) (args) ...)
         PATTERN
 
+        # @!method with_runtime?(node)
         def_node_matcher(:with_runtime?, <<~PATTERN)
           (const (const nil? :T) :Sig)
         PATTERN
 
+        # @!method without_runtime?(node)
         def_node_matcher(:without_runtime?, <<~PATTERN)
           (const (const (const nil? :T) :Sig) :WithoutRuntime)
         PATTERN

@@ -27,6 +27,7 @@ module RuboCop
             :on_failure,
           ].each_with_index.to_h.freeze
 
+        # @!method root_call(node)
         def_node_search(:root_call, <<~PATTERN)
           (send nil? {#{ORDER.keys.map(&:inspect).join(" ")}} ...)
         PATTERN

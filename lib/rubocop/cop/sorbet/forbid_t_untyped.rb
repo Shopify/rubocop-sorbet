@@ -17,7 +17,8 @@ module RuboCop
       #   sig { params(my_argument: String).void }
       #   def foo(my_argument); end
       #
-      class ForbidTUntyped < RuboCop::Cop::Cop
+      class ForbidTUntyped < RuboCop::Cop::Base
+        # @!method t_untyped?(node)
         def_node_matcher(:t_untyped?, "(send (const nil? :T) :untyped)")
 
         def on_send(node)

@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
-  subject(:cop) { described_class.new(config) }
-
   describe("no offenses") do
     it("allows callbacks with no options") do
       expect_no_offenses(<<~RUBY)

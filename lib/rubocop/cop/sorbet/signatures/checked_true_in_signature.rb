@@ -22,6 +22,7 @@ module RuboCop
       class CheckedTrueInSignature < SignatureCop
         include(RuboCop::Cop::RangeHelp)
 
+        # @!method offending_node(node)
         def_node_search(:offending_node, <<~PATTERN)
           (send _ :checked (true))
         PATTERN

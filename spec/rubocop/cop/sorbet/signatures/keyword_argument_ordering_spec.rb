@@ -3,8 +3,6 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::KeywordArgumentOrdering, :config) do
-  subject(:cop) { described_class.new(config) }
-
   it("adds offense when optional arguments are at the end") do
     expect_offense(<<~RUBY)
       sig { params(a: Integer, b: String, blk: Proc).void }
