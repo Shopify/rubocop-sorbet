@@ -7,7 +7,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     expect_offense(<<~RUBY)
       class MyClass
         include Rails.application.routes.url_helpers
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Includes must only contain constant literals
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `include` must only be used with constant literals as arguments
+      end
+    RUBY
+
+    expect_correction(<<~RUBY)
+      class MyClass
+        T.unsafe(self).include Rails.application.routes.url_helpers
       end
     RUBY
   end
@@ -17,7 +23,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
       class MyClass
         mod = ThatMod
         include mod
-        ^^^^^^^^^^^ Includes must only contain constant literals
+        ^^^^^^^^^^^ `include` must only be used with constant literals as arguments
+      end
+    RUBY
+
+    expect_correction(<<~RUBY)
+      class MyClass
+        mod = ThatMod
+        T.unsafe(self).include mod
       end
     RUBY
   end
@@ -26,7 +39,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     expect_offense(<<~RUBY)
       class MyClass
         include Polaris::Engine.helpers
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Includes must only contain constant literals
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `include` must only be used with constant literals as arguments
+      end
+    RUBY
+
+    expect_correction(<<~RUBY)
+      class MyClass
+        T.unsafe(self).include Polaris::Engine.helpers
       end
     RUBY
   end
@@ -35,7 +54,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     expect_offense(<<~RUBY)
       class MyClass
         prepend Polaris::Engine.helpers
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Includes must only contain constant literals
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `prepend` must only be used with constant literals as arguments
+      end
+    RUBY
+
+    expect_correction(<<~RUBY)
+      class MyClass
+        T.unsafe(self).prepend Polaris::Engine.helpers
       end
     RUBY
   end
@@ -44,7 +69,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     expect_offense(<<~RUBY)
       class MyClass
         extend Polaris::Engine.helpers
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Includes must only contain constant literals
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `extend` must only be used with constant literals as arguments
+      end
+    RUBY
+
+    expect_correction(<<~RUBY)
+      class MyClass
+        T.unsafe(self).extend Polaris::Engine.helpers
       end
     RUBY
   end
@@ -53,7 +84,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     expect_offense(<<~RUBY)
       module MyModule
         extend Polaris::Engine.helpers
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Includes must only contain constant literals
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `extend` must only be used with constant literals as arguments
+      end
+    RUBY
+
+    expect_correction(<<~RUBY)
+      module MyModule
+        T.unsafe(self).extend Polaris::Engine.helpers
       end
     RUBY
   end
@@ -64,7 +101,16 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
         class << self
           include ActionView::Helpers::TagHelper
           include Rails.application.routes.url_helpers
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Includes must only contain constant literals
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `include` must only be used with constant literals as arguments
+        end
+      end
+    RUBY
+
+    expect_correction(<<~RUBY)
+      module FilterHelper
+        class << self
+          include ActionView::Helpers::TagHelper
+          T.unsafe(self).include Rails.application.routes.url_helpers
         end
       end
     RUBY
@@ -128,21 +174,42 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidIncludeConstLiteral, :config) do
     RUBY
   end
 
-  describe("autocorrect") do
-    it("autocorrects by prefixing the include with `T.unsafe(self)`") do
-      source = <<~RUBY
-        class Foo
-          include Rails.application.routes.url_helpers
-          include(Migration[2.0])
-        end
-      RUBY
-      expect(autocorrect_source(source))
-        .to(eq(<<~RUBY))
-          class Foo
-            T.unsafe(self).include Rails.application.routes.url_helpers
-            T.unsafe(self).include(Migration[2.0])
-          end
-        RUBY
-    end
+  it "adds no offense when an explicit constant receiver includes a send node" do
+    expect_no_offenses(<<~RUBY)
+      module MyModule
+        MyModule.include Rails.application.routes.url_helpers
+      end
+    RUBY
+  end
+
+  it "adds no offense when an explicit constant receiver extends a send node" do
+    expect_no_offenses(<<~RUBY)
+      module MyModule
+        MyModule.extend Rails.application.routes.url_helpers
+      end
+    RUBY
+  end
+
+  it "adds no offense when an explicit constant receiver prepends a send node" do
+    expect_no_offenses(<<~RUBY)
+      module MyModule
+        MyModule.prepend Rails.application.routes.url_helpers
+      end
+    RUBY
+  end
+
+  it "does not add offense when prepend used with array" do
+    expect_no_offenses(<<~RUBY)
+      Config = []
+      Config.prepend(one)
+
+      module MyModule
+        Config.prepend(two)
+      end
+
+      class MyClass
+        Config.prepend(three)
+      end
+    RUBY
   end
 end
