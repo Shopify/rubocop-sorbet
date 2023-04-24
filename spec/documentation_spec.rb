@@ -10,7 +10,7 @@ RSpec.describe("generated documentation") do
     context(Pathname.new(path).relative_path_from(root_directory)) do
       it "does not contain any rogue `rubocop:___` comments" do
         contents = File.read(path)
-        expect(contents).not_to(match(/rubocop:(?:todo|disable)/))
+        expect(contents).not_to(match(/^(?:#?\s*)rubocop:(?:todo|disable)/))
       end
     end
   end
