@@ -521,8 +521,6 @@ versions in `#typed: strict` files.
 It's no longer required, as of Sorbet 0.5.10210
 See https://sorbet.org/docs/type-assertions#put-type-assertions-behind-memoization
 
-TODO: disable this cop when the Sorbet version is older than `0.5.10210`.
-
 ### Examples
 
 ```ruby
