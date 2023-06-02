@@ -26,11 +26,13 @@ module RuboCop
       #     @foo ||= T.let(Foo.new, T.nilable(Foo))
       #   end
       #
-      # TODO: disable this cop when the Sorbet version is older than `0.5.10210`.
       # TODO: find the right way to access the line length limit, indentation style, and indentation width.
       class ObsoleteStrictMemoization < RuboCop::Cop::Base
         include RuboCop::Cop::MatchRange
         extend AutoCorrector
+
+        include TargetSorbetVersion
+        minimum_target_sorbet_static_version "0.5.10210"
 
         MESSAGE = "This two-stage workaround for memoization in `#typed: strict` files is no longer necessary. " \
           "See https://sorbet.org/docs/type-assertions#put-type-assertions-behind-memoization."
@@ -75,6 +77,10 @@ module RuboCop
 
             corrector.replace(node, correction)
           end
+        end
+
+        def relevant_file?(file)
+          super && enabled_for_sorbet_static_version?
         end
 
         private
