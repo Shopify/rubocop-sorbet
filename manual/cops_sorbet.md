@@ -539,6 +539,37 @@ sig { params(b: String, a: Integer).void }
 def foo(b:, a: 1); end
 ```
 
+## Sorbet/ObsoleteStrictMemoization
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | 0.7.1 | -
+
+Checks for the obsolete pattern for initializing instance variables that was required for older Sorbet
+versions in `#typed: strict` files.
+
+It's no longer required, as of Sorbet 0.5.10210
+See https://sorbet.org/docs/type-assertions#put-type-assertions-behind-memoization
+
+TODO: disable this cop when the Sorbet version is older than `0.5.10210`.
+
+### Examples
+
+```ruby
+# bad
+sig { returns(Foo) }
+def foo
+  @foo = T.let(@foo, T.nilable(Foo))
+  @foo ||= Foo.new
+end
+
+# good
+sig { returns(Foo) }
+def foo
+  @foo ||= T.let(Foo.new, T.nilable(Foo))
+end
+```
+
 ## Sorbet/OneAncestorPerLine
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
