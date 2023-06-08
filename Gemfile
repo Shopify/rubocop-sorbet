@@ -9,3 +9,4 @@ gem "rake", ">= 12.3.3"
 gem "rspec"
 gem "rubocop-shopify", require: false
 gem "yard", "~> 0.9"
+gem "awesome_print"

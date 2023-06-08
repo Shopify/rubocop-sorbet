@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "rubocop"
+require "awesome_print"
 
 module RuboCop
   module Cop
@@ -40,13 +41,15 @@ module RuboCop
         # @!method legacy_memoization_pattern?(node)
         def_node_matcher :legacy_memoization_pattern?, <<~PATTERN
           (begin
-            (ivasgn $_ivar                                # @_ivar = ...
+            ...                                           # Match and ignore any other lines that come first.
+            $(ivasgn $_ivar                               # First line: @_ivar = ...
               (send                                       # T.let(_ivar, T.nilable(_ivar_type))
                 (const nil? :T) :let
                 (ivar _ivar)
                 (send                                     # T.nilable(_ivar_type)
                   (const nil? :T) :nilable $_ivar_type)))
-            (or-asgn                                      # @_ivar ||= _initialization_expr
+            ...
+            $(or-asgn                                     # Second line: @_ivar ||= _initialization_expr
               (ivasgn _ivar)
               $_initialization_expr))
         PATTERN
@@ -55,9 +58,9 @@ module RuboCop
           expression = legacy_memoization_pattern?(node)
           return unless expression
 
-          add_offense(node, message: MESSAGE) do |corrector|
-            ivar, ivar_type, initialization_expr = expression
-
+          first_assignment_node, ivar, ivar_type, second_conditional_assignment_node, initialization_expr = expression
+          # ap expression
+          add_offense(first_assignment_node, message: MESSAGE) do |corrector|
             base_indent = infer_base_indentation(node)
 
             is_multiline_init_expr = initialization_expr.line_count != 1
@@ -75,7 +78,9 @@ module RuboCop
               end
             end
 
-            corrector.replace(node, correction)
+            corrector.replace(first_assignment_node, correction)
+            remove_whitespace_lines_between(first_assignment_node, second_conditional_assignment_node, corrector)
+            corrector.remove(range_by_whole_lines(second_conditional_assignment_node.source_range, include_final_newline: true))
           end
         end
 
@@ -107,6 +112,7 @@ module RuboCop
         def infer_base_indentation(node)
           # The first line of the node has the indentation already stripped,
           # so we infer the base indent from next non-blank line.
+          # ap(node)
           second_line = node.source.lines.drop(1).find { |line| !line.strip.empty? }
           /^\s*/.match(second_line)[0]
         end
@@ -121,6 +127,15 @@ module RuboCop
             #{base_indent}#{indent}T.nilable(#{ivar_type.source}),
             #{base_indent})
           RUBY
+        end
+
+        def remove_whitespace_lines_between(start_node, end_node, corrector)
+          begin_pos = processed_source.buffer.line_range(start_node.last_line + 1).end_pos
+          end_pos = end_node.source_range.begin_pos
+
+          return unless begin_pos < end_pos
+
+          corrector.remove(range_between(begin_pos, end_pos))
         end
       end
     end
