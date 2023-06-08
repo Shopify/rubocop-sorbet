@@ -152,7 +152,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
       end
     end
 
-    context "when its not the first line in a method", pending: "Not implemented yet" do
+    context "when its not the first line in a method" do
       it "registers an offence and autocorrects" do
         expect_offense(<<~RUBY)
           def foo
