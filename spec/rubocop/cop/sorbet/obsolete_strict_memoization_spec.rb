@@ -33,6 +33,24 @@ RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
       RUBY
     end
 
+    describe "with fully qualified ::T" do
+      it "registers an offence and autocorrects" do
+        expect_offense(<<~RUBY)
+          def foo
+            @foo = ::T.let(@foo, ::T.nilable(Foo))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ This two-stage workaround for memoization in `#typed: strict` files is no longer necessary. See https://sorbet.org/docs/type-assertions#put-type-assertions-behind-memoization.
+            @foo ||= Foo.new
+          end
+        RUBY
+
+        expect_correction(<<~RUBY)
+          def foo
+            @foo ||= ::T.let(Foo.new, ::T.nilable(Foo))
+          end
+        RUBY
+      end
+    end
+
     describe "with a complex type" do
       it "registers an offence and autocorrects" do
         expect_offense(<<~RUBY)
