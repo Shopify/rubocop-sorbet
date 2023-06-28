@@ -151,6 +151,13 @@ Sorbet/KeywordArgumentOrdering:
   Enabled: true
   VersionAdded: 0.2.0
 
+Sorbet/LogicalShimFileLocation:
+  Description: 'Ensures RBI shims are located in the same directory as their respective Ruby source file.'
+  Enabled: true
+  VersionAdded: '<<next>>'
+  Include:
+    - "**/*.rbi"
+
 Sorbet/OneAncestorPerLine:
   Description: 'Enforces one ancestor per call to requires_ancestor'
   Enabled: false

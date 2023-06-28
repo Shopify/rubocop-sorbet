@@ -509,6 +509,24 @@ sig { params(b: String, a: Integer).void }
 def foo(b:, a: 1); end
 ```
 
+## Sorbet/LogicalShimFileLocation
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No  | <<next>> | -
+
+This cop ensures RBI shims are located in the same directory as their respective Ruby source file.
+
+### Examples
+
+```ruby
+# bad
+# lib/some_file.rbi
+# some_file.rbi
+
+# good
+# sorbet/shim/some_file.rbi
+```
+
 ## Sorbet/OneAncestorPerLine
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

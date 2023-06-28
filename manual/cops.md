@@ -25,6 +25,7 @@ In the following section you find all available cops:
 * [Sorbet/HasSigil](cops_sorbet.md#sorbethassigil)
 * [Sorbet/IgnoreSigil](cops_sorbet.md#sorbetignoresigil)
 * [Sorbet/KeywordArgumentOrdering](cops_sorbet.md#sorbetkeywordargumentordering)
+* [Sorbet/LogicalShimDirectoryLocation](cops_sorbet.md#sorbetlogicalshimfilelocation)
 * [Sorbet/OneAncestorPerLine](cops_sorbet.md#sorbetoneancestorperline)
 * [Sorbet/RedundantExtendTSig](cops_sorbet.md#sorbetredundantextendtsig)
 * [Sorbet/SignatureBuildOrder](cops_sorbet.md#sorbetsignaturebuildorder)
