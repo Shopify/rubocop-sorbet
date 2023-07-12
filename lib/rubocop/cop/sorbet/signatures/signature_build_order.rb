@@ -36,6 +36,10 @@ module RuboCop
           calls = call_chain(node.children[2]).map(&:method_name)
           return unless calls.any?
 
+          # While the developer is typing, we may have an incomplete call statement, which means `ORDER[call]` will
+          # return `nil`. In that case, invoking `sort_by` will raise
+          return if calls.any? { |call| ORDER[call].nil? }
+
           expected_order = calls.sort_by { |call| ORDER[call] }
           return if expected_order == calls
 

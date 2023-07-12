@@ -42,6 +42,10 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
       expect_no_offenses(<<~RUBY)
         sig { abstract }
       RUBY
+
+      expect_no_offenses(<<~RUBY)
+        sig { params(a: Integer).v }
+      RUBY
     end
 
     it("enforces orders of builder calls") do
