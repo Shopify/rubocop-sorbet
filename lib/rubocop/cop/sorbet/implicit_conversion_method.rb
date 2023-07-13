@@ -30,7 +30,8 @@ module RuboCop
       # @note Since the arity of aliased methods is not checked, false positives may result.
       class ImplicitConversionMethod < RuboCop::Cop::Base
         IMPLICIT_CONVERSION_METHODS = [:to_ary, :to_int, :to_hash, :to_str].freeze
-        MSG = "Avoid implicit conversion methods, as Sorbet does not support them."
+        MSG = "Avoid implicit conversion methods, as Sorbet does not support them. " \
+          "Explicity convert to the desired type instead."
         RESTRICT_ON_SEND = [:alias_method].freeze
 
         def on_alias(node)

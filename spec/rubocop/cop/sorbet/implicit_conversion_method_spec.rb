@@ -3,10 +3,15 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ImplicitConversionMethod, :config) do
+  def message
+    "Avoid implicit conversion methods, as Sorbet does not support them. " \
+    "Explicity convert to the desired type instead."
+  end
+
   it "adds offense when defining implicit conversion method" do
     expect_offense(<<~RUBY)
       def to_ary
-      ^^^^^^^^^^ Avoid implicit conversion methods, as Sorbet does not support them.
+      ^^^^^^^^^^ #{message}
       end
     RUBY
   end
@@ -21,14 +26,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ImplicitConversionMethod, :config) do
   it "adds offense when declaring an implicit conversion method via alias" do
     expect_offense(<<~RUBY)
       alias to_str to_s
-            ^^^^^^ Avoid implicit conversion methods, as Sorbet does not support them.
+            ^^^^^^ #{message}
     RUBY
   end
 
   it "adds offense when declaring an implicit conversion method via alias_method" do
     expect_offense(<<~RUBY)
       alias_method :to_hash, :to_h
-                   ^^^^^^^^ Avoid implicit conversion methods, as Sorbet does not support them.
+                   ^^^^^^^^ #{message}
     RUBY
   end
 end

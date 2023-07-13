@@ -145,7 +145,7 @@ Sorbet/ImplicitConversionMethod:
   Description: >-
     This cop disallows declaring implicit conversion methods, as sorbet does
     not support implicit conversion.
-  Enabled: pending
+  Enabled: false
   VersionAdded: '<<next>>'
 
 Sorbet/KeywordArgumentOrdering:

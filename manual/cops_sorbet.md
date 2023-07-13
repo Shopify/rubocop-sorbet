@@ -490,7 +490,7 @@ Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | No | <<next>> | -
+Disabled | Yes | No | <<next>> | -
 
 This cop disallows declaring implicit conversion methods.
 Since Sorbet is a nominal (not structural) type system,
