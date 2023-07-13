@@ -486,6 +486,35 @@ SuggestedStrictness | `ignore` | String
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
+## Sorbet/ImplicitConversionMethod
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | <<next>> | -
+
+This cop disallows declaring implicit conversion methods.
+Since Sorbet is a nominal (not structural) type system,
+implicit conversion is currently unsupported.
+
+### Examples
+
+```ruby
+# bad
+def to_str; end
+
+# good
+def to_str(x); end
+
+# bad
+def self.to_str; end
+
+# good
+def self.to_str(x); end
+
+# bad
+alias to_str to_s
+```
+
 ## Sorbet/KeywordArgumentOrdering
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

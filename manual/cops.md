@@ -24,6 +24,7 @@ In the following section you find all available cops:
 * [Sorbet/ForbidUntypedStructProps](cops_sorbet.md#sorbetforbiduntypedstructprops)
 * [Sorbet/HasSigil](cops_sorbet.md#sorbethassigil)
 * [Sorbet/IgnoreSigil](cops_sorbet.md#sorbetignoresigil)
+* [Sorbet/ImplicitConversionMethod](cops_sorbet.md#sorbetimplicitconversionmethod)
 * [Sorbet/KeywordArgumentOrdering](cops_sorbet.md#sorbetkeywordargumentordering)
 * [Sorbet/OneAncestorPerLine](cops_sorbet.md#sorbetoneancestorperline)
 * [Sorbet/RedundantExtendTSig](cops_sorbet.md#sorbetredundantextendtsig)
