@@ -31,6 +31,12 @@ module RuboCop
       class ImplicitConversionMethod < RuboCop::Cop::Base
         IMPLICIT_CONVERSION_METHODS = [:to_ary, :to_int, :to_hash, :to_str].freeze
         MSG = "Avoid implicit conversion methods, as Sorbet does not support them."
+        RESTRICT_ON_SEND = [:alias_method].freeze
+
+        def on_alias(node)
+          new_id = node.new_identifier
+          add_offense(new_id) if IMPLICIT_CONVERSION_METHODS.include?(new_id.value)
+        end
 
         def on_def(node)
           return unless IMPLICIT_CONVERSION_METHODS.include?(node.method_name)
@@ -40,9 +46,8 @@ module RuboCop
         end
         alias_method :on_defs, :on_def
 
-        def on_alias(node)
-          new_id = node.new_identifier
-          add_offense(new_id) if IMPLICIT_CONVERSION_METHODS.include?(new_id.value)
+        def on_send(node)
+          add_offense(node.first_argument) if IMPLICIT_CONVERSION_METHODS.include?(node.first_argument.value)
         end
       end
     end
