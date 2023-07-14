@@ -141,6 +141,13 @@ Sorbet/IgnoreSigil:
   - db/**/*.rb
   - script/**/*
 
+Sorbet/ImplicitConversionMethod:
+  Description: >-
+    This cop disallows declaring implicit conversion methods, as sorbet does
+    not support implicit conversion.
+  Enabled: false
+  VersionAdded: '<<next>>'
+
 Sorbet/KeywordArgumentOrdering:
   Description: >-
                   Enforces a compatible keyword arguments with Sorbet.
