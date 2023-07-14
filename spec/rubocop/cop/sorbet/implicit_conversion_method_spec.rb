@@ -8,10 +8,18 @@ RSpec.describe(RuboCop::Cop::Sorbet::ImplicitConversionMethod, :config) do
     "Explicity convert to the desired type instead."
   end
 
-  it "adds offense when defining implicit conversion method" do
+  it "adds offense when defining implicit conversion instance method" do
     expect_offense(<<~RUBY)
       def to_ary
       ^^^^^^^^^^ #{message}
+      end
+    RUBY
+  end
+
+  it "adds offense when defining implicit conversion class method" do
+    expect_offense(<<~RUBY)
+      def self.to_int
+      ^^^^^^^^^^^^^^^ #{message}
       end
     RUBY
   end
