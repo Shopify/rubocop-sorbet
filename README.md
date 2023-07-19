@@ -98,7 +98,7 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/Shopif
 To contribute a new cop, please use the supplied generator like this:
 
 ```sh
-bundle exec rake new_cop[Sorbet/NewCopName]
+bundle exec rake "new_cop[Sorbet/NewCopName]"
 ```
 
 which will create a skeleton cop, a skeleton spec, an entry in the default config file and will require the new cop so that it is properly exported from the gem.
