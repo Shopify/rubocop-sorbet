@@ -20,6 +20,14 @@ module RuboCop
       #     @foo ||= Foo.new
       #   end
       #
+      #   # bad
+      #   sig { returns(Foo) }
+      #   def foo
+      #     # This would have been a mistake, causing the memoized value to be discarded and recomputed on every call.
+      #     @foo = T.let(nil, T.nilable(Foo))
+      #     @foo ||= Foo.new
+      #   end
+      #
       #   # good
       #   sig { returns(Foo) }
       #   def foo
@@ -46,7 +54,7 @@ module RuboCop
             $(ivasgn $_ivar                                           # First line: @_ivar = ...
               (send                                                   # T.let(_ivar, T.nilable(_ivar_type))
                 $(const {nil? cbase} :T) :let
-                (ivar _ivar)
+                {(ivar _ivar) nil}
                 (send (const {nil? cbase} :T) :nilable $_ivar_type))) # T.nilable(_ivar_type)
             $(or-asgn (ivasgn _ivar) $_initialization_expr))          # Second line: @_ivar ||= _initialization_expr
         PATTERN

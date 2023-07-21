@@ -221,4 +221,25 @@ RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
       end
     end
   end
+
+  describe "a mistaken variant of the obsolete memoization pattern" do
+    it "registers an offence and autocorrects" do
+      # This variant would have been a mistake, which would have caused the memoized value to be discarded
+      # and recomputed on every call. We can fix it up into the working version.
+
+      expect_offense(<<~RUBY)
+        def foo
+          @foo = T.let(nil, T.nilable(Foo))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ This two-stage workaround for memoization in `#typed: strict` files is no longer necessary. See https://sorbet.org/docs/type-assertions#put-type-assertions-behind-memoization.
+          @foo ||= Foo.new
+        end
+      RUBY
+
+      expect_correction(<<~RUBY)
+        def foo
+          @foo ||= T.let(Foo.new, T.nilable(Foo))
+        end
+      RUBY
+    end
+  end
 end

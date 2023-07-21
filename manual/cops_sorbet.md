@@ -561,6 +561,14 @@ def foo
   @foo ||= Foo.new
 end
 
+# bad
+sig { returns(Foo) }
+def foo
+  # This would have been a mistake, causing the memoized value to be discarded and recomputed on every call.
+  @foo = T.let(nil, T.nilable(Foo))
+  @foo ||= Foo.new
+end
+
 # good
 sig { returns(Foo) }
 def foo
