@@ -70,6 +70,15 @@ RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
     end
 
     describe "with a long initialization expression" do
+      let(:max_line_length) { 90 }
+
+      let(:config) do
+        RuboCop::Config.new(
+          "Layout/LineLength" => { "Max" => max_line_length },
+          "Sorbet/ObsoleteStrictMemoization" => cop_config,
+        )
+      end
+
       it "registers an offence and autocorrects into a multiline expression" do
         expect_offense(<<~RUBY)
           def foo
@@ -96,7 +105,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
         RUBY
 
         longest_line = autocorrected_source.lines.max_by(&:length)
-        expect(longest_line.length).to(be <= 120) # FIXME: Unhardcode this 120
+        expect(longest_line.length).to(be <= max_line_length)
       end
     end
 
