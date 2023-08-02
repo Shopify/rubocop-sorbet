@@ -4,8 +4,7 @@ require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::EnforceSigilOrder, :config) do
   it("makes no offense on empty files") do
-    expect_no_offenses(<<~RUBY)
-    RUBY
+    expect_no_offenses("")
   end
 
   it("makes no offense with no magic comments") do

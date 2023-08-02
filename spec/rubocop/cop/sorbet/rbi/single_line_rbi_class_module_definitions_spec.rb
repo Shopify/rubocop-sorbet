@@ -5,7 +5,7 @@ require "spec_helper"
 RSpec.describe(RuboCop::Cop::Sorbet::SingleLineRbiClassModuleDefinitions, :config) do
   describe("offences") do
     it "registers an offense when an empty module definition is split across multiple lines" do
-      expect_offense(<<~RBI)
+      expect_offense(<<~RUBY)
         module MyModule
         ^^^^^^^^^^^^^^^ Empty class/module definitions in RBI files should be on a single line.
         end
@@ -20,9 +20,9 @@ RSpec.describe(RuboCop::Cop::Sorbet::SingleLineRbiClassModuleDefinitions, :confi
           def some_method
           end
         end
-      RBI
+      RUBY
 
-      expect_correction(<<~RBI)
+      expect_correction(<<~RUBY)
         module MyModule; end
 
         module SecondModule; end
@@ -31,11 +31,11 @@ RSpec.describe(RuboCop::Cop::Sorbet::SingleLineRbiClassModuleDefinitions, :confi
           def some_method
           end
         end
-      RBI
+      RUBY
     end
 
     it "registers an offence when an empty class definition is split across multiple lines" do
-      expect_offense(<<~RBI)
+      expect_offense(<<~RUBY)
         class MyClass
         ^^^^^^^^^^^^^ Empty class/module definitions in RBI files should be on a single line.
         end
@@ -43,35 +43,35 @@ RSpec.describe(RuboCop::Cop::Sorbet::SingleLineRbiClassModuleDefinitions, :confi
         class AnotherClass < SomeParentClass
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Empty class/module definitions in RBI files should be on a single line.
         end
-      RBI
+      RUBY
 
-      expect_correction(<<~RBI)
+      expect_correction(<<~RUBY)
         class MyClass; end
 
         class AnotherClass < SomeParentClass; end
-      RBI
+      RUBY
     end
   end
 
   describe("no offences") do
     it "does not register an offense when empty module definition is done on a single line" do
-      expect_no_offenses(<<~RBI)
+      expect_no_offenses(<<~RUBY)
         module MyModule; end
 
         module AnotherModule; end
-      RBI
+      RUBY
     end
 
     it "does not register an offense when empty class definition is done on a single line" do
-      expect_no_offenses(<<~RBI)
+      expect_no_offenses(<<~RUBY)
         class MyClass; end
 
         class AnotherClass < SomeParentClass; end
-      RBI
+      RUBY
     end
 
     it "does not register an offence when a module is not empty" do
-      expect_no_offenses(<<~RBI)
+      expect_no_offenses(<<~RUBY)
         module MyModule
           def hello; end
         end
@@ -80,7 +80,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::SingleLineRbiClassModuleDefinitions, :confi
           def world
           end
         end
-      RBI
+      RUBY
     end
   end
 end

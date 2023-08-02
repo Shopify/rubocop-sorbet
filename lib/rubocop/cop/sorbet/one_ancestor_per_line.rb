@@ -6,7 +6,7 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop ensures one ancestor per requires_ancestor line
+      # Ensures one ancestor per requires_ancestor line
       # rather than chaining them as a comma-separated list.
       #
       # @example
@@ -42,17 +42,19 @@ module RuboCop
         def on_module(node)
           return unless node.body
           return unless requires_ancestors(node)
+
           process_node(node)
         end
 
         def on_class(node)
           return unless abstract?(node)
           return unless requires_ancestors(node)
+
           process_node(node)
         end
 
         def autocorrect(node)
-          -> (corrector) do
+          ->(corrector) do
             ra_call = node.parent
             split_ra_calls = ra_call.source.gsub(/,\s+/, new_ra_line(ra_call.loc.column))
             corrector.replace(ra_call, split_ra_calls)

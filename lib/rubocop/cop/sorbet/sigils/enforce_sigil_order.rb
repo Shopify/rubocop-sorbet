@@ -5,7 +5,7 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop checks that the Sorbet sigil comes as the first magic comment in the file.
+      # Checks that the Sorbet sigil comes as the first magic comment in the file.
       #
       # The expected order for magic comments is: (en)?coding, typed, warn_indent then frozen_string_literal.
       #
@@ -57,6 +57,7 @@ module RuboCop
             (lines.min...lines.max).each do |line|
               next if lines.include?(line)
               next unless processed_source[line - 1].empty?
+
               corrector.remove(source_range(processed_source.buffer, line, 0))
             end
           end
@@ -104,7 +105,7 @@ module RuboCop
               add_offense(
                 token,
                 location: token.pos,
-                message: "Magic comments should be in the following order: #{PREFERRED_ORDER.values.join(", ")}."
+                message: "Magic comments should be in the following order: #{PREFERRED_ORDER.values.join(", ")}.",
               )
             end
           end

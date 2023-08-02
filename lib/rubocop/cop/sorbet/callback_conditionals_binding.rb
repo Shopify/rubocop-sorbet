@@ -3,7 +3,7 @@
 module RuboCop
   module Cop
     module Sorbet
-      # This cop ensures that callback conditionals are bound to the right type
+      # Ensures that callback conditionals are bound to the right type
       # so that they are type checked properly.
       #
       # Auto-correction is unsafe because other libraries define similar style callbacks as Rails, but don't always need
@@ -34,14 +34,42 @@ module RuboCop
       #   end
       class CallbackConditionalsBinding < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         CALLBACKS = [
-          :validate, :validates, :validates_with, :before_validation, :around_validation, :before_create,
-          :before_save, :before_destroy, :before_update, :after_create, :after_save, :after_destroy,
-          :after_update, :after_touch, :after_initialize, :after_find, :around_create, :around_save,
-          :around_destroy, :around_update, :before_commit, :after_commit, :after_create_commit,
-          :after_destroy_commit, :after_rollback, :after_save_commit, :after_update_commit,
-          :before_action, :prepend_before_action, :append_before_action, :around_action,
-          :prepend_around_action, :append_around_action, :after_action, :prepend_after_action,
-          :append_after_action
+          :validate,
+          :validates,
+          :validates_with,
+          :before_validation,
+          :around_validation,
+          :before_create,
+          :before_save,
+          :before_destroy,
+          :before_update,
+          :after_create,
+          :after_save,
+          :after_destroy,
+          :after_update,
+          :after_touch,
+          :after_initialize,
+          :after_find,
+          :around_create,
+          :around_save,
+          :around_destroy,
+          :around_update,
+          :before_commit,
+          :after_commit,
+          :after_create_commit,
+          :after_destroy_commit,
+          :after_rollback,
+          :after_save_commit,
+          :after_update_commit,
+          :before_action,
+          :prepend_before_action,
+          :append_before_action,
+          :around_action,
+          :prepend_around_action,
+          :append_around_action,
+          :after_action,
+          :prepend_after_action,
+          :append_after_action,
         ].freeze
 
         def autocorrect(node)
@@ -132,7 +160,7 @@ module RuboCop
           unless block.source.include?("T.bind(self")
             add_offense(
               node,
-              message: "Callback conditionals should be bound to the right type. Use T.bind(self, #{expected_class})"
+              message: "Callback conditionals should be bound to the right type. Use T.bind(self, #{expected_class})",
             )
           end
         end

@@ -46,8 +46,11 @@ task generate_cops_documentation: :yard_for_generate_documentation do
 
   def properties(config, cop)
     header = [
-      "Enabled by default", "Safe", "Supports autocorrection", "VersionAdded",
-      "VersionChanged"
+      "Enabled by default",
+      "Safe",
+      "Supports autocorrection",
+      "VersionAdded",
+      "VersionChanged",
     ]
     config = config.for_cop(cop)
     safe_auto_correct = config.fetch("SafeAutoCorrect", true)
@@ -192,8 +195,16 @@ task generate_cops_documentation: :yard_for_generate_documentation do
 
   def print_cop_with_doc(cop, config)
     t = config.for_cop(cop)
-    non_display_keys = ["Description", "Enabled", "StyleGuide", "Reference", "Safe", "SafeAutoCorrect", "VersionAdded",
-                        "VersionChanged"]
+    non_display_keys = [
+      "Description",
+      "Enabled",
+      "StyleGuide",
+      "Reference",
+      "Safe",
+      "SafeAutoCorrect",
+      "VersionAdded",
+      "VersionChanged",
+    ]
     pars = t.reject { |k| non_display_keys.include?(k) }
     description = "No documentation"
     examples_object = []

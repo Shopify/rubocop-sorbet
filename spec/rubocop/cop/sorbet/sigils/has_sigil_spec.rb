@@ -26,7 +26,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
   shared_examples_for "no autocorrect on files with sigil" do
     it("does not change files with a sigil") do
       expect(
-        autocorrect_source(<<~RUBY)
+        autocorrect_source(<<~RUBY),
           # frozen_string_literal: true
           # typed: strict
           class Foo; end
@@ -41,7 +41,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
 
     it("does not change files with an invalid sigil") do
       expect(
-        autocorrect_source(<<~RUBY)
+        autocorrect_source(<<~RUBY),
           # frozen_string_literal: true
           # typed: no
           class Foo; end
@@ -88,7 +88,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
 
       it("autocorrects by adding typed: false to file without sigil") do
         expect(
-          autocorrect_source(<<~RUBY)
+          autocorrect_source(<<~RUBY),
             # frozen_string_literal: true
             class Foo; end
           RUBY
@@ -102,7 +102,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::HasSigil, :config) do
 
       it("adds the sigil after the shebang line, if present") do
         expect(
-          autocorrect_source(<<~RUBY)
+          autocorrect_source(<<~RUBY),
             #!/usr/bin/env ruby
             class Foo; end
           RUBY

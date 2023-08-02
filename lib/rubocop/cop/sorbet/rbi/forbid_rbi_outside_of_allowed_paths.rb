@@ -5,7 +5,7 @@ require "pathname"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop makes sure that RBI files are always located under the defined allowed paths.
+      # Makes sure that RBI files are always located under the defined allowed paths.
       #
       # Options:
       #
@@ -30,14 +30,14 @@ module RuboCop
             add_offense(
               nil,
               location: source_range(processed_source.buffer, 1, 0),
-              message: "AllowedPaths expects an array"
+              message: "AllowedPaths expects an array",
             )
             return
           elsif paths.empty?
             add_offense(
               nil,
               location: source_range(processed_source.buffer, 1, 0),
-              message: "AllowedPaths cannot be empty"
+              message: "AllowedPaths cannot be empty",
             )
             return
           end
@@ -49,7 +49,7 @@ module RuboCop
           add_offense(
             nil,
             location: source_range(processed_source.buffer, 1, 0),
-            message: "RBI file path should match one of: #{paths.join(", ")}"
+            message: "RBI file path should match one of: #{paths.join(", ")}",
           ) if paths.none? { |pattern| File.fnmatch(pattern, rel_path) }
         end
 
@@ -57,7 +57,8 @@ module RuboCop
 
         def allowed_paths
           paths = cop_config["AllowedPaths"] # rubocop:todo InternalAffairs/UndefinedConfig
-          return nil unless paths.is_a?(Array)
+          return unless paths.is_a?(Array)
+
           paths.compact
         end
       end

@@ -5,7 +5,7 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop disallows binding the return value of `T.any`, `T.all`, `T.enum`
+      # Disallows binding the return value of `T.any`, `T.all`, `T.enum`
       # to a constant directly. To bind the value, one must use `T.type_alias`.
       #
       # @example

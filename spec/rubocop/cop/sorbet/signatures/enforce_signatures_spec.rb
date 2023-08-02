@@ -218,7 +218,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
     shared_examples_for("autocorrect with config") do
       it("autocorrects methods by adding signature stubs") do
         expect(
-          autocorrect_source(<<~RUBY)
+          autocorrect_source(<<~RUBY),
             def foo; end
             def bar(a, b = 2, c: Foo.new); end
             def baz(&blk); end
@@ -239,12 +239,12 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
           def self.bar(a, *b, **c); end
           sig { params(a: T.untyped).returns(T.untyped) }
           def self.baz(a:); end
-          RUBY
+        RUBY
       end
 
       it("autocorrects accessors by adding signature stubs") do
         expect(
-          autocorrect_source(<<~RUBY)
+          autocorrect_source(<<~RUBY),
             class Foo
               attr_reader :foo
               attr_writer :bar
@@ -260,7 +260,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
             sig { params(baz: T.untyped).returns(T.untyped) }
             attr_accessor :baz
           end
-          RUBY
+        RUBY
       end
     end
 
@@ -290,7 +290,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
 
       it("autocorrects methods by adding signature stubs") do
         expect(
-          autocorrect_source(<<~RUBY)
+          autocorrect_source(<<~RUBY),
             def foo; end
             def bar(a, b = 2, c: Foo.new); end
             def baz(&blk); end
@@ -320,12 +320,12 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
             def bar(a, b, c)
             end
           end
-          RUBY
+        RUBY
       end
 
       it("autocorrects accessors by adding signature stubs") do
         expect(
-          autocorrect_source(<<~RUBY)
+          autocorrect_source(<<~RUBY),
             class Foo
               attr_reader :foo
               attr_writer :bar
@@ -341,7 +341,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
             sig { params(baz: PARAM).returns(RET) }
             attr_accessor :baz
           end
-          RUBY
+        RUBY
       end
     end
   end

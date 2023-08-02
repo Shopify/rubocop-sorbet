@@ -34,7 +34,7 @@ module RuboCop
 
         def on_signature(node)
           calls = call_chain(node.children[2]).map(&:method_name)
-          return unless calls.any?
+          return if calls.empty?
 
           # While the developer is typing, we may have an incomplete call statement, which means `ORDER[call]` will
           # return `nil`. In that case, invoking `sort_by` will raise
@@ -57,7 +57,7 @@ module RuboCop
         end
 
         def autocorrect(node)
-          return nil unless can_autocorrect?
+          return unless can_autocorrect?
 
           lambda do |corrector|
             tree = call_chain(node_reparsed_with_modern_features(node))
@@ -67,7 +67,7 @@ module RuboCop
               end
 
             corrector.replace(
-              node.source_range,
+              node,
               Unparser.unparse(tree),
             )
           end

@@ -5,7 +5,7 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop disallows declaring implicit conversion methods.
+      # Disallows declaring implicit conversion methods.
       # Since Sorbet is a nominal (not structural) type system,
       # implicit conversion is currently unsupported.
       #

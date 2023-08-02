@@ -34,6 +34,8 @@ module RuboCop
           on_signature(node) if signature?(node)
         end
 
+        alias_method :on_numblock, :on_block
+
         def on_signature(_)
           # To be defined in subclasses
         end

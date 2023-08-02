@@ -6,7 +6,7 @@ require_relative "valid_sigil"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop makes the Sorbet typed sigil mandatory in all files.
+      # Makes the Sorbet typed sigil mandatory in all files.
       #
       # Options:
       #

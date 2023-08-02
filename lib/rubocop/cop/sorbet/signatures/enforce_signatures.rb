@@ -7,7 +7,7 @@ require_relative "signature_cop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop checks that every method definition and attribute accessor has a Sorbet signature.
+      # Checks that every method definition and attribute accessor has a Sorbet signature.
       #
       # It also suggest an autocorrect with placeholders so the following code:
       #
@@ -68,13 +68,14 @@ module RuboCop
               suggest.returns = "void" if method == :attr_writer
             end
 
-            corrector.insert_before(node.loc.expression, suggest.to_autocorrect)
+            corrector.insert_before(node, suggest.to_autocorrect)
           end
         end
 
         def scope(node)
-          return nil unless node.parent
+          return unless node.parent
           return node.parent if [:begin, :block, :class, :module].include?(node.parent.type)
+
           scope(node.parent)
         end
 
@@ -85,7 +86,7 @@ module RuboCop
           unless @last_sig_for_scope[scope]
             add_offense(
               node,
-              message: "Each method is required to have a signature."
+              message: "Each method is required to have a signature.",
             )
           end
           @last_sig_for_scope[scope] = nil
@@ -124,6 +125,7 @@ module RuboCop
 
           def generate_params
             return if @params.empty?
+
             out = StringIO.new
             out << "params("
             out << @params.map do |param|
@@ -136,6 +138,7 @@ module RuboCop
           def generate_return
             return "returns(#{@return_placeholder})" if @returns.nil?
             return @returns if @returns == "void"
+
             "returns(#{@returns})"
           end
         end

@@ -5,7 +5,7 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop disallows using `T.unsafe` anywhere.
+      # Disallows using `T.unsafe` anywhere.
       #
       # @example
       #

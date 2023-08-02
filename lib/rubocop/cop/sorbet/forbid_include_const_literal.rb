@@ -47,18 +47,21 @@ module RuboCop
           return unless not_lit_const_include?(node) do |send_argument|
             ![:const, :self].include?(send_argument.type)
           end
+
           parent = node.parent
           return unless parent
+
           parent = parent.parent if [:begin, :block].include?(parent.type)
           return unless [:module, :class, :sclass].include?(parent.type)
+
           add_offense(node)
         end
 
         def autocorrect(node)
           lambda do |corrector|
             corrector.replace(
-              node.source_range,
-              "T.unsafe(self).#{node.source}"
+              node,
+              "T.unsafe(self).#{node.source}",
             )
           end
         end
