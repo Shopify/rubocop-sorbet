@@ -12,9 +12,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
 
     it("does not make offense if there is a valid sigil") do
+      # If we are testing exact strictness, we need an exact match
+      # to make it a valid sigil.
+      # In all other cases, we can get away with "strong"
+      strictness = cop_config["ExactStrictness"] || "strong"
+
       expect_no_offenses(<<~RUBY)
         # frozen_string_literal: true
-        # typed: strong
+        # typed: #{strictness}
         class Foo; end
       RUBY
     end
@@ -239,6 +244,56 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
     end
   end
 
+  describe("ExactStrictness: true") do
+    let(:cop_config) do
+      {
+        "Enabled" => true,
+        "ExactStrictness" => "true",
+      }
+    end
+    it_should_behave_like "no offense for missing sigils by default"
+    it_should_behave_like "offense for an invalid sigil"
+
+    it "makes offense if the strictness is below the expected strictness" do
+      expect_offense(<<~RUBY)
+        # frozen_string_literal: true
+        # typed: false
+        ^^^^^^^^^^^^^^ Sorbet sigil should be `true` got `false`.
+        class Foo; end
+      RUBY
+    end
+
+    it "makes offense if the strictness is above the expected strictness" do
+      expect_offense(<<~RUBY)
+        # frozen_string_literal: true
+        # typed: strict
+        ^^^^^^^^^^^^^^^ Sorbet sigil should be `true` got `strict`.
+        class Foo; end
+      RUBY
+    end
+
+    describe("RequireSigilOnAllFiles: true") do
+      let(:cop_config) do
+        {
+          "Enabled" => true,
+          "RequireSigilOnAllFiles" => true,
+          "ExactStrictness" => "true",
+          "MinimumStrictness" => "false",
+          "SuggestedStrictness" => "strict",
+        }
+      end
+      it_should_behave_like "offense for an invalid sigil"
+
+      it "suggest the expected strictness if the sigil is missing" do
+        expect_offense(<<~RUBY)
+          # frozen_string_literal: true
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ No Sorbet sigil found in file. Try a `typed: true` to start (you can also use `rubocop -a` to automatically add this).
+          class Foo; end
+        RUBY
+      end
+    end
+  end
+
   describe("MinimumStrictness: strict") do
     let(:cop_config) do
       {
@@ -254,6 +309,35 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
         # frozen_string_literal: true
         # typed: true
         ^^^^^^^^^^^^^ Sorbet sigil should be at least `strict` got `true`.
+        class Foo; end
+      RUBY
+    end
+  end
+
+  describe("ExactStrictness: strict") do
+    let(:cop_config) do
+      {
+        "Enabled" => true,
+        "ExactStrictness" => "strict",
+      }
+    end
+    it_should_behave_like "no offense for missing sigils by default"
+    it_should_behave_like "offense for an invalid sigil"
+
+    it "makes offense if the strictness is below the expected strictness" do
+      expect_offense(<<~RUBY)
+        # frozen_string_literal: true
+        # typed: true
+        ^^^^^^^^^^^^^ Sorbet sigil should be `strict` got `true`.
+        class Foo; end
+      RUBY
+    end
+
+    it "makes offense if the strictness is above the expected strictness" do
+      expect_offense(<<~RUBY)
+        # frozen_string_literal: true
+        # typed: strong
+        ^^^^^^^^^^^^^^^ Sorbet sigil should be `strict` got `strong`.
         class Foo; end
       RUBY
     end

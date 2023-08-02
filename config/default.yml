@@ -120,7 +120,8 @@ Sorbet/HasSigil:
   Description: 'Makes the Sorbet typed sigil mandatory in all files.'
   Enabled: false
   SuggestedStrictness: "false"
-  MinimumStrictness: "false"
+  MinimumStrictness: nil
+  ExactStrictness: nil
   VersionAdded: 0.3.3
   Include:
   - "**/*.{rb,rbi,rake,ru}"
@@ -242,7 +243,8 @@ Sorbet/ValidSigil:
   Enabled: true
   RequireSigilOnAllFiles: false
   SuggestedStrictness: "false"
-  MinimumStrictness: "false"
+  MinimumStrictness: nil
+  ExactStrictness: nil
   VersionAdded: 0.3.3
   Include:
   - "**/*.{rb,rbi,rake,ru}"

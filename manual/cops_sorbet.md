@@ -466,7 +466,8 @@ If a `MinimumStrictness` level is specified, it will be used in offense messages
 Name | Default value | Configurable values
 --- | --- | ---
 SuggestedStrictness | `false` | String
-MinimumStrictness | `false` | String
+MinimumStrictness | `nil` | String
+ExactStrictness | `nil` | String
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
@@ -720,8 +721,10 @@ Options:
 * `RequireSigilOnAllFiles`: make offense if the Sorbet typed is not found in the file (default: false)
 * `SuggestedStrictness`: Sorbet strictness level suggested in offense messages (default: 'false')
 * `MinimumStrictness`: If set, make offense if the strictness level in the file is below this one
+* `ExactStrictness`: If set, make offense if the strictness level in the file is different than this one
 
-If a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
+If an `ExactStrictness` level is specified, it will be used in offense messages and autocorrect.
+Otherwise, if a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
 
 ### Configurable attributes
 
@@ -729,6 +732,7 @@ Name | Default value | Configurable values
 --- | --- | ---
 RequireSigilOnAllFiles | `false` | Boolean
 SuggestedStrictness | `false` | String
-MinimumStrictness | `false` | String
+MinimumStrictness | `nil` | String
+ExactStrictness | `nil` | String
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
