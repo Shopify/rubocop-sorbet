@@ -13,8 +13,10 @@ module RuboCop
       # * `RequireSigilOnAllFiles`: make offense if the Sorbet typed is not found in the file (default: false)
       # * `SuggestedStrictness`: Sorbet strictness level suggested in offense messages (default: 'false')
       # * `MinimumStrictness`: If set, make offense if the strictness level in the file is below this one
+      # * `ExactStrictness`: If set, make offense if the strictness level in the file is different than this one
       #
-      # If a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
+      # If an `ExactStrictness` level is specified, it will be used in offense messages and autocorrect.
+      # Otherwise, if a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
       class ValidSigil < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         @registry = Cop.registry # So we can properly subclass this cop
 
@@ -36,7 +38,7 @@ module RuboCop
             return unless extract_sigil(processed_source).nil?
 
             token = processed_source.tokens.first
-            replace_with = suggested_strictness_level(minimum_strictness, suggested_strictness)
+            replace_with = suggested_strictness_level
             sigil = "# typed: #{replace_with}"
             if token.text.start_with?("#!") # shebang line
               corrector.insert_after(token.pos, "\n#{sigil}")
@@ -70,7 +72,7 @@ module RuboCop
 
           token = processed_source.tokens.first
           if require_sigil_on_all_files?
-            strictness = suggested_strictness_level(minimum_strictness, suggested_strictness)
+            strictness = suggested_strictness_level
             add_offense(
               token,
               location: token.pos,
@@ -81,7 +83,8 @@ module RuboCop
           false
         end
 
-        def suggested_strictness_level(minimum_strictness, suggested_strictness)
+        def suggested_strictness_level
+          return exact_strictness if exact_strictness
           # if no minimum strictness is set (eg. using Sorbet/HasSigil without config) then
           # we always use the suggested strictness which defaults to `false`
           return suggested_strictness unless minimum_strictness
@@ -94,10 +97,12 @@ module RuboCop
           # the suggested strictness might be higher than the minimum (eg. if you want all new files
           # at a higher strictness level, without having to migrate existing files at lower levels).
 
-          suggested_level = STRICTNESS_LEVELS.index(suggested_strictness)
-          minimum_level = STRICTNESS_LEVELS.index(minimum_strictness)
+          levels = [
+            STRICTNESS_LEVELS.index(suggested_strictness),
+            STRICTNESS_LEVELS.index(minimum_strictness),
+          ]
 
-          suggested_level > minimum_level ? suggested_strictness : minimum_strictness
+          STRICTNESS_LEVELS[levels.compact.max]
         end
 
         def check_strictness_not_empty(sigil, strictness)
@@ -123,18 +128,32 @@ module RuboCop
         end
 
         def check_strictness_level(sigil, strictness)
-          return true unless minimum_strictness
+          return true if !minimum_strictness && !exact_strictness
 
-          minimum_level = STRICTNESS_LEVELS.index(minimum_strictness)
           current_level = STRICTNESS_LEVELS.index(strictness)
-          if current_level < minimum_level
-            add_offense(
-              sigil,
-              location: sigil.pos,
-              message: "Sorbet sigil should be at least `#{minimum_strictness}` got `#{strictness}`."
-            )
-            return false
+
+          if exact_strictness
+            exact_level = STRICTNESS_LEVELS.index(exact_strictness)
+            if current_level != exact_level
+              add_offense(
+                sigil,
+                location: sigil.pos,
+                message: "Sorbet sigil should be `#{exact_strictness}` got `#{strictness}`."
+              )
+              return false
+            end
+          else
+            minimum_level = STRICTNESS_LEVELS.index(minimum_strictness)
+            if current_level < minimum_level
+              add_offense(
+                sigil,
+                location: sigil.pos,
+                message: "Sorbet sigil should be at least `#{minimum_strictness}` got `#{strictness}`."
+              )
+              return false
+            end
           end
+
           true
         end
 
@@ -154,6 +173,12 @@ module RuboCop
         # Default is `nil`
         def minimum_strictness
           config = cop_config["MinimumStrictness"].to_s # rubocop:todo InternalAffairs/UndefinedConfig
+          config if STRICTNESS_LEVELS.include?(config)
+        end
+
+        # Default is `nil`
+        def exact_strictness
+          config = cop_config["ExactStrictness"].to_s # rubocop:todo InternalAffairs/UndefinedConfig
           config if STRICTNESS_LEVELS.include?(config)
         end
       end
