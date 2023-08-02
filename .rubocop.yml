@@ -10,6 +10,8 @@ AllCops:
   TargetRubyVersion: 2.5
   Exclude:
     - vendor/**/*
+  NewCops: disable
+  SuggestExtensions: false
 
 InternalAffairs:
   Enabled: true
