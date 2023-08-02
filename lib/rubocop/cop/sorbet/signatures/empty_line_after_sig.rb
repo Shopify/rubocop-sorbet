@@ -5,7 +5,7 @@ require_relative "signature_cop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop checks for blank lines after signatures.
+      # Checks for blank lines after signatures.
       #
       # It also suggests an autocorrect
       #
@@ -31,10 +31,10 @@ module RuboCop
         end
 
         def autocorrect(node)
-          -> (corrector) do
+          ->(corrector) do
             offending_range = node.source_range.with(
               begin_pos: node.source_range.end_pos + 1,
-              end_pos: processed_source.buffer.line_range(next_method(node).line).begin_pos
+              end_pos: processed_source.buffer.line_range(next_method(node).line).begin_pos,
             )
             corrector.remove(offending_range)
             clean_range = offending_range.source.split("\n").reject(&:empty?).join("\n")

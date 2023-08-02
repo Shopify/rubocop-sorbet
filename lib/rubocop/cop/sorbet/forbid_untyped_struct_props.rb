@@ -6,7 +6,7 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop disallows use of `T.untyped` or `T.nilable(T.untyped)`
+      # Disallows use of `T.untyped` or `T.nilable(T.untyped)`
       # as a prop type for `T::Struct` or `T::ImmutableStruct`.
       #
       # @example

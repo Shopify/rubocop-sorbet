@@ -6,11 +6,13 @@ module RuboCop
   module Cop
     module Sorbet
       module MutableConstantSorbetAwareBehaviour
-        def self.prepended(base)
-          # @!method t_let(node)
-          base.def_node_matcher(:t_let, <<~PATTERN)
-            (send (const nil? :T) :let $_constant _type)
-          PATTERN
+        class << self
+          def prepended(base)
+            # @!method t_let(node)
+            base.def_node_matcher(:t_let, <<~PATTERN)
+              (send (const nil? :T) :let $_constant _type)
+            PATTERN
+          end
         end
 
         def on_assignment(value)
@@ -26,5 +28,5 @@ module RuboCop
 end
 
 RuboCop::Cop::Style::MutableConstant.prepend(
-  RuboCop::Cop::Sorbet::MutableConstantSorbetAwareBehaviour
+  RuboCop::Cop::Sorbet::MutableConstantSorbetAwareBehaviour,
 )

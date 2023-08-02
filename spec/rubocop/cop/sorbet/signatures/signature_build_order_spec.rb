@@ -85,7 +85,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
       Object.send(:remove_const, :Unparser) # What does "constant" even mean?
       message =
         "Sig builders must be invoked in the following order: type_parameters, params, void. " \
-        "For autocorrection, add the `unparser` gem to your project."
+          "For autocorrection, add the `unparser` gem to your project."
 
       expect_offense(<<~RUBY)
         sig { void.type_parameters(:U).params(x: T.type_parameter(:U)) }

@@ -3,7 +3,7 @@
 module RuboCop
   module Cop
     module Sorbet
-      # This cop ensures RBI shims do not include a call to extend T::Sig
+      # Ensures RBI shims do not include a call to extend T::Sig
       # or to extend T::Helpers
       #
       # @example

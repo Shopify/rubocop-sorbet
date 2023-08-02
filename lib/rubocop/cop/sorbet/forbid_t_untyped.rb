@@ -5,7 +5,7 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop disallows using `T.untyped` anywhere.
+      # Disallows using `T.untyped` anywhere.
       #
       # @example
       #

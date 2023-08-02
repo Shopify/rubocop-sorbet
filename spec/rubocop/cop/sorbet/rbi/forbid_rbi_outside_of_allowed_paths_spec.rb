@@ -119,7 +119,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is set to an empty list" do
         expect(cop.offenses.size).to(eq(1))
         expect(cop.messages).to(eq(
-          ["AllowedPaths cannot be empty"]
+          ["AllowedPaths cannot be empty"],
         ))
       end
     end
@@ -137,7 +137,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is set to nil" do
         expect(cop.offenses.size).to(eq(1))
         expect(cop.messages).to(eq(
-          ["AllowedPaths expects an array"]
+          ["AllowedPaths expects an array"],
         ))
       end
     end
@@ -155,7 +155,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is a list containing only nil" do
         expect(cop.offenses.size).to(eq(1))
         expect(cop.messages).to(eq(
-          ["AllowedPaths cannot be empty"]
+          ["AllowedPaths cannot be empty"],
         ))
       end
     end
@@ -173,7 +173,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is not an array" do
         expect(cop.offenses.size).to(eq(1))
         expect(cop.messages).to(eq(
-          ["AllowedPaths expects an array"]
+          ["AllowedPaths expects an array"],
         ))
       end
     end

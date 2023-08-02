@@ -5,7 +5,7 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop ensures all constants used as `T.type_alias` are using CamelCase.
+      # Ensures all constants used as `T.type_alias` are using CamelCase.
       #
       # @example
       #

@@ -5,7 +5,7 @@ require "spec_helper"
 RSpec.describe(RuboCop::Cop::Sorbet::ImplicitConversionMethod, :config) do
   def message
     "Avoid implicit conversion methods, as Sorbet does not support them. " \
-    "Explicity convert to the desired type instead."
+      "Explicity convert to the desired type instead."
   end
 
   it "adds offense when defining implicit conversion instance method" do

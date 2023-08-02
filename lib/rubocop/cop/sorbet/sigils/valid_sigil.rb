@@ -5,7 +5,7 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop checks that every Ruby file contains a valid Sorbet sigil.
+      # Checks that every Ruby file contains a valid Sorbet sigil.
       # Adapted from: https://gist.github.com/clarkdave/85aca4e16f33fd52aceb6a0a29936e52
       #
       # Options:
@@ -77,7 +77,7 @@ module RuboCop
               token,
               location: token.pos,
               message: "No Sorbet sigil found in file. " \
-                "Try a `typed: #{strictness}` to start (you can also use `rubocop -a` to automatically add this)."
+                "Try a `typed: #{strictness}` to start (you can also use `rubocop -a` to automatically add this).",
             )
           end
           false
@@ -111,7 +111,7 @@ module RuboCop
           add_offense(
             sigil,
             location: sigil.pos,
-            message: "Sorbet sigil should not be empty."
+            message: "Sorbet sigil should not be empty.",
           )
           false
         end
@@ -122,7 +122,7 @@ module RuboCop
           add_offense(
             sigil,
             location: sigil.pos,
-            message: "Invalid Sorbet sigil `#{strictness}`."
+            message: "Invalid Sorbet sigil `#{strictness}`.",
           )
           false
         end
@@ -138,7 +138,7 @@ module RuboCop
               add_offense(
                 sigil,
                 location: sigil.pos,
-                message: "Sorbet sigil should be `#{exact_strictness}` got `#{strictness}`."
+                message: "Sorbet sigil should be `#{exact_strictness}` got `#{strictness}`.",
               )
               return false
             end
@@ -148,7 +148,7 @@ module RuboCop
               add_offense(
                 sigil,
                 location: sigil.pos,
-                message: "Sorbet sigil should be at least `#{minimum_strictness}` got `#{strictness}`."
+                message: "Sorbet sigil should be at least `#{minimum_strictness}` got `#{strictness}`.",
               )
               return false
             end

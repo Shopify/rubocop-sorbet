@@ -5,14 +5,14 @@ require "spec_helper"
 RSpec.describe(RuboCop::Cop::Sorbet::BindingConstantWithoutTypeAlias, :config) do
   def message
     "It looks like you're trying to bind a type to a constant. " \
-    "To do this, you must alias the type using `T.type_alias`."
+      "To do this, you must alias the type using `T.type_alias`."
   end
 
   def deprecation
     "It looks like you're using the old `T.type_alias` syntax. " \
-    "`T.type_alias` now expects a block." \
-    'Run Sorbet with the options "--autocorrect --error-white-list=5043" ' \
-    "to automatically upgrade to the new syntax."
+      "`T.type_alias` now expects a block." \
+      'Run Sorbet with the options "--autocorrect --error-white-list=5043" ' \
+      "to automatically upgrade to the new syntax."
   end
 
   describe("offenses") do

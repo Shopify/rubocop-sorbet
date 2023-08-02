@@ -3,7 +3,7 @@
 module RuboCop
   module Cop
     module Sorbet
-      # This cop checks that there is only one Sorbet sigil in a given file
+      # Checks that there is only one Sorbet sigil in a given file
       #
       # For example, the following class with two sigils
       #
@@ -28,8 +28,9 @@ module RuboCop
 
         def investigate(processed_source)
           return if processed_source.tokens.empty?
+
           sigils = extract_all_sigils(processed_source)
-          return unless sigils.size > 1
+          return if sigils.empty?
 
           sigils[1..sigils.size].each do |token|
             add_offense(token, location: token.pos, message: "Files must only contain one sigil")
@@ -37,14 +38,14 @@ module RuboCop
         end
 
         def autocorrect(_node)
-          -> (corrector) do
+          ->(corrector) do
             sigils = extract_all_sigils(processed_source)
-            return unless sigils.size > 1
+            return if sigils.empty?
 
             # The first sigil encountered represents the "real" strictness so remove any below
             sigils[1..sigils.size].each do |token|
               corrector.remove(
-                source_range(processed_source.buffer, token.line, (0..token.pos.last_column))
+                source_range(processed_source.buffer, token.line, (0..token.pos.last_column)),
               )
             end
           end

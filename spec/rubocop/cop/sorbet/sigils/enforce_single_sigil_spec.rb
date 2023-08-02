@@ -3,8 +3,7 @@
 RSpec.describe(RuboCop::Cop::Sorbet::EnforceSingleSigil, :config) do
   describe("no offenses") do
     it("makes no offense on empty files") do
-      expect_no_offenses(<<~RUBY)
-      RUBY
+      expect_no_offenses("")
     end
 
     it("makes no offense with only one sigil") do

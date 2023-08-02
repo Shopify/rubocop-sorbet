@@ -15,7 +15,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::IgnoreSigil, :config) do
     describe("autocorrect") do
       it("autocorrects by adding typed: ignore to file without sigil") do
         expect(
-          autocorrect_source(<<~RUBY)
+          autocorrect_source(<<~RUBY),
             # frozen_string_literal: true
             class Foo; end
           RUBY

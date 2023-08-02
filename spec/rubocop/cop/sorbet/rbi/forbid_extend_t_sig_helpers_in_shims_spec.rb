@@ -5,7 +5,7 @@ require "spec_helper"
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigHelpersInShims, :config) do
   describe("offences") do
     it "adds an offence when a targeted class or module extends T::Sig or T::Helpers" do
-      expect_offense(<<~RBI)
+      expect_offense(<<~RUBY)
         module MyModule
           extend T::Sig
           ^^^^^^^^^^^^^ Extending T::Sig or T::Helpers in a shim is unnecessary
@@ -15,19 +15,19 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigHelpersInShims, :config) do
           sig { returns(String) }
           def foo; end
         end
-      RBI
+      RUBY
 
-      expect_correction(<<~RBI)
+      expect_correction(<<~RUBY)
         module MyModule
 
           sig { returns(String) }
           def foo; end
         end
-      RBI
+      RUBY
     end
 
     it "adds an offence when an extend T::Sig or extend T::Helpers call uses parenthesis syntax" do
-      expect_offense(<<~RBI)
+      expect_offense(<<~RUBY)
         module MyModule
           extend(T::Sig)
           ^^^^^^^^^^^^^^ Extending T::Sig or T::Helpers in a shim is unnecessary
@@ -37,19 +37,19 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigHelpersInShims, :config) do
           sig { returns(String) }
           def foo; end
         end
-      RBI
+      RUBY
 
-      expect_correction(<<~RBI)
+      expect_correction(<<~RUBY)
         module MyModule
 
           sig { returns(String) }
           def foo; end
         end
-      RBI
+      RUBY
     end
 
     it "adds an offense when extend T::Sig or extend T::Helpers are extended in otherwise empty classes or modules" do
-      expect_offense(<<~RBI)
+      expect_offense(<<~RUBY)
         module MyModule
           extend(T::Sig)
           ^^^^^^^^^^^^^^ Extending T::Sig or T::Helpers in a shim is unnecessary
@@ -59,27 +59,27 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidExtendTSigHelpersInShims, :config) do
           extend(T::Helpers)
           ^^^^^^^^^^^^^^^^^^ Extending T::Sig or T::Helpers in a shim is unnecessary
         end
-      RBI
+      RUBY
 
-      expect_correction(<<~RBI)
+      expect_correction(<<~RUBY)
         module MyModule
         end
 
         class MyClass
         end
-      RBI
+      RUBY
     end
   end
 
   describe("no offences") do
     it "does not add an offence to uses of extend that are not T::Sig or T::Helpers" do
-      expect_no_offenses(<<~RBI)
+      expect_no_offenses(<<~RUBY)
         module MyModule
           extend ActiveSupport::Concern
 
           def foo; end
         end
-      RBI
+      RUBY
     end
   end
 end

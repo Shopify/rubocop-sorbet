@@ -6,7 +6,7 @@ require_relative "has_sigil"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop makes the Sorbet `true` sigil mandatory in all files.
+      # Makes the Sorbet `true` sigil mandatory in all files.
       class TrueSigil < HasSigil
         def minimum_strictness
           "true"

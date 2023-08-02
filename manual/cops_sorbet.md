@@ -6,7 +6,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | No | 0.2.0 | -
 
-This cop disallows using `.override(allow_incompatible: true)`.
+Disallows using `.override(allow_incompatible: true)`.
 Using `allow_incompatible` suggests a violation of the Liskov
 Substitution Principle, meaning that a subclass is not a valid
 subtype of its superclass. This Cop prevents these design smells
@@ -28,7 +28,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.2.0 | -
 
-This cop disallows binding the return value of `T.any`, `T.all`, `T.enum`
+Disallows binding the return value of `T.any`, `T.all`, `T.enum`
 to a constant directly. To bind the value, one must use `T.type_alias`.
 
 ### Examples
@@ -47,7 +47,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | No | Yes  | 0.7.0 | -
 
-This cop ensures that callback conditionals are bound to the right type
+Ensures that callback conditionals are bound to the right type
 so that they are type checked properly.
 
 Auto-correction is unsafe because other libraries define similar style callbacks as Rails, but don't always need
@@ -85,7 +85,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | No | 0.2.0 | -
 
-This cop disallows the usage of `checked(true)`. This usage could cause
+Disallows the usage of `checked(true)`. This usage could cause
 confusion; it could lead some people to believe that a method would be checked
 even if runtime checks have not been enabled on the class or globally.
 Additionally, in the event where checks are enabled, `checked(true)` would
@@ -107,7 +107,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | No | 0.2.0 | -
 
-This cop disallows the calls that are used to get constants fom Strings
+Disallows the calls that are used to get constants fom Strings
 such as +constantize+, +const_get+, and +constants+.
 
 The goal of this cop is to make the code easier to statically analyze,
@@ -144,7 +144,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.7.0 | -
 
-This cop checks for blank lines after signatures.
+Checks for blank lines after signatures.
 
 It also suggests an autocorrect
 
@@ -167,7 +167,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.3.4 | -
 
-This cop checks that the Sorbet sigil comes as the first magic comment in the file.
+Checks that the Sorbet sigil comes as the first magic comment in the file.
 
 The expected order for magic comments is: (en)?coding, typed, warn_indent then frozen_string_literal.
 
@@ -196,7 +196,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | Yes  | 0.3.4 | -
 
-This cop checks that every method definition and attribute accessor has a Sorbet signature.
+Checks that every method definition and attribute accessor has a Sorbet signature.
 
 It also suggest an autocorrect with placeholders so the following code:
 
@@ -222,7 +222,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.7.0 | -
 
-This cop checks that there is only one Sorbet sigil in a given file
+Checks that there is only one Sorbet sigil in a given file
 
 For example, the following class with two sigils
 
@@ -249,7 +249,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.3.3 | -
 
-This cop makes the Sorbet `false` sigil mandatory in all files.
+Makes the Sorbet `false` sigil mandatory in all files.
 
 ### Configurable attributes
 
@@ -265,7 +265,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.6.0 | -
 
-This cop ensures RBI shims do not include a call to extend T::Sig
+Ensures RBI shims do not include a call to extend T::Sig
 or to extend T::Helpers
 
 ### Examples
@@ -326,7 +326,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | No | 0.6.1 | -
 
-This cop makes sure that RBI files are always located under the defined allowed paths.
+Makes sure that RBI files are always located under the defined allowed paths.
 
 Options:
 
@@ -389,7 +389,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | No | 0.7.0 | 0.7.0
 
-This cop disallows using `T.unsafe` anywhere.
+Disallows using `T.unsafe` anywhere.
 
 ### Examples
 
@@ -407,7 +407,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | No | 0.6.9 | 0.7.0
 
-This cop disallows using `T.untyped` anywhere.
+Disallows using `T.untyped` anywhere.
 
 ### Examples
 
@@ -427,7 +427,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | No | 0.4.0 | -
 
-This cop disallows use of `T.untyped` or `T.nilable(T.untyped)`
+Disallows use of `T.untyped` or `T.nilable(T.untyped)`
 as a prop type for `T::Struct` or `T::ImmutableStruct`.
 
 ### Examples
@@ -452,7 +452,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | Yes  | 0.3.3 | -
 
-This cop makes the Sorbet typed sigil mandatory in all files.
+Makes the Sorbet typed sigil mandatory in all files.
 
 Options:
 
@@ -477,7 +477,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | Yes  | 0.3.3 | -
 
-This cop makes the Sorbet `ignore` sigil mandatory in all files.
+Makes the Sorbet `ignore` sigil mandatory in all files.
 
 ### Configurable attributes
 
@@ -493,7 +493,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | No | <<next>> | -
 
-This cop disallows declaring implicit conversion methods.
+Disallows declaring implicit conversion methods.
 Since Sorbet is a nominal (not structural) type system,
 implicit conversion is currently unsupported.
 
@@ -522,7 +522,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | No | 0.2.0 | -
 
-This cop checks for the ordering of keyword arguments required by
+Checks for the ordering of keyword arguments required by
 sorbet-runtime. The ordering requires that all keyword arguments
 are at the end of the parameters list, and all keyword arguments
 with a default value must be after those without default values.
@@ -545,7 +545,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | Yes  | 0.6.0 | -
 
-This cop ensures one ancestor per requires_ancestor line
+Ensures one ancestor per requires_ancestor line
 rather than chaining them as a comma-separated list.
 
 ### Examples
@@ -614,7 +614,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | Yes  | 0.6.0 | -
 
-This cop ensures empty class/module definitions in RBI files are
+Ensures empty class/module definitions in RBI files are
 done on a single line rather than being split across multiple lines.
 
 ### Examples
@@ -640,7 +640,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | Yes  | 0.3.3 | -
 
-This cop makes the Sorbet `strict` sigil mandatory in all files.
+Makes the Sorbet `strict` sigil mandatory in all files.
 
 ### Configurable attributes
 
@@ -656,7 +656,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | Yes  | 0.3.3 | -
 
-This cop makes the Sorbet `strong` sigil mandatory in all files.
+Makes the Sorbet `strong` sigil mandatory in all files.
 
 ### Configurable attributes
 
@@ -672,7 +672,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Disabled | Yes | Yes  | 0.3.3 | -
 
-This cop makes the Sorbet `true` sigil mandatory in all files.
+Makes the Sorbet `true` sigil mandatory in all files.
 
 ### Configurable attributes
 
@@ -688,7 +688,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | No | 0.6.6 | -
 
-This cop ensures all constants used as `T.type_alias` are using CamelCase.
+Ensures all constants used as `T.type_alias` are using CamelCase.
 
 ### Examples
 
@@ -713,7 +713,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.3.3 | -
 
-This cop checks that every Ruby file contains a valid Sorbet sigil.
+Checks that every Ruby file contains a valid Sorbet sigil.
 Adapted from: https://gist.github.com/clarkdave/85aca4e16f33fd52aceb6a0a29936e52
 
 Options:

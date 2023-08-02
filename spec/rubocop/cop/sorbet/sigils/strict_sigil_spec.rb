@@ -16,7 +16,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::StrictSigil, :config) do
     describe("autocorrect") do
       it("autocorrects by adding typed: strict to file without sigil") do
         expect(
-          autocorrect_source(<<~RUBY)
+          autocorrect_source(<<~RUBY),
             # frozen_string_literal: true
             class Foo; end
           RUBY

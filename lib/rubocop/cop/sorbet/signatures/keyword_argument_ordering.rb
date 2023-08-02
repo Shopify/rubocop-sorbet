@@ -6,7 +6,7 @@ require_relative "signature_cop"
 module RuboCop
   module Cop
     module Sorbet
-      # This cop checks for the ordering of keyword arguments required by
+      # Checks for the ordering of keyword arguments required by
       # sorbet-runtime. The ordering requires that all keyword arguments
       # are at the end of the parameters list, and all keyword arguments
       # with a default value must be after those without default values.
@@ -24,6 +24,7 @@ module RuboCop
         def on_signature(node)
           method_node = node.parent.children[node.sibling_index + 1]
           return if method_node.nil?
+
           method_parameters = method_node.arguments
 
           check_order_for_kwoptargs(method_parameters)
@@ -41,7 +42,7 @@ module RuboCop
 
             add_offense(
               param,
-              message: "Optional keyword arguments must be at the end of the parameter list."
+              message: "Optional keyword arguments must be at the end of the parameter list.",
             )
           end
         end
