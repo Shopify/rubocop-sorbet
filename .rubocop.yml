@@ -7,7 +7,7 @@ require:
   - rubocop/cop/internal_affairs
 
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 2.7
   Exclude:
     - vendor/**/*
   NewCops: disable
