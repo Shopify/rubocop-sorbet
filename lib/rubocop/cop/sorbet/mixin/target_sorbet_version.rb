@@ -29,6 +29,7 @@ module RuboCop
         end
 
         def target_sorbet_static_version_from_bundler_lock_file
+          # Do memoization with the `defined?` pattern since sorbet-static version might be `nil`
           if defined?(@target_sorbet_static_version_from_bundler_lock_file)
             @target_sorbet_static_version_from_bundler_lock_file
           else
