@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "sorbet/mixin/target_sorbet_version.rb"
+
 require_relative "sorbet/binding_constant_without_type_alias"
 require_relative "sorbet/constants_from_strings"
 require_relative "sorbet/forbid_superclass_const_literal"
@@ -12,6 +14,7 @@ require_relative "sorbet/forbid_t_unsafe"
 require_relative "sorbet/forbid_t_untyped"
 require_relative "sorbet/redundant_extend_t_sig"
 require_relative "sorbet/type_alias_name"
+require_relative "sorbet/obsolete_strict_memoization"
 
 require_relative "sorbet/rbi/forbid_extend_t_sig_helpers_in_shims"
 require_relative "sorbet/rbi/forbid_rbi_outside_of_allowed_paths"
