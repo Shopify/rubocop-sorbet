@@ -3,8 +3,21 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
+  let(:specs) do
+    [
+      Gem::Specification.new("foo", "0.0.1"),
+      Gem::Specification.new("bar", "0.0.2"),
+    ]
+  end
+
   before(:each) do
-    allow(cop).to(receive(:target_sorbet_static_version_from_bundler_lock_file).and_return("0.5.10210"))
+    allow(Bundler).to(receive(:locked_gems)).and_return(
+      Struct.new(:specs).new([
+        *specs,
+        Gem::Specification.new("sorbet-static", "0.5.10210"),
+      ]),
+    )
+
     allow(cop).to(receive(:configured_indentation_width).and_return(2))
   end
 
@@ -208,7 +221,34 @@ RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
 
       describe "the obsolete memoization pattern" do
         it "does not register an offence" do
-          allow(cop).to(receive(:target_sorbet_static_version_from_bundler_lock_file).and_return("0.5.10209"))
+          allow(Bundler).to(receive(:locked_gems)).and_return(
+            Struct.new(:specs).new([
+              *specs,
+              Gem::Specification.new("sorbet-static", "0.5.10209"),
+            ]),
+          )
+
+          expect_no_offenses(<<~RUBY)
+            sig { returns(Foo) }
+            def foo
+              @foo = T.let(@foo, T.nilable(Foo))
+              @foo ||= Foo.new
+            end
+          RUBY
+        end
+      end
+    end
+
+    context "not using Sorbet" do
+      # If the project is not using Sorbet, the obsolete memoization pattern might be intentional.
+
+      describe "the obsolete memoization pattern" do
+        it "does not register an offence" do
+          allow(Bundler).to(receive(:locked_gems)).and_return(
+            Struct.new(:specs).new([
+              *specs,
+            ]),
+          )
 
           expect_no_offenses(<<~RUBY)
             sig { returns(Foo) }

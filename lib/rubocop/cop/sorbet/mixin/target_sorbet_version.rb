@@ -29,22 +29,18 @@ module RuboCop
         end
 
         def target_sorbet_static_version_from_bundler_lock_file
-          @target_sorbet_static_version_from_bundler_lock_file ||= read_sorbet_static_version_from_bundler_lock_file
+          if defined?(@target_sorbet_static_version_from_bundler_lock_file)
+            @target_sorbet_static_version_from_bundler_lock_file
+          else
+            @target_sorbet_static_version_from_bundler_lock_file = read_sorbet_static_version_from_bundler_lock_file
+          end
         end
 
-        # Adapted from https://github.com/rubocop/rubocop/blob/1181d4ebad5f71c586f9514d9c341cdfffc1957d/lib/rubocop/config.rb#L293-L308
         def read_sorbet_static_version_from_bundler_lock_file
-          lock_file_path = config.bundler_lock_file_path
-
-          return nil unless lock_file_path
-
-          File.foreach(lock_file_path) do |line|
-            # If Sorbet (or one of its frameworks) is in Gemfile.lock or gems.lock, there should be
-            # a line like:
-            #         sorbet-static (X.X.X-some_arch)
-            result = line.match(/^\s+sorbet-static\s+\((\d+\.\d+\.\d+)/)
-            return Gem::Version.new(result.captures.first) if result
-          end
+          require "bundler"
+          ::Bundler.locked_gems.specs.find { |spec| spec.name == "sorbet-static" }&.version
+        rescue LoadError, Bundler::GemfileNotFound
+          nil
         end
       end
     end
