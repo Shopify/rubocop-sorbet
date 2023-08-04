@@ -42,6 +42,15 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidSigil, :config) do
         ^^^^^^^^^^^^^^^ Invalid Sorbet sigil `foobar`.
         class Foo; end
       RUBY
+    end 
+
+    it "enforces whitespase surrounding valid strictness levels" do
+      expect_offense(<<~RUBY)
+        # Hello world!
+        # typed: true# rubocop:todo Sorbet/StrictSigil
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Invalid Sorbet sigil `true#`.
+        class Foo; end
+      RUBY
     end
   end
 
