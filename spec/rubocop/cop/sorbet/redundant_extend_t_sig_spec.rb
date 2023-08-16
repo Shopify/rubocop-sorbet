@@ -14,7 +14,6 @@ RSpec.describe(RuboCop::Cop::Sorbet::RedundantExtendTSig, :config) do
 
       expect_correction(<<~RUBY)
         #{header}
-          #{trailing_whitespace}
         end
       RUBY
     end
@@ -43,7 +42,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::RedundantExtendTSig, :config) do
       ^^^^^^^^^^^^^ #{message}
     RUBY
 
-    expect_correction(a_blank_line)
+    expect_correction("")
   end
 
   it "registers an offense when using `extend ::T::Sig` (fully qualified)" do
@@ -52,7 +51,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::RedundantExtendTSig, :config) do
       ^^^^^^^^^^^^^^^ #{message}
     RUBY
 
-    expect_correction(a_blank_line)
+    expect_correction("")
   end
 
   it "registers an offense when using `extend T::Sig` with an explicit receiver" do
@@ -61,7 +60,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::RedundantExtendTSig, :config) do
       ^^^^^^^^^^^^^^^^^^^^^^^^^ #{message}
     RUBY
 
-    expect_correction(a_blank_line)
+    expect_correction("")
   end
 
   it "does not register an offense when extending other modules in the T namespace" do
@@ -70,11 +69,5 @@ RSpec.describe(RuboCop::Cop::Sorbet::RedundantExtendTSig, :config) do
         extend T::Helpers
       end
     RUBY
-  end
-
-  private
-
-  def a_blank_line
-    "\n"
   end
 end
