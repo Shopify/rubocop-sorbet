@@ -23,25 +23,53 @@ module RuboCop
           "Instead, strive to write interfaces which respect subtyping principles and remove `allow_incompatible`"
         RESTRICT_ON_SEND = [:override].freeze
 
-        # @!method allow_incompatible_override?(node)
-        def_node_matcher(:allow_incompatible_override?, <<~PATTERN)
+        # @!method sig_dot_override?(node)
+        def_node_matcher(:sig_dot_override?, <<~PATTERN)
           (send
-            #sig?
+            [!nil? #sig?]
             :override
             (hash <$(pair (sym :allow_incompatible) true) ...>)
           )
         PATTERN
 
         # @!method sig?(node)
-        def_node_search :sig?, <<~PATTERN
+        def_node_search(:sig?, <<~PATTERN)
           (send _ :sig ...)
         PATTERN
 
+        # @!method override?(node)
+        def_node_matcher(:override?, <<~PATTERN)
+          (send
+            _
+            :override
+            (hash <$(pair (sym :allow_incompatible) true) ...>)
+          )
+        PATTERN
+
         def on_send(node)
-          allow_incompatible_override?(node) do |allow_incompatible_pair|
+          sig_dot_override?(node) do |allow_incompatible_pair|
             add_offense(allow_incompatible_pair)
           end
         end
+
+        def on_block(node)
+          return unless sig?(node.send_node)
+
+          block = node.children.last
+          return unless block.send_type?
+
+          receiver = block.receiver
+          while receiver
+            allow_incompatible_pair = override?(receiver)
+            if allow_incompatible_pair
+              add_offense(allow_incompatible_pair)
+              break
+            end
+            receiver = receiver.receiver
+          end
+        end
+
+        alias_method :on_numblock, :on_block
       end
     end
   end
