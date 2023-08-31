@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
-  let(:specs) do
+  let(:specs_without_sorbet) do
     [
       Gem::Specification.new("foo", "0.0.1"),
       Gem::Specification.new("bar", "0.0.2"),
@@ -13,7 +13,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
   before(:each) do
     allow(Bundler).to(receive(:locked_gems)).and_return(
       Struct.new(:specs).new([
-        *specs,
+        *specs_without_sorbet,
         Gem::Specification.new("sorbet-static", "0.5.10210"),
       ]),
     )
@@ -223,7 +223,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
         it "does not register an offence" do
           allow(Bundler).to(receive(:locked_gems)).and_return(
             Struct.new(:specs).new([
-              *specs,
+              *specs_without_sorbet,
               Gem::Specification.new("sorbet-static", "0.5.10209"),
             ]),
           )
@@ -245,9 +245,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ObsoleteStrictMemoization, :config) do
       describe "the obsolete memoization pattern" do
         it "does not register an offence" do
           allow(Bundler).to(receive(:locked_gems)).and_return(
-            Struct.new(:specs).new([
-              *specs,
-            ]),
+            Struct.new(:specs).new(specs_without_sorbet),
           )
 
           expect_no_offenses(<<~RUBY)
