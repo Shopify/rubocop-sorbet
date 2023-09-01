@@ -15,6 +15,7 @@ require_relative "sorbet/forbid_t_untyped"
 require_relative "sorbet/redundant_extend_t_sig"
 require_relative "sorbet/type_alias_name"
 require_relative "sorbet/obsolete_strict_memoization"
+require_relative "sorbet/buggy_obsolete_strict_memoization"
 
 require_relative "sorbet/rbi/forbid_extend_t_sig_helpers_in_shims"
 require_relative "sorbet/rbi/forbid_rbi_outside_of_allowed_paths"
