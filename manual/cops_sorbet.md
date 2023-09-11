@@ -421,6 +421,38 @@ Name | Default value | Configurable values
 --- | --- | ---
 Exclude | `db/migrate/*.rb` | Array
 
+## Sorbet/ForbidTStruct
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | <<next>>
+
+Disallows using `T::Struct`.
+
+`T::Struct` has runtime performance implications that can lead to around 5x slower code over the equivilant
+PORO (plain old ruby object).
+
+### Examples
+
+```ruby
+# bad
+class Foo < T::Struct
+  prop :bar, T.nilable(String)
+  const :baz, Integer
+end
+
+# good
+class Foo
+  extend T::Sig
+
+  sig { returns(T.nilable(String)) }
+  attr_accessor :bar
+
+  sig { returns(Integer) }
+  attr_reader :baz
+end
+```
+
 ## Sorbet/ForbidTUnsafe
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
