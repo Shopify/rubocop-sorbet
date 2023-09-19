@@ -421,6 +421,45 @@ Name | Default value | Configurable values
 --- | --- | ---
 Exclude | `db/migrate/*.rb` | Array
 
+## Sorbet/ForbidTStruct
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | No | Yes  | <<next>> | <<next>>
+
+Disallow using `T::Struct` and `T::Props`.
+
+### Examples
+
+```ruby
+# bad
+class MyStruct < T::Struct
+  const :foo, String
+  prop :bar, Integer, default: 0
+
+  def some_method; end
+end
+
+# good
+class MyStruct
+  extend T::Sig
+
+  sig { returns(String) }
+  attr_reader :foo
+
+  sig { returns(Integer) }
+  attr_accessor :bar
+
+  sig { params(foo: String, bar: Integer) }
+  def initialize(foo:, bar: 0)
+    @foo = foo
+    @bar = bar
+  end
+
+  def some_method; end
+end
+```
+
 ## Sorbet/ForbidTUnsafe
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
