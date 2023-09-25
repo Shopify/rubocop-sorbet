@@ -97,6 +97,13 @@ Sorbet/ForbidSuperclassConstLiteral:
   Exclude:
   - db/migrate/*.rb
 
+Sorbet/ForbidTStruct:
+  Description: 'Forbid usage of T::Struct.'
+  Enabled: false
+  VersionAdded: <<next>>
+  VersionChanged: <<next>>
+  Safe: false
+
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'
   Enabled: false
