@@ -102,7 +102,7 @@ module RuboCop
         end
 
         class Property
-          attr_reader :node, :kind, :name, :type, :default, :factory
+          attr_reader :node, :kind, :name, :default, :factory
 
           def initialize(node, kind, name, type, default:, factory:)
             @node = node
@@ -150,6 +150,10 @@ module RuboCop
 
           def nilable?
             type.start_with?("T.nilable(")
+          end
+
+          def type
+            @type.gsub(/[[:space:]]+/, "").strip
           end
         end
 

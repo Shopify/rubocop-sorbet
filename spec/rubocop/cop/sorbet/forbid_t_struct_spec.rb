@@ -408,5 +408,31 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
 
       expect(autocorrect_source(source)).to(eq(corrected))
     end
+
+    it "strips new lines from type definitions" do
+      source = <<~RUBY
+        class Foo < T::Struct
+          const :foo, T.nilable(
+            Integer
+          )
+        end
+      RUBY
+
+      corrected = <<~RUBY
+        class Foo
+          extend T::Sig
+
+          sig { returns(T.nilable(Integer)) }
+          attr_reader :foo
+
+          sig { params(foo: T.nilable(Integer)).void }
+          def initialize(foo: nil)
+            @foo = foo
+          end
+        end
+      RUBY
+
+      expect(autocorrect_source(source)).to(eq(corrected))
+    end
   end
 end
