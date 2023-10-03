@@ -131,8 +131,13 @@ module RuboCop
           def initialize_param
             rb = String.new
             rb << "#{name}:"
-            rb << " #{default}" if default
-            rb << " #{factory}" if factory
+            if default
+              rb << " #{default}"
+            elsif factory
+              rb << " #{factory}"
+            elsif nilable?
+              rb << " nil"
+            end
             rb
           end
 
@@ -141,6 +146,10 @@ module RuboCop
             rb << "@#{name} = #{name}"
             rb << ".call" if factory
             rb
+          end
+
+          def nilable?
+            type.start_with?("T.nilable(")
           end
         end
 
@@ -203,11 +212,11 @@ module RuboCop
 
         def initialize_method(indent, props)
           # We sort optional keyword arguments after required ones
-          props = props.sort_by { |prop| prop.default || prop.factory ? 1 : 0 }
+          sorted_props = props.sort_by { |prop| prop.default || prop.factory || prop.nilable? ? 1 : 0 }
 
           string = +"\n"
-          string << "#{indent}sig { params(#{props.map(&:initialize_sig_param).join(", ")}).void }\n"
-          string << "#{indent}def initialize(#{props.map(&:initialize_param).join(", ")})\n"
+          string << "#{indent}sig { params(#{sorted_props.map(&:initialize_sig_param).join(", ")}).void }\n"
+          string << "#{indent}def initialize(#{sorted_props.map(&:initialize_param).join(", ")})\n"
           props.each do |prop|
             string << "#{indent}  #{prop.initialize_assign}\n"
           end
