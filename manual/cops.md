@@ -23,6 +23,7 @@ In the following section you find all available cops:
 * [Sorbet/ForbidTStruct](cops_sorbet.md#sorbetforbidtstruct)
 * [Sorbet/ForbidTUnsafe](cops_sorbet.md#sorbetforbidtunsafe)
 * [Sorbet/ForbidTUntyped](cops_sorbet.md#sorbetforbidtuntyped)
+* [Sorbet/ForbidTypeAliasedShapes](cops_sorbet.md#sorbetforbidtypealiasedshapes)
 * [Sorbet/ForbidUntypedStructProps](cops_sorbet.md#sorbetforbiduntypedstructprops)
 * [Sorbet/HasSigil](cops_sorbet.md#sorbethassigil)
 * [Sorbet/IgnoreSigil](cops_sorbet.md#sorbetignoresigil)
