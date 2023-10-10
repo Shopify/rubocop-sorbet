@@ -434,5 +434,56 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
 
       expect(autocorrect_source(source)).to(eq(corrected))
     end
+
+    it "splits long lines" do
+      source = <<~RUBY
+        class Foo < T::Struct
+          const :foo, LONG_CONSTANT_NAME_WITH_MANY_CHARS, default: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+          const :bar, LONG_CONSTANT_NAME_WITH_MANY_CHARS, default: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+          const :baz, LONG_CONSTANT_NAME_WITH_MANY_CHARS, default: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+          const :qux, LONG_CONSTANT_NAME_WITH_MANY_CHARS, default: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+        end
+      RUBY
+
+      corrected = <<~RUBY
+        class Foo
+          extend T::Sig
+
+          sig { returns(LONG_CONSTANT_NAME_WITH_MANY_CHARS) }
+          attr_reader :foo
+
+          sig { returns(LONG_CONSTANT_NAME_WITH_MANY_CHARS) }
+          attr_reader :bar
+
+          sig { returns(LONG_CONSTANT_NAME_WITH_MANY_CHARS) }
+          attr_reader :baz
+
+          sig { returns(LONG_CONSTANT_NAME_WITH_MANY_CHARS) }
+          attr_reader :qux
+
+          sig do
+            params(
+              foo: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+              bar: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+              baz: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+              qux: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+            ).void
+          end
+          def initialize(
+            foo: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+            bar: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+            baz: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+            qux: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+          )
+            @foo = foo
+            @bar = bar
+            @baz = baz
+            @qux = qux
+          end
+        end
+      RUBY
+
+      expect(autocorrect_source(source)).to(eq(corrected))
+    end
   end
 end

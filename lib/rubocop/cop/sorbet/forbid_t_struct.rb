@@ -219,8 +219,35 @@ module RuboCop
           sorted_props = props.sort_by { |prop| prop.default || prop.factory || prop.nilable? ? 1 : 0 }
 
           string = +"\n"
-          string << "#{indent}sig { params(#{sorted_props.map(&:initialize_sig_param).join(", ")}).void }\n"
-          string << "#{indent}def initialize(#{sorted_props.map(&:initialize_param).join(", ")})\n"
+
+          line = "#{indent}sig { params(#{sorted_props.map(&:initialize_sig_param).join(", ")}).void }\n"
+          if line.length <= max_line_length
+            string << line
+          else
+            string << "#{indent}sig do\n"
+            string << "#{indent}  params(\n"
+            sorted_props.each do |prop|
+              string << "#{indent}    #{prop.initialize_sig_param}"
+              string << "," if prop != sorted_props.last
+              string << "\n"
+            end
+            string << "#{indent}  ).void\n"
+            string << "#{indent}end\n"
+          end
+
+          line = "#{indent}def initialize(#{sorted_props.map(&:initialize_param).join(", ")})\n"
+          if line.length <= max_line_length
+            string << line
+          else
+            string << "#{indent}def initialize(\n"
+            sorted_props.each do |prop|
+              string << "#{indent}  #{prop.initialize_param}"
+              string << "," if prop != sorted_props.last
+              string << "\n"
+            end
+            string << "#{indent})\n"
+          end
+
           props.each do |prop|
             string << "#{indent}  #{prop.initialize_assign}\n"
           end
