@@ -814,6 +814,68 @@ SuggestedStrictness | `strong` | String
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
+## Sorbet/TStructPropertyAttrMacro
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | <<next>> | -
+
+Checks for the use of `attr_*` methods matching a `const` or `prop` in a `T::Struct`.
+
+### Examples
+
+```ruby
+# bad – pointless `attr_*` method
+class Foo < T::Struct
+  attr_reader :bar
+  attr_reader :biz
+  attr_writer :biz
+  attr_accessor :baz
+
+  const :bar, String
+  prop :biz, String
+  prop :baz, String
+end
+
+# good
+class Foo < T::Struct
+  const :bar, String
+  prop :biz, String
+  prop :baz, String
+end
+```
+```ruby
+# bad – defining writer method for `const` property
+class Foo < T::Struct
+  attr_writer :bar
+  attr_accessor :biz
+
+  const :bar, String
+  const :biz, String
+end
+
+# good – mutable property defined with `prop`
+class Foo < T::Struct
+  prop :bar, String
+  prop :biz, String
+end
+```
+```ruby
+# good – customized attribute access – although this is not a recommended pattern with T::Struct
+class Foo < T::Struct
+  const :bar, String
+  prop :biz, String
+
+  def bar
+    # ...
+  end
+
+  def biz=(value)
+    # ...
+  end
+end
+```
+
 ## Sorbet/TrueSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

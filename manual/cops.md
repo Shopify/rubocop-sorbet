@@ -36,6 +36,7 @@ In the following section you find all available cops:
 * [Sorbet/SingleLineRbiClassModuleDefinitions](cops_sorbet.md#sorbetsinglelinerbiclassmoduledefinitions)
 * [Sorbet/StrictSigil](cops_sorbet.md#sorbetstrictsigil)
 * [Sorbet/StrongSigil](cops_sorbet.md#sorbetstrongsigil)
+* [Sorbet/TStructPropertyAttrMacro](cops_sorbet.md#sorbettstructpropertyattrmacro)
 * [Sorbet/TrueSigil](cops_sorbet.md#sorbettruesigil)
 * [Sorbet/TypeAliasName](cops_sorbet.md#sorbettypealiasname)
 * [Sorbet/ValidSigil](cops_sorbet.md#sorbetvalidsigil)

@@ -268,6 +268,11 @@ Sorbet/TrueSigil:
   - db/**/*.rb
   - script/**/*
 
+Sorbet/TStructPropertyAttrMacro:
+  Description: 'Checks for the use of `attr_*` methods matching a `const` or `prop` in a `T::Struct`.'
+  Enabled: pending
+  VersionAdded: '<<next>>'
+
 Sorbet/TypeAliasName:
   Description: 'Type alias constant names must be in CamelCase.'
   Enabled: true
