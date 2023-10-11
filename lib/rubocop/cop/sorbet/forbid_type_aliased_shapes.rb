@@ -32,11 +32,22 @@ module RuboCop
             (args)
             (hash ...)
           )
+        PATTERN
 
+        # @!method nested_type_alias?(node)
+        def_node_matcher(:nested_type_alias?, <<-PATTERN)
+          (block
+            (send
+              (const nil? :T) :type_alias)
+            (args)
+            (array
+              (hash ...)
+            )
+          )
         PATTERN
 
         def on_block(node)
-          add_offense(node) if type_alias?(node)
+          add_offense(node) if type_alias?(node) || nested_type_alias?(node)
         end
 
         alias_method :on_numblock, :on_block
