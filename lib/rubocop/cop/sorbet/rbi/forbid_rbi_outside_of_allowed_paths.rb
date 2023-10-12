@@ -56,7 +56,7 @@ module RuboCop
         private
 
         def allowed_paths
-          paths = cop_config["AllowedPaths"] # rubocop:todo InternalAffairs/UndefinedConfig
+          paths = cop_config["AllowedPaths"]
           return unless paths.is_a?(Array)
 
           paths.compact
