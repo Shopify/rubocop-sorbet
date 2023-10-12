@@ -3,66 +3,71 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
-  describe("no offenses") do
-    it "makes no offense when signarure and method are next to eachother" do
+  context("with no empty line between sig and method definition") do
+    it("does not register an offense") do
       expect_no_offenses(<<~RUBY)
         sig { void }
         def foo; end
       RUBY
     end
+
+    it("does not register an offense for surrounding empty lines") do
+      expect_no_offenses(<<~RUBY)
+        extend T::Sig
+
+        sig { void }
+        def foo; end
+
+        bar!
+      RUBY
+    end
   end
-  describe("with offences") do
-    it "makes offense there is a line between a method and a signature" do
+
+  context("with an empty line between sig and method definition") do
+    it("registers an offense for normal method definition") do
       expect_offense(<<~RUBY)
         sig { void }
 
         ^{} Extra empty line or comment detected
         def foo; end
       RUBY
+
+      expect_correction(<<~RUBY)
+        sig { void }
+        def foo; end
+      RUBY
     end
 
-    it "supports various method defs" do
+    it("registers an offense for singleton method definition") do
       expect_offense(<<~RUBY)
         sig { void }
 
         ^{} Extra empty line or comment detected
         def self.foo; end
+      RUBY
 
+      expect_correction(<<~RUBY)
+        sig { void }
+        def self.foo; end
+      RUBY
+    end
+
+    it("registers an offense for attr_reader") do
+      expect_offense(<<~RUBY)
         sig { void }
 
         ^{} Extra empty line or comment detected
         attr_reader :bar
       RUBY
-    end
-  end
-  describe("autocorrect") do
-    it("removes the empty line for single-line sigs") do
-      source = <<~RUBY
-        module Example
-          extend T::Sig
 
-          sig { params(session: String).void }
-
-          def initialize(session:)
-            @session = session
-          end
-        end
+      expect_correction(<<~RUBY)
+        sig { void }
+        attr_reader :bar
       RUBY
-      expect(autocorrect_source(source))
-        .to(eq(<<~RUBY))
-          module Example
-            extend T::Sig
-
-            sig { params(session: String).void }
-            def initialize(session:)
-              @session = session
-            end
-          end
-        RUBY
     end
 
-    it("removes the empty line for multiline sigs with identation") do
-      source = <<~RUBY
+    it("registers an offense for multiline sigs with indentation") do
+      expect_offense(<<~RUBY)
         module Example
           extend T::Sig
 
@@ -72,6 +77,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
             ).void
           end
 
+        ^{} Extra empty line or comment detected
           def initialize(
             session:
           )
@@ -79,27 +85,27 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
           end
         end
       RUBY
-      expect(autocorrect_source(source))
-        .to(eq(<<~RUBY))
-          module Example
-            extend T::Sig
 
-            sig do
-              params(
-                session: String,
-              ).void
-            end
-            def initialize(
-              session:
-            )
-              @session = session
-            end
+      expect_correction(<<~RUBY)
+        module Example
+          extend T::Sig
+
+          sig do
+            params(
+              session: String,
+            ).void
           end
-        RUBY
+          def initialize(
+            session:
+          )
+            @session = session
+          end
+        end
+      RUBY
     end
 
-    it("moves comments above the sig") do
-      source = <<~RUBY
+    it("registers an offense for comments in between sig and method definition") do
+      expect_offense(<<~RUBY)
         module Example
           extend T::Sig
 
@@ -109,6 +115,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
             ).void
           end
           # Session: string
+        ^ Extra empty line or comment detected
           def initialize(
             session:
           )
@@ -116,24 +123,44 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
           end
         end
       RUBY
-      expect(autocorrect_source(source))
-        .to(eq(<<~RUBY))
-          module Example
-            extend T::Sig
 
-            # Session: string
-            sig do
-              params(
-                session: String,
-              ).void
-            end
-            def initialize(
-              session:
-            )
-              @session = session
-            end
+      expect_correction(<<~RUBY)
+        module Example
+          extend T::Sig
+
+          # Session: string
+          sig do
+            params(
+              session: String,
+            ).void
           end
-        RUBY
+          def initialize(
+            session:
+          )
+            @session = session
+          end
+        end
+      RUBY
+    end
+
+    it "registers an offense for empty line and comments in between sig and method definition" do
+      expect_offense(<<~RUBY)
+        sig { params(session: String).void }
+
+        # Session: string
+        ^ Extra empty line or comment detected
+        def initialize(session:)
+          @session = session
+        end
+      RUBY
+
+      expect_correction(<<~RUBY)
+        # Session: string
+        sig { params(session: String).void }
+        def initialize(session:)
+          @session = session
+        end
+      RUBY
     end
   end
 end
