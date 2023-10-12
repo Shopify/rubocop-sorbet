@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "rubocop"
-require_relative "signature_cop"
-
 module RuboCop
   module Cop
     module Sorbet
@@ -19,8 +16,9 @@ module RuboCop
       #
       #   # good
       #   sig { void }
-      class CheckedTrueInSignature < SignatureCop
+      class CheckedTrueInSignature < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         include(RuboCop::Cop::RangeHelp)
+        include(RuboCop::Cop::Sorbet::SignatureHelp)
 
         # @!method offending_node(node)
         def_node_search(:offending_node, <<~PATTERN)

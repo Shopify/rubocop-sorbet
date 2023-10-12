@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "rubocop"
-require_relative "signature_cop"
-
 module RuboCop
   module Cop
     module Sorbet
@@ -20,7 +17,9 @@ module RuboCop
       #   # good
       #   sig { params(b: String, a: Integer).void }
       #   def foo(b:, a: 1); end
-      class KeywordArgumentOrdering < SignatureCop
+      class KeywordArgumentOrdering < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+        include SignatureHelp
+
         def on_signature(node)
           method_node = node.parent.children[node.sibling_index + 1]
           return if method_node.nil?
