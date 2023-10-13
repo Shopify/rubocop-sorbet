@@ -90,7 +90,7 @@ module RuboCop
           return suggested_strictness unless minimum_strictness
 
           # special case: if you're using Sorbet/IgnoreSigil without config, we should recommend `ignore`
-          return "ignore" if minimum_strictness == "ignore" && cop_config["SuggestedStrictness"].nil? # rubocop:todo InternalAffairs/UndefinedConfig
+          return "ignore" if minimum_strictness == "ignore" && cop_config["SuggestedStrictness"].nil?
 
           # if a minimum strictness is set (eg. you're using Sorbet/FalseSigil)
           # we want to compare the minimum strictness and suggested strictness. this is because
@@ -161,24 +161,24 @@ module RuboCop
 
         # Default is `false`
         def require_sigil_on_all_files?
-          !!cop_config["RequireSigilOnAllFiles"] # rubocop:todo InternalAffairs/UndefinedConfig
+          !!cop_config["RequireSigilOnAllFiles"]
         end
 
         # Default is `'false'`
         def suggested_strictness
-          config = cop_config["SuggestedStrictness"].to_s # rubocop:todo InternalAffairs/UndefinedConfig
+          config = cop_config["SuggestedStrictness"].to_s
           STRICTNESS_LEVELS.include?(config) ? config : "false"
         end
 
         # Default is `nil`
         def minimum_strictness
-          config = cop_config["MinimumStrictness"].to_s # rubocop:todo InternalAffairs/UndefinedConfig
+          config = cop_config["MinimumStrictness"].to_s
           config if STRICTNESS_LEVELS.include?(config)
         end
 
         # Default is `nil`
         def exact_strictness
-          config = cop_config["ExactStrictness"].to_s # rubocop:todo InternalAffairs/UndefinedConfig
+          config = cop_config["ExactStrictness"].to_s
           config if STRICTNESS_LEVELS.include?(config)
         end
       end

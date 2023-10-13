@@ -22,3 +22,6 @@ Naming/FileName:
 
 Layout/LineLength:
   IgnoreCopDirectives: true
+
+InternalAffairs/UndefinedConfig:
+  Enabled: false # Bug in implementation fails to find our configs
