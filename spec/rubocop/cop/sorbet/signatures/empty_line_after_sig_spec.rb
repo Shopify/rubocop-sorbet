@@ -121,7 +121,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
             ).void
           end
           # Session: string
-        ^ Extra empty line or comment detected
+        ^^^^^^^^^^^^^^^^^^^ Extra empty line or comment detected
           def initialize(
             session:
           )
@@ -153,6 +153,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
       expect_offense(<<~RUBY)
         sig { params(session: String).void }
 
+        ^{} Extra empty line or comment detected
 
         # Session: string
 
@@ -160,7 +161,6 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
 
         # on more lines
 
-        ^{} Extra empty line or comment detected
         def initialize(session:)
           @session = session
         end
@@ -181,7 +181,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
       expect_offense(<<~RUBY)
         true; sig { void }
         # Comment
-        ^ Extra empty line or comment detected
+        ^^^^^^^^^ Extra empty line or comment detected
         def m; end
       RUBY
 
@@ -191,6 +191,12 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
         def m; end
       RUBY
     end
+  end
+
+  it "registers no offense when there is only a sig" do
+    expect_no_offenses(<<~RUBY)
+      sig { void }
+    RUBY
   end
 
   it "registers no offense when there is only a method definition" do

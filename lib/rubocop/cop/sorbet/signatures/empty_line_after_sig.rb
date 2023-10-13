@@ -5,10 +5,7 @@ module RuboCop
     module Sorbet
       # Checks for blank lines after signatures.
       #
-      # It also suggests an autocorrect
-      #
       # @example
-      #
       #   # bad
       #   sig { void }
       #
@@ -17,35 +14,59 @@ module RuboCop
       #   # good
       #   sig { void }
       #   def foo; end
-      #
       class EmptyLineAfterSig < ::RuboCop::Cop::Base
         extend AutoCorrector
         include RangeHelp
         include SignatureHelp
 
-        def on_signature(node)
-          if (next_method(node).line - node.last_line) > 1
-            location = source_range(processed_source.buffer, next_method(node).line - 1, 0)
-            add_offense(location, message: "Extra empty line or comment detected") do |corrector|
-              offending_range = node.source_range.with(
-                begin_pos: node.source_range.end_pos + 1,
-                end_pos: processed_source.buffer.line_range(next_method(node).line).begin_pos,
+        MSG = "Extra empty line or comment detected"
+
+        # @!method signable_method_definition?(node)
+        def_node_matcher :signable_method_definition?, <<~PATTERN
+          ${
+            def
+            defs
+            (send nil? {:attr_reader :attr_writer :attr_accessor} ...)
+          }
+        PATTERN
+
+        def on_signature(sig)
+          signable_method_definition?(next_sibling(sig)) do |definition|
+            range = lines_between(sig, definition)
+            next if range.empty? || range.single_line?
+
+            add_offense(range) do |corrector|
+              corrector.insert_before(
+                range_by_whole_lines(sig.source_range),
+                range.source
+                  .sub(/\A\n+/, "") # remove initial newline(s)
+                  .gsub(/\n{2,}/, "\n"), # remove empty line(s)
               )
-              corrector.remove(offending_range)
-              clean_range = offending_range.source.split("\n").reject(&:empty?).join("\n")
-              offending_line = processed_source.buffer.line_range(node.source_range.first_line)
-              corrector.insert_before(offending_line, "#{clean_range}\n") unless clean_range.empty?
+              corrector.remove(range)
             end
           end
         end
 
         private
 
-        def next_method(node)
-          processed_source.tokens.find do |t|
-            t.line >= node.last_line &&
-              (t.type == :kDEF || t.text.start_with?("attr_"))
-          end
+        def next_sibling(node)
+          node.parent&.children&.at(node.sibling_index + 1)
+        end
+
+        def lines_between(node1, node2, buffer: processed_source.buffer)
+          end_of_node1_pos   = node1.source_range.end_pos
+          start_of_node2_pos = node2.source_range.begin_pos
+
+          string_in_between = buffer.slice(end_of_node1_pos...start_of_node2_pos)
+          # Fallbacks handle same line edge case
+          begin_offset = string_in_between.index("\n")  || 0
+          end_offset   = string_in_between.rindex("\n") || string_in_between.length - 1
+
+          Parser::Source::Range.new(
+            buffer,
+            end_of_node1_pos + begin_offset + 1, # +1 to exclude post-node1 newline
+            end_of_node1_pos + end_offset   + 1, # +1 to include pre-node2  newline
+          )
         end
       end
     end

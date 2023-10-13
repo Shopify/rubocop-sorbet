@@ -184,8 +184,6 @@ Enabled | Yes | Yes  | 0.7.0 | -
 
 Checks for blank lines after signatures.
 
-It also suggests an autocorrect
-
 ### Examples
 
 ```ruby
