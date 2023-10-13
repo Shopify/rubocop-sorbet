@@ -162,8 +162,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
           sig { params(foo: Integer, baz: Symbol, bar: String).void }
           def initialize(foo:, baz:, bar: "foo")
             @foo = foo
-            @baz = baz
             @bar = bar
+            @baz = baz
           end
         end
       RUBY
@@ -369,6 +369,40 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
           end
 
           # Some loose comment after
+        end
+      RUBY
+
+      expect(autocorrect_source(source)).to(eq(corrected))
+    end
+
+    it "handles optional nilable properties" do
+      source = <<~RUBY
+        class Foo < T::Struct
+          const :foo, T.nilable(Integer)
+          prop :bar, T.nilable(String)
+          prop :baz, Integer
+        end
+      RUBY
+
+      corrected = <<~RUBY
+        class Foo
+          extend T::Sig
+
+          sig { returns(T.nilable(Integer)) }
+          attr_reader :foo
+
+          sig { returns(T.nilable(String)) }
+          attr_accessor :bar
+
+          sig { returns(Integer) }
+          attr_accessor :baz
+
+          sig { params(baz: Integer, foo: T.nilable(Integer), bar: T.nilable(String)).void }
+          def initialize(baz:, foo: nil, bar: nil)
+            @foo = foo
+            @bar = bar
+            @baz = baz
+          end
         end
       RUBY
 
