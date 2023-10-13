@@ -26,44 +26,38 @@ module RuboCop
       # ```ruby
       # include Polaris::Engine.helpers
       # ```
-      class ForbidIncludeConstLiteral < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
-        MSG = "Includes must only contain constant literals"
+      class ForbidIncludeConstLiteral < RuboCop::Cop::Base
+        extend AutoCorrector
 
-        attr_accessor :used_names
+        MSG = "`%<inclusion_method>s` must only be used with constant literals as arguments"
+        RESTRICT_ON_SEND = [:include, :extend, :prepend].freeze
 
-        # @!method not_lit_const_include?(node)
-        def_node_matcher :not_lit_const_include?, <<-PATTERN
-          (send nil? {:include :extend :prepend}
-            $_
-          )
+        # @!method dynamic_inclusion?(node)
+        def_node_matcher :dynamic_inclusion?, <<~PATTERN
+          (send nil? ${:include :extend :prepend} $#neither_const_nor_self?)
         PATTERN
 
-        def initialize(*)
-          super
-          self.used_names = Set.new
-        end
-
         def on_send(node)
-          return unless not_lit_const_include?(node) do |send_argument|
-            ![:const, :self].include?(send_argument.type)
+          dynamic_inclusion?(node) do |inclusion_method, included|
+            return unless within_onymous_module?(node)
+
+            add_offense(node, message: format(MSG, inclusion_method: inclusion_method)) do |corrector|
+              corrector.replace(node, "T.unsafe(self).#{inclusion_method} #{included.source}")
+            end
           end
-
-          parent = node.parent
-          return unless parent
-
-          parent = parent.parent if [:begin, :block].include?(parent.type)
-          return unless [:module, :class, :sclass].include?(parent.type)
-
-          add_offense(node)
         end
 
-        def autocorrect(node)
-          lambda do |corrector|
-            corrector.replace(
-              node,
-              "T.unsafe(self).#{node.source}",
-            )
-          end
+        private
+
+        def neither_const_nor_self?(node)
+          !node.const_type? && !node.self_type?
+        end
+
+        # Returns true if the node is within a module declaration that is not anonymous.
+        def within_onymous_module?(node)
+          parent = node.parent
+          parent = parent.parent while parent&.begin_type? || parent&.block_type?
+          parent && (parent.module_type? || parent.class_type? || parent.sclass_type?)
         end
       end
     end
