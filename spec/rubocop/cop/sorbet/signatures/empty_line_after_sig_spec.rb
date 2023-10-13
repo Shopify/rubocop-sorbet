@@ -21,6 +21,12 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
         bar!
       RUBY
     end
+
+    it("does not register an offense or fail if the sig and definition are on the same line") do
+      expect_no_offenses(<<~RUBY)
+        sig { void }; def foo; end
+      RUBY
+    end
   end
 
   context("with an empty line between sig and method definition") do
@@ -147,8 +153,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
       expect_offense(<<~RUBY)
         sig { params(session: String).void }
 
+
         # Session: string
-        ^ Extra empty line or comment detected
+
+        # More stuff
+
+        # on more lines
+
+        ^{} Extra empty line or comment detected
         def initialize(session:)
           @session = session
         end
@@ -156,11 +168,34 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
 
       expect_correction(<<~RUBY)
         # Session: string
+        # More stuff
+        # on more lines
         sig { params(session: String).void }
         def initialize(session:)
           @session = session
         end
       RUBY
     end
+
+    it("registers an offense and does not fail if the sig is not the first expression on its line") do
+      expect_offense(<<~RUBY)
+        true; sig { void }
+        # Comment
+        ^ Extra empty line or comment detected
+        def m; end
+      RUBY
+
+      expect_correction(<<~RUBY)
+        # Comment
+        true; sig { void }
+        def m; end
+      RUBY
+    end
+  end
+
+  it "registers no offense when there is only a method definition" do
+    expect_no_offenses(<<~RUBY)
+      def foo; end
+    RUBY
   end
 end
