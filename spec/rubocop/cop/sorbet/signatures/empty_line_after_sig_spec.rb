@@ -27,6 +27,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
         sig { void }; def foo; end
       RUBY
     end
+
+    it("does not register an offense or fail if a method definition has multiple sigs (e.g. RBI files)") do
+      expect_no_offenses(<<~RUBY)
+        sig { void }
+        sig { params(foo: String).void }
+        def bar(foo); end
+      RUBY
+    end
   end
 
   context("with an empty line between sig and method definition") do
@@ -189,6 +197,38 @@ RSpec.describe(RuboCop::Cop::Sorbet::EmptyLineAfterSig, :config) do
         # Comment
         true; sig { void }
         def m; end
+      RUBY
+    end
+
+    it("registers an offense for empty line following multiple sigs") do
+      expect_offense(<<~RUBY)
+        sig { void }
+        sig { params(foo: String).void }
+
+        ^{} Extra empty line or comment detected
+        def bar(foo); end
+      RUBY
+
+      expect_correction(<<~RUBY)
+        sig { void }
+        sig { params(foo: String).void }
+        def bar(foo); end
+      RUBY
+    end
+
+    it("registers an offense for empty line in between multiple sigs") do
+      expect_offense(<<~RUBY)
+        sig { void }
+
+        ^{} Extra empty line or comment detected
+        sig { params(foo: String).void }
+        def bar(foo); end
+      RUBY
+
+      expect_correction(<<~RUBY)
+        sig { void }
+        sig { params(foo: String).void }
+        def bar(foo); end
       RUBY
     end
   end
