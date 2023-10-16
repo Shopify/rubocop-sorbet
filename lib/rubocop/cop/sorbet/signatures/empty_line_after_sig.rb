@@ -21,17 +21,18 @@ module RuboCop
 
         MSG = "Extra empty line or comment detected"
 
-        # @!method signable_method_definition?(node)
-        def_node_matcher :signable_method_definition?, <<~PATTERN
+        # @!method sig_or_signable_method_definition?(node)
+        def_node_matcher :sig_or_signable_method_definition?, <<~PATTERN
           ${
             def
             defs
             (send nil? {:attr_reader :attr_writer :attr_accessor} ...)
+            #signature?
           }
         PATTERN
 
         def on_signature(sig)
-          signable_method_definition?(next_sibling(sig)) do |definition|
+          sig_or_signable_method_definition?(next_sibling(sig)) do |definition|
             range = lines_between(sig, definition)
             next if range.empty? || range.single_line?
 
