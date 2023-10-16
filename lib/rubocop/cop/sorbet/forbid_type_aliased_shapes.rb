@@ -24,30 +24,17 @@ module RuboCop
       class ForbidTypeAliasedShapes < RuboCop::Cop::Base
         MSG = "Type aliases shouldn't contain shapes because of significant performance overhead"
 
-        # @!method type_alias?(node)
-        def_node_matcher(:type_alias?, <<-PATTERN)
+        # @!method shape_type_alias?(node)
+        def_node_matcher(:shape_type_alias?, <<-PATTERN)
           (block
-            (send
-              (const nil? :T) :type_alias)
+            (send (const {nil? cbase} :T) :type_alias)
             (args)
-            (hash ...)
-          )
-        PATTERN
-
-        # @!method nested_type_alias?(node)
-        def_node_matcher(:nested_type_alias?, <<-PATTERN)
-          (block
-            (send
-              (const nil? :T) :type_alias)
-            (args)
-            (array
-              (hash ...)
-            )
+            `hash
           )
         PATTERN
 
         def on_block(node)
-          add_offense(node) if type_alias?(node) || nested_type_alias?(node)
+          add_offense(node) if shape_type_alias?(node)
         end
 
         alias_method :on_numblock, :on_block
