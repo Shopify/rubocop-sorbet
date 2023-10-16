@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "rubocop"
-require_relative "signature_cop"
-
 begin
   require "unparser"
 rescue LoadError
@@ -31,7 +28,9 @@ module RuboCop
       #
       #  # good
       #  sig { params(x: Integer).returns(Integer) }
-      class SignatureBuildOrder < SignatureCop
+      class SignatureBuildOrder < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+        include SignatureHelp
+
         ORDER =
           [
             :abstract,

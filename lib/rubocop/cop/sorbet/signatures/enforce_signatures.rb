@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-require "rubocop"
 require "stringio"
-require_relative "signature_cop"
 
 module RuboCop
   module Cop
@@ -26,7 +24,9 @@ module RuboCop
       #
       # * `ParameterTypePlaceholder`: placeholders used for parameter types (default: 'T.untyped')
       # * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
-      class EnforceSignatures < SignatureCop
+      class EnforceSignatures < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+        include SignatureHelp
+
         def initialize(config = nil, options = nil)
           super(config, options)
           @last_sig_for_scope = {}

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "signature_cop"
-
 module RuboCop
   module Cop
     module Sorbet
@@ -20,8 +18,9 @@ module RuboCop
       #   sig { void }
       #   def foo; end
       #
-      class EmptyLineAfterSig < SignatureCop
+      class EmptyLineAfterSig < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         include RangeHelp
+        include SignatureHelp
 
         def on_signature(node)
           if (next_method(node).line - node.last_line) > 1

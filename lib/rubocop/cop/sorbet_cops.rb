@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "sorbet/mixin/target_sorbet_version.rb"
+require_relative "sorbet/mixin/signature_help.rb"
 
 require_relative "sorbet/binding_constant_without_type_alias"
 require_relative "sorbet/constants_from_strings"

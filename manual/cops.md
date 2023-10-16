@@ -32,7 +32,6 @@ In the following section you find all available cops:
 * [Sorbet/OneAncestorPerLine](cops_sorbet.md#sorbetoneancestorperline)
 * [Sorbet/RedundantExtendTSig](cops_sorbet.md#sorbetredundantextendtsig)
 * [Sorbet/SignatureBuildOrder](cops_sorbet.md#sorbetsignaturebuildorder)
-* [Sorbet/SignatureCop](cops_sorbet.md#sorbetsignaturecop)
 * [Sorbet/SingleLineRbiClassModuleDefinitions](cops_sorbet.md#sorbetsinglelinerbiclassmoduledefinitions)
 * [Sorbet/StrictSigil](cops_sorbet.md#sorbetstrictsigil)
 * [Sorbet/StrongSigil](cops_sorbet.md#sorbetstrongsigil)

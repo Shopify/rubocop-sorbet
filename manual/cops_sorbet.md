@@ -733,16 +733,6 @@ sig { void.abstract }
 sig { abstract.void }
 ```
 
-## Sorbet/SignatureCop
-
-Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
---- | --- | --- | --- | ---
-Enabled | Yes | No | - | -
-
-Abstract cop specific to Sorbet signatures
-
-You can subclass it to use the `on_signature` trigger and the `signature?` node matcher.
-
 ## Sorbet/SingleLineRbiClassModuleDefinitions
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
