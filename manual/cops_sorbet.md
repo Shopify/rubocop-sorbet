@@ -759,7 +759,7 @@ sig { params(x: Integer).returns(Integer) }
 
 Name | Default value | Configurable values
 --- | --- | ---
-Order | `abstract`, `override`, `overridable`, `type_parameters`, `params`, `returns`, `void`, `soft`, `checked`, `on_failure` | Array
+Order | `final`, `abstract`, `implementation`, `override`, `overridable`, `type_parameters`, `params`, `bind`, `returns`, `void`, `soft`, `checked`, `on_failure` | Array
 
 ## Sorbet/SingleLineRbiClassModuleDefinitions
 

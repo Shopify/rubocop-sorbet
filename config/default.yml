@@ -224,11 +224,14 @@ Sorbet/SignatureBuildOrder:
                   such as: `abstract.params(...).returns(...).soft`.'
   Enabled: true
   Order:
+    - final
     - abstract
+    - implementation
     - override
     - overridable
     - type_parameters
     - params
+    - bind
     - returns
     - void
     - soft
