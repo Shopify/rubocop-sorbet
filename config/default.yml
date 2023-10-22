@@ -223,6 +223,17 @@ Sorbet/SignatureBuildOrder:
                   then params, then return and finally the modifier
                   such as: `abstract.params(...).returns(...).soft`.'
   Enabled: true
+  Order:
+    - abstract
+    - override
+    - overridable
+    - type_parameters
+    - params
+    - returns
+    - void
+    - soft
+    - checked
+    - on_failure
   VersionAdded: 0.3.0
 
 Sorbet/SingleLineRbiClassModuleDefinitions:

@@ -95,4 +95,32 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
       Object.const_set(:Unparser, original_unparser)
     end
   end
+
+  describe("config") do
+    let :cop_config do
+      {
+        "Order" => [
+          "returns",
+          "override",
+        ],
+      }
+    end
+
+    it("ignores chains including unknown methods") do
+      expect_no_offenses(<<~RUBY)
+        sig { override.params(x: Integer).returns(Integer) } # params not in Order
+      RUBY
+    end
+
+    it("allows customizing the order") do
+      expect_offense(<<~RUBY)
+        sig { override.returns(Integer) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^ Sig builders must be invoked in the following order: returns, override.
+      RUBY
+
+      expect_correction(<<~RUBY)
+        sig { returns(Integer).override }
+      RUBY
+    end
+  end
 end

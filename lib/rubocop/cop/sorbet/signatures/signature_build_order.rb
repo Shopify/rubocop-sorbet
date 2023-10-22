@@ -9,12 +9,11 @@ end
 module RuboCop
   module Cop
     module Sorbet
-      # Checks for the correct order of sig builder methods:
-      # - abstract, override, or overridable
-      # - type_parameters
-      # - params
-      # - returns, or void
-      # - soft, checked, or on_failure
+      # Checks for the correct order of `sig` builder methods.
+      #
+      # Options:
+      #
+      # * `Order`: The order in which to enforce the builder methods are called.
       #
       # @example
       #   # bad
@@ -31,34 +30,22 @@ module RuboCop
       class SignatureBuildOrder < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         include SignatureHelp
 
-        ORDER =
-          [
-            :abstract,
-            :override,
-            :overridable,
-            :type_parameters,
-            :params,
-            :returns,
-            :void,
-            :soft,
-            :checked,
-            :on_failure,
-          ].each_with_index.to_h.freeze
-
         # @!method root_call(node)
         def_node_search(:root_call, <<~PATTERN)
-          (send nil? {#{ORDER.keys.map(&:inspect).join(" ")}} ...)
+          (send nil? #builder? ...)
         PATTERN
 
         def on_signature(node)
           calls = call_chain(node.children[2]).map(&:method_name)
           return if calls.empty?
 
-          # While the developer is typing, we may have an incomplete call statement, which means `ORDER[call]` will
-          # return `nil`. In that case, invoking `sort_by` will raise
-          return if calls.any? { |call| ORDER[call].nil? }
-
-          expected_order = calls.sort_by { |call| ORDER[call] }
+          expected_order = calls.sort_by do |call|
+            builder_method_indexes.fetch(call) do
+              # Abort if we don't have a configured order for this call,
+              # likely because the method name is still being typed.
+              return nil
+            end
+          end
           return if expected_order == calls
 
           message = "Sig builders must be invoked in the following order: #{expected_order.join(", ")}."
@@ -79,7 +66,7 @@ module RuboCop
 
           lambda do |corrector|
             tree = call_chain(node_reparsed_with_modern_features(node))
-              .sort_by { |call| ORDER[call.method_name] }
+              .sort_by { |call| builder_method_indexes[call.method_name] }
               .reduce(nil) do |receiver, caller|
                 caller.updated(nil, [receiver] + caller.children.drop(1))
               end
@@ -131,6 +118,14 @@ module RuboCop
           calls << sig_child_node
 
           calls
+        end
+
+        def builder?(method_name)
+          builder_method_indexes.key?(method_name)
+        end
+
+        def builder_method_indexes
+          @configured_order ||= cop_config.fetch("Order").map(&:to_sym).each_with_index.to_h.freeze
         end
       end
     end
