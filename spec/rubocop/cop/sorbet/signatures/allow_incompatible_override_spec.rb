@@ -74,4 +74,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::AllowIncompatibleOverride, :config) do
       end
     RUBY
   end
+
+  it("doesn't break on incomplete signatures") do
+    expect_no_offenses(<<~RUBY)
+      class Foo
+        sig {  }
+        def foo; end
+      end
+    RUBY
+  end
 end

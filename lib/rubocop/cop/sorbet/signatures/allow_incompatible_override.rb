@@ -56,7 +56,7 @@ module RuboCop
           return unless sig?(node.send_node)
 
           block = node.children.last
-          return unless block.send_type?
+          return unless block&.send_type?
 
           receiver = block.receiver
           while receiver
