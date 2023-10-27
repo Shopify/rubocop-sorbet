@@ -245,10 +245,6 @@ Style/DefWithParentheses:
 Sorbet/EmptyLineAfterSig:
   Enabled: true
 
-Style/EmptyMethod:
-  Enabled: true
-  EnforcedStyle: compact
-
 Style/FrozenStringLiteralComment:
   Enabled: true
   EnforcedStyle: never
