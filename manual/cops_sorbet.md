@@ -502,7 +502,7 @@ def foo(my_argument); end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | 0.7.5 | -
+Disabled | Yes | No | 0.7.6 | -
 
 Disallows defining type aliases that contain shapes
 

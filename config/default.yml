@@ -92,7 +92,7 @@ Sorbet/ForbidIncludeConstLiteral:
 Sorbet/ForbidTypeAliasedShapes:
   Description: 'Forbids defining type aliases that contain shapes'
   Enabled: false
-  VersionAdded: 0.7.5
+  VersionAdded: 0.7.6
 
 Sorbet/ForbidSuperclassConstLiteral:
   Description: 'Forbid superclasses which are non-literal constants.'
