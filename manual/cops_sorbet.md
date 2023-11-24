@@ -496,6 +496,31 @@ sig { params(my_argument: String).void }
 def foo(my_argument); end
 ```
 
+## Sorbet/ForbidTypeAliasedShapes
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | 0.7.6 | -
+
+Disallows defining type aliases that contain shapes
+
+### Examples
+
+```ruby
+# bad
+Foo = T.type_alias { { foo: Integer } }
+
+# good
+class Foo
+  extend T::Sig
+
+  sig { params(foo: Integer).void }
+  def initialize(foo)
+    @foo = foo
+  end
+end
+```
+
 ## Sorbet/ForbidUntypedStructProps
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
