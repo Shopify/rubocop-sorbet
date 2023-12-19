@@ -69,6 +69,14 @@ inherit_gem:
 
 This will turn off default cops for `**/*.rbi` files and enable the RBI specific cops.
 
+You'll also need to add an entry to the main `.rubocop.yml` so that RBI files are included, e.g.:
+
+```yaml
+AllCops:
+  Include:
+    - "sorbet/rbi/shims/**/*.rbi"
+```
+
 ## The Cops
 All cops are located under [`lib/rubocop/cop/sorbet`](lib/rubocop/cop/sorbet), and contain examples/documentation.
 
