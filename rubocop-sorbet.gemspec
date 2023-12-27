@@ -26,7 +26,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_development_dependency("rspec", "~> 3.7")
-  spec.add_development_dependency("unparser", "~> 0.6")
 
   spec.add_runtime_dependency("rubocop", ">= 0.90.0")
 end

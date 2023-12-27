@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-begin
-  require "unparser"
-rescue LoadError
-  nil
-end
-
 module RuboCop
   module Cop
     module Sorbet
@@ -27,7 +21,8 @@ module RuboCop
       #
       #   # good
       #   sig { params(x: Integer).returns(Integer) }
-      class SignatureBuildOrder < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class SignatureBuildOrder < ::RuboCop::Cop::Base
+        extend AutoCorrector
         include SignatureHelp
 
         # @!method root_call(node)
@@ -36,92 +31,66 @@ module RuboCop
         PATTERN
 
         def on_signature(node)
-          calls = call_chain(node.children[2]).map(&:method_name)
-          return if calls.empty?
+          body = node.body
 
-          expected_order = calls.sort_by do |call|
-            builder_method_indexes.fetch(call) do
-              # Abort if we don't have a configured order for this call,
-              # likely because the method name is still being typed.
-              return nil
-            end
+          actual_calls_and_indexes = call_chain(body).map.with_index do |send_node, actual_index|
+            # The index this method call appears at in the configured Order.
+            expected_index = builder_method_indexes[send_node.method_name]
+
+            [send_node, actual_index, expected_index]
           end
-          return if expected_order == calls
 
-          message = "Sig builders must be invoked in the following order: #{expected_order.join(", ")}."
+          # Temporarily extract unknown method calls
+          expected_calls_and_indexes, unknown_calls_and_indexes = actual_calls_and_indexes
+            .partition { |_, _, expected_index| expected_index }
 
-          unless can_autocorrect?
-            message += " For autocorrection, add the `unparser` gem to your project."
+          # Sort known method calls by expected index
+          expected_calls_and_indexes.sort_by! { |_, _, expected_index| expected_index }
+
+          # Re-insert unknown method calls in their positions
+          unknown_calls_and_indexes.each do |entry|
+            _, original_index, _ = entry
+
+            expected_calls_and_indexes.insert(original_index, entry)
           end
+
+          # Compare expected and actual ordering
+          expected_method_names = expected_calls_and_indexes.map { |send_node, _, _| send_node.method_name }
+          actual_method_names = actual_calls_and_indexes.map { |send_node, _, _| send_node.method_name }
+          return if expected_method_names == actual_method_names
 
           add_offense(
-            node.children[2],
-            message: message,
-          )
-          node
+            body,
+            message: "Sig builders must be invoked in the following order: #{expected_method_names.join(", ")}.",
+          ) { |corrector| corrector.replace(body, expected_source(expected_calls_and_indexes)) }
         end
-
-        def autocorrect(node)
-          return unless can_autocorrect?
-
-          lambda do |corrector|
-            tree = call_chain(node_reparsed_with_modern_features(node))
-              .sort_by { |call| builder_method_indexes[call.method_name] }
-              .reduce(nil) do |receiver, caller|
-                caller.updated(nil, [receiver] + caller.children.drop(1))
-              end
-
-            corrector.replace(
-              node,
-              Unparser.unparse(tree),
-            )
-          end
-        end
-
-        # Create a subclass of AST Builder that has modern features turned on
-        class ModernBuilder < RuboCop::AST::Builder
-          modernize
-        end
-        private_constant :ModernBuilder
 
         private
 
-        # This method exists to reparse the current node with modern features enabled.
-        # Modern features include "index send" emitting, which is necessary to unparse
-        # "index sends" (i.e. `[]` calls) back to index accessors (i.e. as `foo[bar]``).
-        # Otherwise, we would get the unparsed node as `foo.[](bar)`.
-        def node_reparsed_with_modern_features(node)
-          # Create a new parser with a modern builder class instance
-          parser = Parser::CurrentRuby.new(ModernBuilder.new)
-          # Create a new source buffer with the node source
-          buffer = Parser::Source::Buffer.new(processed_source.path, source: node.source)
-          # Re-parse the buffer
-          parser.parse(buffer)
+        def expected_source(expected_calls_and_indexes)
+          expected_calls_and_indexes.reduce(nil) do |receiver_source, (send_node, _, _)|
+            send_source = if send_node.arguments?
+              "#{send_node.method_name}(#{send_node.arguments.map(&:source).join(", ")})"
+            else
+              send_node.method_name.to_s
+            end
+
+            receiver_source ? "#{receiver_source}.#{send_source}" : send_source
+          end
         end
 
-        def can_autocorrect?
-          defined?(::Unparser)
-        end
+        # Split foo.bar.baz into [foo, foo.bar, foo.bar.baz]
+        def call_chain(node)
+          chain = []
 
-        def call_chain(sig_child_node)
-          return [] if sig_child_node.nil?
-
-          call_node = root_call(sig_child_node).first
-          return [] unless call_node
-
-          calls = []
-          while call_node != sig_child_node
-            calls << call_node
-            call_node = call_node.parent
+          while node&.send_type?
+            chain << node
+            node = node.receiver
           end
 
-          calls << sig_child_node
+          chain.reverse!
 
-          calls
-        end
-
-        def builder?(method_name)
-          builder_method_indexes.key?(method_name)
+          chain
         end
 
         def builder_method_indexes

@@ -49,50 +49,45 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
     end
 
     it("enforces orders of builder calls") do
-      message = "Sig builders must be invoked in the following order: type_parameters, params, void."
       expect_offense(<<~RUBY)
         sig { void.type_parameters(:U).params(x: T.type_parameter(:U)) }
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{message}
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Sig builders must be invoked in the following order: type_parameters, params, void.
       RUBY
     end
   end
 
   describe("autocorrect") do
     it("autocorrects sigs in the correct order") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         sig { void.type_parameters(:U).params(x: T.type_parameter(:U)) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Sig builders must be invoked in the following order: type_parameters, params, void.
       RUBY
-      expect(autocorrect_source(source))
-        .to(eq(<<~RUBY))
-          sig { type_parameters(:U).params(x: T.type_parameter(:U)).void }
-        RUBY
+
+      expect_correction <<~RUBY
+        sig { type_parameters(:U).params(x: T.type_parameter(:U)).void }
+      RUBY
     end
 
     it("autocorrects sigs with generic types properly") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         sig { void.type_parameters(:U).params(x: T.type_parameter(:U), y: T::Hash[String, Integer]) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Sig builders must be invoked in the following order: type_parameters, params, void.
       RUBY
-      expect(autocorrect_source(source))
-        .to(eq(<<~RUBY))
-          sig { type_parameters(:U).params(x: T.type_parameter(:U), y: T::Hash[String, Integer]).void }
-        RUBY
+
+      expect_correction <<~RUBY
+        sig { type_parameters(:U).params(x: T.type_parameter(:U), y: T::Hash[String, Integer]).void }
+      RUBY
     end
-  end
 
-  describe("without the unparser gem") do
-    it("catches the errors and suggests using Unparser for the correction") do
-      original_unparser = Unparser
-      Object.send(:remove_const, :Unparser) # What does "constant" even mean?
-      message =
-        "Sig builders must be invoked in the following order: type_parameters, params, void. " \
-          "For autocorrection, add the `unparser` gem to your project."
-
-      expect_offense(<<~RUBY)
-        sig { void.type_parameters(:U).params(x: T.type_parameter(:U)) }
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{message}
+    it("autocorrects sigs even with many unknown methods") do
+      expect_offense <<~RUBY
+        sig { void.foo.type_parameters(:U).bar.params(x: T.type_parameter(:U), y: T::Hash[String, Integer]).baz }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Sig builders must be invoked in the following order: type_parameters, foo, params, bar, void, baz.
       RUBY
-    ensure
-      Object.const_set(:Unparser, original_unparser)
+
+      expect_correction <<~RUBY
+        sig { type_parameters(:U).foo.params(x: T.type_parameter(:U), y: T::Hash[String, Integer]).bar.void.baz }
+      RUBY
     end
   end
 
@@ -106,9 +101,33 @@ RSpec.describe(RuboCop::Cop::Sorbet::SignatureBuildOrder, :config) do
       }
     end
 
-    it("ignores chains including unknown methods") do
-      expect_no_offenses(<<~RUBY)
-        sig { override.params(x: Integer).returns(Integer) } # params not in Order
+    it("ignores unknown methods, while sorting the remainder of the chain") do
+      expect_offense(<<~RUBY)
+        sig { override.params(x: Integer).returns(Integer) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Sig builders must be invoked in the following order: returns, params, override.
+      RUBY
+
+      expect_correction(<<~RUBY)
+        sig { returns(Integer).params(x: Integer).override }
+      RUBY
+
+      # Doesn't actually care about where params appears; only cares about relative ordering of returns and override.
+      expect_offense(<<~RUBY)
+        sig { override.returns(Integer).params(x: Integer) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Sig builders must be invoked in the following order: returns, override, params.
+      RUBY
+
+      expect_correction(<<~RUBY)
+        sig { returns(Integer).override.params(x: Integer) }
+      RUBY
+
+      expect_offense(<<~RUBY)
+        sig { params(x: Integer).override.returns(Integer) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Sig builders must be invoked in the following order: params, returns, override.
+      RUBY
+
+      expect_correction(<<~RUBY)
+        sig { params(x: Integer).returns(Integer).override }
       RUBY
     end
 
