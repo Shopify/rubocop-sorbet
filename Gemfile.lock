@@ -59,7 +59,7 @@ PLATFORMS
 DEPENDENCIES
   byebug
   rake (>= 12.3.3)
-  rspec
+  rspec (~> 3.7)
   rubocop-shopify
   rubocop-sorbet!
   yard (~> 0.9)
