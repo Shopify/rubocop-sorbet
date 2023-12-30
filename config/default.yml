@@ -293,3 +293,8 @@ Sorbet/ValidSigil:
   - bin/**/*
   - db/**/*.rb
   - script/**/*
+
+Sorbet/VoidCheckedTests:
+  Description: 'Forbid `.void.checked(:tests)`'
+  Enabled: true
+  VersionAdded: 0.7.7
