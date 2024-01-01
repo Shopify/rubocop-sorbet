@@ -46,9 +46,9 @@ module RuboCop
         private_constant(:MESSAGE)
 
         private def top_level_void(node)
-          return nil unless node.is_a?(RuboCop::AST::SendNode)
+          return unless node.is_a?(RuboCop::AST::SendNode)
 
-          if node.method_name == :void
+          if node.method?(:void)
             node
           else
             top_level_void(node.receiver)
@@ -59,8 +59,7 @@ module RuboCop
           checked_send = checked_tests(node).first
           return unless checked_send
 
-          _recv, _block_args, body = *node
-          void_send = top_level_void(body)
+          void_send = top_level_void(node.body)
 
           return unless void_send
 

@@ -4,10 +4,10 @@ require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::VoidCheckedTests, :config) do
   def message
-      "The return value in a `.void.checked(:tests)` makes test behavior " \
-        "diffferent from non-test behavior. Either use " \
-        "`.returns(T.anything).checked(:tests)` to keep checking in tests, " \
-        "or `.void.checked(:never)` to leave the return completely untouched."
+    "The return value in a `.void.checked(:tests)` makes test behavior " \
+      "diffferent from non-test behavior. Either use " \
+      "`.returns(T.anything).checked(:tests)` to keep checking in tests, " \
+      "or `.void.checked(:never)` to leave the return completely untouched."
   end
 
   describe("offenses") do
