@@ -39,10 +39,10 @@ module RuboCop
         PATTERN
 
         MESSAGE =
-          "The return value in a `.void.checked(:tests)` makes test behavior " \
-            "diffferent from non-test behavior. Either use " \
-            "`.returns(T.anything).checked(:tests)` to keep checking in tests, " \
-            "or `.void.checked(:never)` to leave the return completely untouched."
+          "Returning `.void` from a sig marked `.checked(:tests)` means that the" \
+            "method will return a different value in non-test environments (possibly" \
+            "with different truthiness). Either use `.returns(T.anything).checked(:tests)`" \
+            "to keep checking in tests, or `.void.checked(:never)` to leave it untouched."
         private_constant(:MESSAGE)
 
         private def top_level_void(node)
