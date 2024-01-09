@@ -69,5 +69,22 @@ RSpec.describe(RuboCop::Cop::Sorbet::VoidCheckedTests, :config) do
         def foo(&blk); end
       RUBY
     end
+
+    it("allows .void in initialize methods") do
+      expect_no_offenses(<<~RUBY)
+        sig { void.checked(:tests) }
+        def initialize; end
+      RUBY
+    end
+
+    it("handles weird nodes between sig and def") do
+      # Happened in real test case in wild, where an initial version of this
+      # cop raised an uncaught exception.
+      expect_no_offenses(<<~RUBY)
+        sig { void.checked(:tests) }
+        X = 1
+        def initialize; end
+      RUBY
+    end
   end
 end

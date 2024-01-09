@@ -35,13 +35,13 @@ module RuboCop
 
         # @!method checked_tests(node)
         def_node_search(:checked_tests, <<~PATTERN)
-          (send _ :checked (sym :tests))
+          ({csend send} _ :checked (sym :tests))
         PATTERN
 
         MESSAGE =
-          "Returning `.void` from a sig marked `.checked(:tests)` means that the" \
-            "method will return a different value in non-test environments (possibly" \
-            "with different truthiness). Either use `.returns(T.anything).checked(:tests)`" \
+          "Returning `.void` from a sig marked `.checked(:tests)` means that the " \
+            "method will return a different value in non-test environments (possibly " \
+            "with different truthiness). Either use `.returns(T.anything).checked(:tests)` " \
             "to keep checking in tests, or `.void.checked(:never)` to leave it untouched."
         private_constant(:MESSAGE)
 
@@ -50,14 +50,25 @@ module RuboCop
 
           if node.method?(:void)
             node
+          elsif (recv = node.receiver)
+            top_level_void(recv)
           else
-            top_level_void(node.receiver)
+            nil
           end
         end
 
         def on_signature(node)
           checked_send = checked_tests(node).first
           return unless checked_send
+
+          if (parent = node.parent) && (sibling_index = node.sibling_index)
+            later_siblings = parent.children[(sibling_index + 1)..]
+            if (def_node = later_siblings.find { |sibling| sibling.is_a?(RuboCop::AST::DefNode) })
+              # Sorbet requires that `initialize` methods return `.void`
+              # (A stylistic convention which happens to be enforced by Sorbet)
+              return if def_node.method_name == :initialize
+            end
+          end
 
           void_send = top_level_void(node.body)
 
