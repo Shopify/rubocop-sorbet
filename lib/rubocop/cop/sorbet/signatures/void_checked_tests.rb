@@ -52,8 +52,6 @@ module RuboCop
             node
           elsif (recv = node.receiver)
             top_level_void(recv)
-          else
-            nil
           end
         end
 
@@ -66,7 +64,7 @@ module RuboCop
             if (def_node = later_siblings.find { |sibling| sibling.is_a?(RuboCop::AST::DefNode) })
               # Sorbet requires that `initialize` methods return `.void`
               # (A stylistic convention which happens to be enforced by Sorbet)
-              return if def_node.method_name == :initialize
+              return if def_node.method?(:initialize)
             end
           end
 

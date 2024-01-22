@@ -77,7 +77,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::VoidCheckedTests, :config) do
       RUBY
     end
 
-    it("handles weird nodes between sig and def") do
+    it("allows weird nodes between sig and def") do
       # Happened in real test case in wild, where an initial version of this
       # cop raised an uncaught exception.
       expect_no_offenses(<<~RUBY)
