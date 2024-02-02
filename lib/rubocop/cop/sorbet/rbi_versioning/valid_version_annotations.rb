@@ -19,17 +19,15 @@ module RuboCop
       #   # @version <= 4.3-preview
       #
       class ValidVersionAnnotations < Base
+        include RBIVersionAnnotationHelper
+
         MSG = "Invalid gem version(s) detected: %<versions>s"
 
-        VERSION_PREFIX = "# @version "
-
         def on_new_investigation
-          processed_source.comments.each_with_index do |comment, _comment_idx|
-            next unless version_annotation?(comment)
-
+          rbi_version_annotations.each do |comment|
             invalid_versions = []
 
-            comment.text.delete_prefix(VERSION_PREFIX).split(", ").each do |version|
+            versions.each do |version|
               invalid_versions << version unless valid_version?(version)
             end
 
@@ -41,10 +39,6 @@ module RuboCop
         end
 
         private
-
-        def version_annotation?(comment)
-          comment.text.start_with?(VERSION_PREFIX)
-        end
 
         def valid_version?(version_string)
           parts = version_string.strip.split(" ")

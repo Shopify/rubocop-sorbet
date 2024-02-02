@@ -301,7 +301,7 @@ Sorbet/ValidVersionAnnotations:
   Include:
   - "**/*.rbi"
 
-Sorbet/NoOverlappingAndAnnotations:
+Sorbet/ForbidOverlappingAndAnnotations:
   Description: 'Ensures any gem version annotations using "and" operation do not overlap unnecessarily.'
   Enabled: pending
   VersionAdded: '<<next>>'
