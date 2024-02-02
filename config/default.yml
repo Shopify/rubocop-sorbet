@@ -300,3 +300,8 @@ Sorbet/ValidVersionAnnotations:
   VersionAdded: '<<next>>'
   Include:
   - "**/*.rbi"
+
+Sorbet/NoOverlappingAndAnnotations:
+  Description: 'Ensures any gem version annotations using "and" operation do not overlap unnecessarily.'
+  Enabled: pending
+  VersionAdded: '<<next>>'
