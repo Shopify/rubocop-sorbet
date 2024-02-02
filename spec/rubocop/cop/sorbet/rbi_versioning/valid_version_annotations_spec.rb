@@ -29,14 +29,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidVersionAnnotations, :config) do
   it "registers an offense when gem version is not formatted correctly" do
     expect_offense(<<~RUBY)
       # @version = blah
-                 ^^^^^^ #{RuboCop::Cop::Sorbet::ValidVersionAnnotations::MSG}
+      ^^^^^^^^^^^^^^^^^ Invalid gem version(s) detected: = blah
     RUBY
   end
 
   it "registers an offense when one gem version out of the list is not formatted correctly" do
     expect_offense(<<~RUBY)
       # @version < 3.2, > 4, ~> five
-                             ^^^^^^^ #{RuboCop::Cop::Sorbet::ValidVersionAnnotations::MSG}
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Invalid gem version(s) detected: ~> five
     RUBY
   end
 
@@ -44,7 +44,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ValidVersionAnnotations, :config) do
     expect_offense(<<~RUBY)
       # @version < 3.2, > 4
       # @version ~> five
-                 ^^^^^^^ #{RuboCop::Cop::Sorbet::ValidVersionAnnotations::MSG}
+      ^^^^^^^^^^^^^^^^^^ Invalid gem version(s) detected: ~> five
+    RUBY
+  end
+
+  it "registers an offense for multiple incorrectly formatted versions" do
+    expect_offense(<<~RUBY)
+      # @version < 3.2, ~> five, = blah
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Invalid gem version(s) detected: ~> five, = blah
     RUBY
   end
 end
