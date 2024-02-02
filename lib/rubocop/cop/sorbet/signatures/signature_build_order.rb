@@ -23,11 +23,11 @@ module RuboCop
       #   # good
       #   sig { abstract.void }
       #
-      #  # bad
-      #  sig { returns(Integer).params(x: Integer) }
+      #   # bad
+      #   sig { returns(Integer).params(x: Integer) }
       #
-      #  # good
-      #  sig { params(x: Integer).returns(Integer) }
+      #   # good
+      #   sig { params(x: Integer).returns(Integer) }
       class SignatureBuildOrder < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
         include SignatureHelp
 

@@ -740,12 +740,6 @@ Checks for the correct order of sig builder methods:
 - returns, or void
 - soft, checked, or on_failure
 
- # bad
- sig { returns(Integer).params(x: Integer) }
-
- # good
- sig { params(x: Integer).returns(Integer) }
-
 ### Examples
 
 ```ruby
@@ -754,6 +748,12 @@ sig { void.abstract }
 
 # good
 sig { abstract.void }
+
+# bad
+sig { returns(Integer).params(x: Integer) }
+
+# good
+sig { params(x: Integer).returns(Integer) }
 ```
 
 ## Sorbet/SingleLineRbiClassModuleDefinitions
