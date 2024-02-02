@@ -38,6 +38,7 @@ In the following section you find all available cops:
 * [Sorbet/StrongSigil](cops_sorbet.md#sorbetstrongsigil)
 * [Sorbet/TrueSigil](cops_sorbet.md#sorbettruesigil)
 * [Sorbet/TypeAliasName](cops_sorbet.md#sorbettypealiasname)
+* [Sorbet/ValidGemVersionAnnotations](cops_sorbet.md#sorbetvalidgemversionannotations)
 * [Sorbet/ValidSigil](cops_sorbet.md#sorbetvalidsigil)
 
 <!-- END_COP_LIST -->
