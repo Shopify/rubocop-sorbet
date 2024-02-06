@@ -188,12 +188,12 @@ Sorbet/BuggyObsoleteStrictMemoization:
     Checks for the a mistaken variant of the "obsolete memoization pattern" that used to be required
     for older Sorbet versions in `#typed: strict` files. The mistaken variant would overwrite the ivar with `nil`
     on every call, causing the memoized value to be discarded and recomputed on every call.
-    
+
     This cop will correct it to read from the ivar instead of `nil`, which will memoize it correctly.
-    
+
     The result of this correction will be the "obsolete memoization pattern", which can further be corrected by
     the `Sorbet/ObsoleteStrictMemoization` cop.
-    
+
     See `Sorbet/ObsoleteStrictMemoization` for more details.
   Enabled: true
   VersionAdded: '0.7.3'
@@ -293,3 +293,15 @@ Sorbet/ValidSigil:
   - bin/**/*
   - db/**/*.rb
   - script/**/*
+
+Sorbet/ValidGemVersionAnnotations:
+  Description: >-
+                  Ensures all gem version annotations in RBI files are correctly formatted per
+                  Ruby's gem version specification guidelines.
+
+                  See the rubygems.org documentation for more information on how to format gem
+                  versions: https://guides.rubygems.org/patterns/#pessimistic-version-constraint
+  Enabled: true
+  VersionAdded: 0.7.7
+  Include:
+  - "**/*.rbi"
