@@ -409,6 +409,63 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
       expect(autocorrect_source(source)).to(eq(corrected))
     end
 
+    it "handles spaces in types" do
+      source = <<~RUBY
+        class Foo < T::Struct
+          const :foo, T.any(Integer, String)
+          const :bar, T.nilable(
+            T.any(Integer, String)
+          )
+          const :baz, T::Hash[Integer, String]
+          const :qux, T::Hash[Symbol, T.any(Integer, String)]
+          const :quux, T.any(
+            T::Hash[Integer, String],
+            String
+          )
+        end
+      RUBY
+
+      corrected = <<~RUBY
+        class Foo
+          extend T::Sig
+
+          sig { returns(T.any(Integer, String)) }
+          attr_reader :foo
+
+          sig { returns(T.nilable(T.any(Integer, String))) }
+          attr_reader :bar
+
+          sig { returns(T::Hash[Integer, String]) }
+          attr_reader :baz
+
+          sig { returns(T::Hash[Symbol, T.any(Integer, String)]) }
+          attr_reader :qux
+
+          sig { returns(T.any(T::Hash[Integer, String], String)) }
+          attr_reader :quux
+
+          sig do
+            params(
+              foo: T.any(Integer, String),
+              baz: T::Hash[Integer, String],
+              qux: T::Hash[Symbol, T.any(Integer, String)],
+              quux: T.any(T::Hash[Integer, String], String),
+              bar: T.nilable(T.any(Integer, String))
+            ).void
+          end
+          def initialize(foo:, baz:, qux:, quux:, bar: nil)
+            @foo = foo
+            @bar = bar
+            @baz = baz
+            @qux = qux
+            @quux = quux
+          end
+        end
+      RUBY
+
+      expect(autocorrect_source(source)).to(eq(corrected))
+    end
+
     it "strips new lines from type definitions" do
       source = <<~RUBY
         class Foo < T::Struct

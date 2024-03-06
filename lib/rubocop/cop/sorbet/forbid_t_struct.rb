@@ -153,7 +153,8 @@ module RuboCop
           end
 
           def type
-            @type.gsub(/[[:space:]]+/, "").strip
+            copy = @type.gsub(/[[:space:]]+/, "").strip # Remove newlines and spaces
+            copy.gsub(",", ", ") # Add a space after each comma
           end
         end
 
