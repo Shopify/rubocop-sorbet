@@ -408,5 +408,139 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
 
       expect(autocorrect_source(source)).to(eq(corrected))
     end
+
+    it "handles spaces in types" do
+      source = <<~RUBY
+        class Foo < T::Struct
+          const :foo, T.any(Integer, String)
+          const :bar, T.nilable(
+            T.any(Integer, String)
+          )
+          const :baz, T::Hash[Integer, String]
+          const :qux, T::Hash[Symbol, T.any(Integer, String)]
+          const :quux, T.any(
+            T::Hash[Integer, String],
+            String
+          )
+        end
+      RUBY
+
+      corrected = <<~RUBY
+        class Foo
+          extend T::Sig
+
+          sig { returns(T.any(Integer, String)) }
+          attr_reader :foo
+
+          sig { returns(T.nilable(T.any(Integer, String))) }
+          attr_reader :bar
+
+          sig { returns(T::Hash[Integer, String]) }
+          attr_reader :baz
+
+          sig { returns(T::Hash[Symbol, T.any(Integer, String)]) }
+          attr_reader :qux
+
+          sig { returns(T.any(T::Hash[Integer, String], String)) }
+          attr_reader :quux
+
+          sig do
+            params(
+              foo: T.any(Integer, String),
+              baz: T::Hash[Integer, String],
+              qux: T::Hash[Symbol, T.any(Integer, String)],
+              quux: T.any(T::Hash[Integer, String], String),
+              bar: T.nilable(T.any(Integer, String))
+            ).void
+          end
+          def initialize(foo:, baz:, qux:, quux:, bar: nil)
+            @foo = foo
+            @bar = bar
+            @baz = baz
+            @qux = qux
+            @quux = quux
+          end
+        end
+      RUBY
+
+      expect(autocorrect_source(source)).to(eq(corrected))
+    end
+
+    it "strips new lines from type definitions" do
+      source = <<~RUBY
+        class Foo < T::Struct
+          const :foo, T.nilable(
+            Integer
+          )
+        end
+      RUBY
+
+      corrected = <<~RUBY
+        class Foo
+          extend T::Sig
+
+          sig { returns(T.nilable(Integer)) }
+          attr_reader :foo
+
+          sig { params(foo: T.nilable(Integer)).void }
+          def initialize(foo: nil)
+            @foo = foo
+          end
+        end
+      RUBY
+
+      expect(autocorrect_source(source)).to(eq(corrected))
+    end
+
+    it "splits long lines" do
+      source = <<~RUBY
+        class Foo < T::Struct
+          const :foo, LONG_CONSTANT_NAME_WITH_MANY_CHARS, default: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+          const :bar, LONG_CONSTANT_NAME_WITH_MANY_CHARS, default: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+          const :baz, LONG_CONSTANT_NAME_WITH_MANY_CHARS, default: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+          const :qux, LONG_CONSTANT_NAME_WITH_MANY_CHARS, default: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+        end
+      RUBY
+
+      corrected = <<~RUBY
+        class Foo
+          extend T::Sig
+
+          sig { returns(LONG_CONSTANT_NAME_WITH_MANY_CHARS) }
+          attr_reader :foo
+
+          sig { returns(LONG_CONSTANT_NAME_WITH_MANY_CHARS) }
+          attr_reader :bar
+
+          sig { returns(LONG_CONSTANT_NAME_WITH_MANY_CHARS) }
+          attr_reader :baz
+
+          sig { returns(LONG_CONSTANT_NAME_WITH_MANY_CHARS) }
+          attr_reader :qux
+
+          sig do
+            params(
+              foo: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+              bar: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+              baz: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+              qux: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+            ).void
+          end
+          def initialize(
+            foo: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+            bar: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+            baz: LONG_CONSTANT_NAME_WITH_MANY_CHARS,
+            qux: LONG_CONSTANT_NAME_WITH_MANY_CHARS
+          )
+            @foo = foo
+            @bar = bar
+            @baz = baz
+            @qux = qux
+          end
+        end
+      RUBY
+
+      expect(autocorrect_source(source)).to(eq(corrected))
+    end
   end
 end
