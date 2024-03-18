@@ -733,12 +733,11 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.3.0 | -
 
-Checks for the correct order of sig builder methods:
-- abstract, override, or overridable
-- type_parameters
-- params
-- returns, or void
-- soft, checked, or on_failure
+Checks for the correct order of `sig` builder methods.
+
+Options:
+
+* `Order`: The order in which to enforce the builder methods are called.
 
 ### Examples
 
@@ -755,6 +754,12 @@ sig { returns(Integer).params(x: Integer) }
 # good
 sig { params(x: Integer).returns(Integer) }
 ```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Order | `final`, `abstract`, `implementation`, `override`, `overridable`, `type_parameters`, `params`, `bind`, `returns`, `void`, `soft`, `checked`, `on_failure` | Array
 
 ## Sorbet/SingleLineRbiClassModuleDefinitions
 
