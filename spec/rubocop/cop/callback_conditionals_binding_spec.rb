@@ -69,6 +69,16 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         end
       RUBY
     end
+
+    it("allows blocks that already have a T.bind") do
+      expect_no_offenses <<~RUBY
+        module Namespace
+          class Post
+            validates :it, presence: true, if: -> { T.bind(self, Namespace::Post).should? }
+          end
+        end
+      RUBY
+    end
   end
 
   describe("offenses") do
@@ -76,7 +86,16 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> { should? && ready? }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+        end
+      RUBY
+
+      expect_correction(<<~RUBY)
+        class Post < ApplicationRecord
+          before_create :do_it, if: -> {
+            T.bind(self, Post)
+            should? && ready?
+          }
         end
       RUBY
     end
@@ -85,7 +104,16 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, unless: -> { shouldnt? }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+        end
+      RUBY
+
+      expect_correction(<<~RUBY)
+        class Post < ApplicationRecord
+          before_create :do_it, unless: -> {
+            T.bind(self, Post)
+            shouldnt?
+          }
         end
       RUBY
     end
@@ -94,8 +122,17 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, unless: lambda {
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
-             shouldnt?
+                                ^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+            shouldnt?
+          }
+        end
+      RUBY
+
+      expect_correction(<<~RUBY)
+        class Post < ApplicationRecord
+          before_create :do_it, unless: lambda {
+            T.bind(self, Post)
+            shouldnt?
           }
         end
       RUBY
@@ -105,85 +142,72 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, unless: -> do
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
-             shouldnt?
+                                ^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+            shouldnt?
           end
         end
       RUBY
-    end
-  end
 
-  describe("autocorrect") do
-    it("autocorrects by adding the missing binding") do
-      source = <<~RUBY
+      expect_correction(<<~RUBY)
         class Post < ApplicationRecord
-          before_create :do_it, if: -> { should? && ready? }
+          before_create :do_it, unless: -> do
+            T.bind(self, Post)
+            shouldnt?
+          end
         end
       RUBY
-
-      corrected_source = <<~CORRECTED
-        class Post < ApplicationRecord
-          before_create :do_it, if: -> {
-            T.bind(self, Post)
-            should? && ready?
-          }
-        end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
     end
 
     it("autocorrects with chaining if the lambda includes a single statement") do
-      source = <<~RUBY
+      expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> { should? }
+                                ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> {
             T.bind(self, Post)
             should?
           }
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
     it("autocorrects multi line blocks with a single statement") do
-      source = <<~RUBY
+      expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> do
+                                ^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             should?
           end
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> do
             T.bind(self, Post)
             should?
           end
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
-    it("autocorrects multi line blocks with multie statements") do
-      source = <<~RUBY
+    it("autocorrects multi line blocks with multiple statements") do
+      expect_offense <<~RUBY
         class Post < ApplicationRecord
           before_create :do_it, if: -> do
+                                ^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             a = should?
             a && ready?
           end
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         class Post < ApplicationRecord
           before_create :do_it, if: -> do
             T.bind(self, Post)
@@ -191,21 +215,20 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
             a && ready?
           end
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
     it("autocorrects with the correct type when there are multiple parent levels") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         class Post
           extend Something
 
           validates :it, presence: true, if: -> {should? && ready?}
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         class Post
           extend Something
 
@@ -214,21 +237,20 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
             should? && ready?
           }
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
     it("autocorrects to multiline if the receiver of the send node is not self") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         class Post
           extend Something
 
           validates :it, presence: true, if: -> { %w(first second).include?(name) }
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         class Post
           extend Something
 
@@ -237,23 +259,22 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
             %w(first second).include?(name)
           }
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
     it("doesn't try to add more lines if already a do end block") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         class Post
           extend Something
 
           validates :it, presence: true, if: -> do
+                                         ^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             should? && ready?
           end
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         class Post
           extend Something
 
@@ -262,21 +283,20 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
             should? && ready?
           end
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
     it("corrects chained methods to a single statement") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         class Post
           extend Something
 
           validates :it, presence: true, if: -> { something.present? }
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         class Post
           extend Something
 
@@ -285,42 +305,40 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
             something.present?
           }
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
     it("does not try to chain if the condition is an instance variable") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         class Post
           validates :it, presence: true, if: lambda { @ready }
+                                         ^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         class Post
           validates :it, presence: true, if: lambda {
             T.bind(self, Post)
             @ready
           }
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
     it("does not use fully qualified names for corrections") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         module First
           module Second
             class Post
               validates :it, presence: true, if: -> { should? }
+                                             ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             end
           end
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         module First
           module Second
             class Post
@@ -331,44 +349,43 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
             end
           end
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
     it("uses fully qualified name if defined on the same line") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         class First::Second::Post
           validates :it, presence: true, if: -> { should? }
+                                         ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, First::Second::Post)
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         class First::Second::Post
           validates :it, presence: true, if: -> {
             T.bind(self, First::Second::Post)
             should?
           }
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
     it("finds the right class when there are multiple inside a namespace") do
-      source = <<~RUBY
+      expect_offense <<~RUBY
         module First
           class Article
             validates :that, if: -> { must? }
+                             ^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Article)
           end
 
           class Second::Post
             validates :it, presence: true, if: -> { should? }
+                                           ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Second::Post)
           end
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         module First
           class Article
             validates :that, if: -> {
@@ -384,48 +401,99 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
             }
           end
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
-    it("accepts proc as block") do
-      source = <<~RUBY
+    it("detects offenses in procs") do
+      expect_offense <<~RUBY
         class Post
           validates :it, presence: true, if: proc { should? }
+                                         ^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
+      expect_correction <<~RUBY
         class Post
           validates :it, presence: true, if: proc {
             T.bind(self, Post)
             should?
           }
         end
-      CORRECTED
-
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+      RUBY
     end
 
-    it("does not attempt to correct blocks that already have a T.bind") do
-      source = <<~RUBY
-        module Namespace
-          class Post
-            validates :it, presence: true, if: -> { T.bind(self, Namespace::Post).should? }
-          end
+    it "handles the presence of both if: and unless: conditionals" do
+      expect_offense(<<~RUBY)
+        class Post < ApplicationRecord
+          before_create :do_it, if: -> { should? }, unless: -> { shouldnt? }
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
-      corrected_source = <<~CORRECTED
-        module Namespace
-          class Post
-            validates :it, presence: true, if: -> { T.bind(self, Namespace::Post).should? }
+      expect_correction(<<~RUBY)
+        class Post < ApplicationRecord
+          before_create :do_it, if: -> {
+            T.bind(self, Post)
+            should?
+          }, unless: -> {
+            T.bind(self, Post)
+            shouldnt?
+          }
+        end
+      RUBY
+    end
+
+    it "detects offenses inside single line do-end blocks" do
+      expect_offense(<<~RUBY)
+        class Post < ApplicationRecord
+          before_create :do_it, if: -> do should end
+                                ^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+          after_create :do_it, if: -> do should end
+                               ^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+        end
+      RUBY
+
+      expect_correction(<<~RUBY)
+        class Post < ApplicationRecord
+          before_create :do_it, if: -> do
+            T.bind(self, Post)
+            should
+          end
+          after_create :do_it, if: -> do
+            T.bind(self, Post)
+            should
           end
         end
-      CORRECTED
+      RUBY
+    end
 
-      expect(autocorrect_source(source)).to(eq(corrected_source))
+    describe "custom indentation widths" do
+      let(:config) do
+        RuboCop::Config.new(
+          "Layout/IndentationWidth" => {
+            "Width" => 4,
+          },
+        )
+      end
+
+      it "indents the autocorrected code with the same width as the original code" do
+        expect_offense(<<~RUBY)
+          class Post < ApplicationRecord
+              before_create :do_it, if: -> { should? }
+                                    ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+          end
+        RUBY
+
+        expect_correction(<<~RUBY)
+          class Post < ApplicationRecord
+              before_create :do_it, if: -> {
+                  T.bind(self, Post)
+                  should?
+              }
+          end
+        RUBY
+      end
     end
   end
 end

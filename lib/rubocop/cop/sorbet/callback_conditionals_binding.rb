@@ -32,8 +32,13 @@ module RuboCop
       #       true
       #     end
       #   end
-      class CallbackConditionalsBinding < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
-        CALLBACKS = [
+      class CallbackConditionalsBinding < RuboCop::Cop::Base
+        extend AutoCorrector
+        include Alignment
+
+        MSG = "Callback conditionals should be bound to the right type. Use T.bind(self, %{type})"
+
+        RESTRICT_ON_SEND = [
           :validate,
           :validates,
           :validates_with,
@@ -72,97 +77,56 @@ module RuboCop
           :append_after_action,
         ].freeze
 
-        def autocorrect(node)
-          lambda do |corrector|
-            options = node.each_child_node.find(&:hash_type?)
+        # @!method argumentless_unbound_callable_callback_conditional?(node)
+        def_node_matcher :argumentless_unbound_callable_callback_conditional?, <<~PATTERN
+          (pair (sym {:if :unless})                          # callback conditional
+            $(block
+              (send nil? {:lambda :proc})                    # callable
+              (args)                                         # argumentless
+              !`(send(const {cbase nil?} :T) :bind self $_ ) # unbound
+            )
+          )
+        PATTERN
 
-            conditional = nil
-            options.each_pair do |keyword, block|
-              if keyword.value == :if || keyword.value == :unless
-                conditional = block
-                break
+        def on_send(node)
+          type = immediately_enclosing_module_name(node)
+          return unless type
+
+          node.arguments.each do |arg|
+            next unless arg.hash_type? # Skip non-keyword arguments
+
+            arg.each_child_node do |pair_node|
+              argumentless_unbound_callable_callback_conditional?(pair_node) do |block|
+                add_offense(pair_node, message: format(MSG, type: type)) do |corrector|
+                  block_opening_indentation = block.source_range.source_line[/\A */]
+                  block_body_indentation    = block_opening_indentation + SPACE * configured_indentation_width
+
+                  if block.single_line? # then convert to multi-line block first
+                    # 1. Replace whitespace (if any) between the opening delimiter and the block body,
+                    #    with newline and the correct indentation for the block body.
+                    preceeding_whitespace_range = block.loc.begin.end.join(block.body.source_range.begin)
+                    corrector.replace(preceeding_whitespace_range, "\n#{block_body_indentation}")
+
+                    # 2. Replace whitespace (if any) between the block body and the closing delimiter,
+                    #    with newline and the same indentation as the block opening.
+                    trailing_whitespace_range = block.body.source_range.end.join(block.loc.end.begin)
+                    corrector.replace(trailing_whitespace_range, "\n#{block_opening_indentation}")
+                  end
+
+                  # Prepend the binding to the block body
+                  corrector.insert_before(block.body, "T.bind(self, #{type})\n#{block_body_indentation}")
+                end
               end
             end
-
-            _, _, block = conditional.child_nodes
-
-            # Find the class node and check if it includes a namespace on the
-            # same line e.g.: Namespace::Class, which will require the fully
-            # qualified name
-
-            klass = node.ancestors.find(&:class_type?)
-
-            expected_class = if klass.children.first.children.first.nil?
-              node.parent_module_name.split("::").last
-            else
-              klass.identifier.source
-            end
-
-            do_end_lambda = conditional.source.include?("do") && conditional.source.include?("end")
-
-            unless do_end_lambda
-              # We are converting a one line lambda into a multiline
-              # Remove the space after the `{`
-              if /{\s/.match?(conditional.source)
-                corrector.remove_preceding(block, 1)
-              end
-
-              # Remove the last space and `}` and re-add it with a line break
-              # and the correct indentation
-              base_indentation = " " * node.loc.column
-              chars_to_remove = /\s}/.match?(conditional.source) ? 2 : 1
-              corrector.remove_trailing(conditional, chars_to_remove)
-              corrector.insert_after(block, "\n#{base_indentation}}")
-            end
-
-            # Add the T.bind
-            indentation = " " * (node.loc.column + 2)
-            line_start = do_end_lambda ? "" : "\n#{indentation}"
-            bind = "#{line_start}T.bind(self, #{expected_class})\n#{indentation}"
-
-            corrector.insert_before(block, bind)
           end
         end
 
-        def on_send(node)
-          return unless CALLBACKS.include?(node.method_name)
+        private
 
-          options = node.each_child_node.find(&:hash_type?)
-          return if options.nil?
-
-          conditional = nil
-          options.each_pair do |keyword, block|
-            next unless keyword.sym_type?
-
-            if keyword.value == :if || keyword.value == :unless
-              conditional = block
-              break
-            end
-          end
-
-          return if conditional.nil? || conditional.array_type? || conditional.child_nodes.empty?
-
-          return unless conditional.arguments.empty?
-
-          type, _, block = conditional.child_nodes
-          return unless type.lambda_or_proc? || type.block_literal?
-
-          klass = node.ancestors.find(&:class_type?)
-
-          expected_class = if klass&.children&.first&.children&.first.nil?
-            node.parent_module_name&.split("::")&.last
-          else
-            klass.identifier.source
-          end
-
-          return if expected_class.nil?
-
-          unless block.source.include?("T.bind(self")
-            add_offense(
-              node,
-              message: "Callback conditionals should be bound to the right type. Use T.bind(self, #{expected_class})",
-            )
-          end
+        # Find the immediately enclosing class or module name.
+        # Returns `nil`` if the immediate parent (skipping begin if present) is not a class or module.
+        def immediately_enclosing_module_name(node)
+          (node.parent&.begin_type? ? node.parent.parent : node.parent)&.defined_module_name
         end
       end
     end
