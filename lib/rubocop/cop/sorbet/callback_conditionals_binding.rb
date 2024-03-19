@@ -97,7 +97,7 @@ module RuboCop
 
             arg.each_child_node do |pair_node|
               argumentless_unbound_callable_callback_conditional?(pair_node) do |block|
-                add_offense(node, message: format(MSG, type: type)) do |corrector|
+                add_offense(pair_node, message: format(MSG, type: type)) do |corrector|
                   block_opening_indentation = block.source_range.source_line[/\A */]
                   block_body_indentation    = block_opening_indentation + SPACE * configured_indentation_width
 

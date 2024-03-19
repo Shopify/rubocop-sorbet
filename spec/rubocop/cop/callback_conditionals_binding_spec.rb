@@ -86,7 +86,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> { should? && ready? }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -104,7 +104,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, unless: -> { shouldnt? }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -122,7 +122,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, unless: lambda {
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             shouldnt?
           }
         end
@@ -142,7 +142,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, unless: -> do
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             shouldnt?
           end
         end
@@ -162,7 +162,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> { should? }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -180,7 +180,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> do
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             should?
           end
         end
@@ -200,7 +200,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense <<~RUBY
         class Post < ApplicationRecord
           before_create :do_it, if: -> do
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             a = should?
             a && ready?
           end
@@ -224,7 +224,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
           extend Something
 
           validates :it, presence: true, if: -> {should? && ready?}
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -246,7 +246,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
           extend Something
 
           validates :it, presence: true, if: -> { %w(first second).include?(name) }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -268,7 +268,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
           extend Something
 
           validates :it, presence: true, if: -> do
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                         ^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             should? && ready?
           end
         end
@@ -292,7 +292,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
           extend Something
 
           validates :it, presence: true, if: -> { something.present? }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -312,7 +312,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense <<~RUBY
         class Post
           validates :it, presence: true, if: lambda { @ready }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                         ^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -332,7 +332,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
           module Second
             class Post
               validates :it, presence: true, if: -> { should? }
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                             ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
             end
           end
         end
@@ -356,7 +356,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense <<~RUBY
         class First::Second::Post
           validates :it, presence: true, if: -> { should? }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, First::Second::Post)
+                                         ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, First::Second::Post)
         end
       RUBY
 
@@ -375,12 +375,12 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         module First
           class Article
             validates :that, if: -> { must? }
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Article)
+                             ^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Article)
           end
 
           class Second::Post
             validates :it, presence: true, if: -> { should? }
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Second::Post)
+                                           ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Second::Post)
           end
         end
       RUBY
@@ -408,7 +408,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense <<~RUBY
         class Post
           validates :it, presence: true, if: proc { should? }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                         ^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -426,7 +426,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> { should? }, unless: -> { shouldnt? }
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -447,9 +448,9 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> do should end
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                ^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
           after_create :do_it, if: -> do should end
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                               ^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
         end
       RUBY
 
@@ -480,7 +481,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         expect_offense(<<~RUBY)
           class Post < ApplicationRecord
               before_create :do_it, if: -> { should? }
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
+                                    ^^^^^^^^^^^^^^^^^^ Callback conditionals should be bound to the right type. Use T.bind(self, Post)
           end
         RUBY
 
