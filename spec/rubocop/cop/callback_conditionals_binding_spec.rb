@@ -131,11 +131,9 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       expect_correction(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, unless: lambda {
-           #{""}
             T.bind(self, Post)
             shouldnt?
           }
-         #{""}
         end
       RUBY
     end
@@ -424,7 +422,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
       RUBY
     end
 
-    it "detects only the first offense in the presence of both if: and unless: conditionals" do
+    it "handles the presence of both if: and unless: conditionals" do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> { should? }, unless: -> { shouldnt? }
@@ -437,12 +435,15 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
           before_create :do_it, if: -> {
             T.bind(self, Post)
             should?
-          }, unless: -> { shouldnt? }
+          }, unless: -> {
+            T.bind(self, Post)
+            shouldnt?
+          }
         end
       RUBY
     end
 
-    it "detects offenses inside single line do-end blocks but corrects them poorly" do
+    it "detects offenses inside single line do-end blocks" do
       expect_offense(<<~RUBY)
         class Post < ApplicationRecord
           before_create :do_it, if: -> do should end
@@ -454,10 +455,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
 
       expect_correction(<<~RUBY)
         class Post < ApplicationRecord
-          before_create :do_it, if: -> do T.bind(self, Post)
-            should end
-          after_create :do_it, if: -> do T.bind(self, Post)
-            should end
+          before_create :do_it, if: -> do
+            T.bind(self, Post)
+            should
+          end
+          after_create :do_it, if: -> do
+            T.bind(self, Post)
+            should
+          end
         end
       RUBY
     end
@@ -471,7 +476,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         )
       end
 
-      it "indents the autocorrected code with two spaces" do
+      it "indents the autocorrected code with the same width as the original code" do
         expect_offense(<<~RUBY)
           class Post < ApplicationRecord
               before_create :do_it, if: -> { should? }
@@ -482,8 +487,8 @@ RSpec.describe(RuboCop::Cop::Sorbet::CallbackConditionalsBinding, :config) do
         expect_correction(<<~RUBY)
           class Post < ApplicationRecord
               before_create :do_it, if: -> {
-                T.bind(self, Post)
-                should?
+                  T.bind(self, Post)
+                  should?
               }
           end
         RUBY
