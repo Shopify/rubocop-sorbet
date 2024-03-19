@@ -33,21 +33,18 @@ module RuboCop
       #
       #   # good
       #   { "User" => User }.fetch(class_name)
-      class ConstantsFromStrings < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
-        # @!method constant_from_string?(node)
-        def_node_matcher(:constant_from_string?, <<-PATTERN)
-          (send _ {:constantize :constants :const_get} ...)
-        PATTERN
+      class ConstantsFromStrings < ::RuboCop::Cop::Base
+        MSG = "Don't use `%<method_name>s`, it makes the code harder to understand, less editor-friendly, " \
+          "and impossible to analyze. Replace `%<method_name>s` with a case/when or a hash."
+
+        RESTRICT_ON_SEND = [
+          :constantize,
+          :constants,
+          :const_get,
+        ].freeze
 
         def on_send(node)
-          return unless constant_from_string?(node)
-
-          add_offense(
-            node,
-            location: :selector,
-            message: "Don't use `#{node.method_name}`, it makes the code harder to understand, less editor-friendly, " \
-              "and impossible to analyze. Replace `#{node.method_name}` with a case/when or a hash.",
-          )
+          add_offense(node.selector, message: format(MSG, method_name: node.method_name))
         end
       end
     end
