@@ -356,38 +356,6 @@ or
 include Polaris::Engine.helpers
 ```
 
-## Sorbet/ForbidRBIOutsideOfAllowedPaths
-
-Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
---- | --- | --- | --- | ---
-Enabled | Yes | No | 0.6.1 | -
-
-Makes sure that RBI files are always located under the defined allowed paths.
-
-Options:
-
-* `AllowedPaths`: A list of the paths where RBI files are allowed (default: ["rbi/**", "sorbet/rbi/**"])
-
-### Examples
-
-```ruby
-# bad
-# lib/some_file.rbi
-# other_file.rbi
-
-# good
-# rbi/external_interface.rbi
-# sorbet/rbi/some_file.rbi
-# sorbet/rbi/any/path/for/file.rbi
-```
-
-### Configurable attributes
-
-Name | Default value | Configurable values
---- | --- | ---
-AllowedPaths | `rbi/**`, `sorbet/rbi/**` | Array
-Include | `**/*.rbi` | Array
-
 ## Sorbet/ForbidSuperclassConstLiteral
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
@@ -699,6 +667,38 @@ module SomeModule
   requires_ancestor Minitest::Assertions
 end
 ```
+
+## Sorbet/RBIFilePath
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | 0.6.1 | -
+
+Makes sure that RBI files are always located under the defined allowed paths.
+
+Options:
+
+* `AllowedPaths`: A list of the paths where RBI files are allowed (default: ["rbi/**", "sorbet/rbi/**"])
+
+### Examples
+
+```ruby
+# bad
+# lib/some_file.rbi
+# other_file.rbi
+
+# good
+# rbi/external_interface.rbi
+# sorbet/rbi/some_file.rbi
+# sorbet/rbi/any/path/for/file.rbi
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+AllowedPaths | `rbi/**`, `sorbet/rbi/**` | Array
+Include | `**/*.rbi` | Array
 
 ## Sorbet/RedundantExtendTSig
 

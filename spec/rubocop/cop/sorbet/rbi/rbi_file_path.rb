@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
+RSpec.describe(RuboCop::Cop::Sorbet::RBIFilePath, :config) do
   describe "with default configuration" do
     it "registers an offense if an RBI file is outside AllowedPaths" do
       expect_offense(<<~RUBY, filename: "some/dir/file.rbi")

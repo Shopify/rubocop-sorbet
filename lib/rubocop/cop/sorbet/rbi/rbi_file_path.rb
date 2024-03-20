@@ -20,7 +20,7 @@ module RuboCop
       #   # rbi/external_interface.rbi
       #   # sorbet/rbi/some_file.rbi
       #   # sorbet/rbi/any/path/for/file.rbi
-      class ForbidRBIOutsideOfAllowedPaths < RuboCop::Cop::Base
+      class RBIFilePath < RuboCop::Cop::Base
         MSG = "RBI file path should match one of: %<allowed_paths>s"
 
         def on_new_investigation
