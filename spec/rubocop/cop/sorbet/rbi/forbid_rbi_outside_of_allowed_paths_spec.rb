@@ -7,7 +7,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
     it "registers an offense if an RBI file is outside AllowedPaths" do
       expect_offense(<<~RUBY, filename: "some/dir/file.rbi")
         # ...
-        ^ RBI file path should match one of: rbi/**, sorbet/rbi/**
+        ^{} RBI file path should match one of: rbi/**, sorbet/rbi/**
       RUBY
     end
 
@@ -40,7 +40,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
     it "registers an offense if an RBI file is outside of the allowed path" do
       expect_offense(<<~RUBY, filename: "some/forbidden/directory/file.rbi")
         # ...
-        ^ RBI file path should match one of: some/allowed/**
+        ^{} RBI file path should match one of: some/allowed/**
       RUBY
     end
 
@@ -73,7 +73,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
     it "registers an offense if an RBI file is outside of the allowed paths" do
       expect_offense(<<~RUBY, filename: "some/forbidden/directory/file.rbi")
         # ...
-        ^ RBI file path should match one of: some/allowed/**, hello/other/allowed/**
+        ^{} RBI file path should match one of: some/allowed/**, hello/other/allowed/**
       RUBY
     end
   end
