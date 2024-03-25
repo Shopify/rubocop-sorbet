@@ -170,6 +170,7 @@ Sorbet/KeywordArgumentOrdering:
                   after those without default values.
   Enabled: true
   VersionAdded: 0.2.0
+  VersionChanged: <<next>>
 
 Sorbet/ObsoleteStrictMemoization:
   Description: >-

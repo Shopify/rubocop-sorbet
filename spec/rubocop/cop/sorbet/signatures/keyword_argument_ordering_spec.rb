@@ -60,4 +60,12 @@ RSpec.describe(RuboCop::Cop::Sorbet::KeywordArgumentOrdering, :config) do
                  ^^^^ Optional keyword arguments must be at the end of the parameter list.
     RUBY
   end
+
+  it "adds offense on offending singleton methods" do
+    expect_offense(<<~RUBY)
+      sig { params(a: Integer, b: String, blk: Proc).void }
+      def self.foo(a: 1, b:, &blk); end
+                   ^^^^ Optional keyword arguments must be at the end of the parameter list.
+    RUBY
+  end
 end

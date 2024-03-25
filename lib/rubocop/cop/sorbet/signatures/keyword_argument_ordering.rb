@@ -42,6 +42,7 @@ module RuboCop
             add_offense(kwoptarg) if kwoptarg.sibling_index < last_kwarg.sibling_index
           end
         end
+        alias_method :on_signed_defs, :on_signed_def
       end
     end
   end
