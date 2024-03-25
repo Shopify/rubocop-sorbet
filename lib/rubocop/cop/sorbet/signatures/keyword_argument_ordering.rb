@@ -19,6 +19,7 @@ module RuboCop
       #   def foo(b:, a: 1); end
       class KeywordArgumentOrdering < ::RuboCop::Cop::Base
         include SignatureHelp
+        extend AutoCorrector
 
         MSG = "Optional keyword arguments must be at the end of the parameter list."
 
@@ -39,7 +40,16 @@ module RuboCop
           return if last_kwarg.nil?
 
           kwoptargs.each do |kwoptarg|
-            add_offense(kwoptarg) if kwoptarg.sibling_index < last_kwarg.sibling_index
+            add_offense(kwoptarg) do |corrector|
+              # NOTE: Fixing the sig's param ordering is not this cop's responsibility
+
+              next_arg = kwoptarg.right_sibling
+              # We need the range of the kwoptarg and the comma and whitespace following it
+              kwoptarg_range_until_next_arg = kwoptarg.source_range.join(next_arg.source_range.begin)
+
+              corrector.remove(kwoptarg_range_until_next_arg)
+              corrector.insert_after(last_kwarg, ", #{kwoptarg.source}")
+            end if kwoptarg.sibling_index < last_kwarg.sibling_index
           end
         end
         alias_method :on_signed_defs, :on_signed_def

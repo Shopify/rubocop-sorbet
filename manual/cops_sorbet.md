@@ -620,7 +620,7 @@ alias to_str to_s
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | No | 0.2.0 | <<next>>
+Enabled | Yes | Yes  | 0.2.0 | <<next>>
 
 Checks for the ordering of keyword arguments required by
 sorbet-runtime. The ordering requires that all keyword arguments
