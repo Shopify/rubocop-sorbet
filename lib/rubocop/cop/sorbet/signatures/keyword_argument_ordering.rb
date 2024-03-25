@@ -17,32 +17,29 @@ module RuboCop
       #   # good
       #   sig { params(b: String, a: Integer).void }
       #   def foo(b:, a: 1); end
-      class KeywordArgumentOrdering < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class KeywordArgumentOrdering < ::RuboCop::Cop::Base
         include SignatureHelp
 
-        def on_signature(node)
-          method_node = node.parent.children[node.sibling_index + 1]
-          return if method_node.nil?
+        MSG = "Optional keyword arguments must be at the end of the parameter list."
 
-          method_parameters = method_node.arguments
+        def on_signed_def(node)
+          kwoptargs = []
+          last_kwarg = nil
 
-          check_order_for_kwoptargs(method_parameters)
-        end
+          node.arguments.each do |arg|
+            if arg.kwoptarg_type?
+              kwoptargs << arg
+              next
+            elsif arg.kwarg_type?
+              last_kwarg = arg
+              next
+            end
+          end
 
-        private
+          return if last_kwarg.nil?
 
-        def check_order_for_kwoptargs(parameters)
-          out_of_kwoptarg = false
-
-          parameters.reverse.each do |param|
-            out_of_kwoptarg = true unless param.kwoptarg_type? || param.blockarg_type? || param.kwrestarg_type?
-
-            next unless param.kwoptarg_type? && out_of_kwoptarg
-
-            add_offense(
-              param,
-              message: "Optional keyword arguments must be at the end of the parameter list.",
-            )
+          kwoptargs.each do |kwoptarg|
+            add_offense(kwoptarg) if kwoptarg.sibling_index < last_kwarg.sibling_index
           end
         end
       end
