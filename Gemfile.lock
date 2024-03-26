@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rubocop-sorbet (0.8.0)
-      rubocop (>= 0.90.0)
+      rubocop (>= 1.45.1)
 
 GEM
   remote: https://rubygems.org/
