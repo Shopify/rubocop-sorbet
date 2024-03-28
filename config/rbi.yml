@@ -2,7 +2,6 @@ require:
   - rubocop-sorbet
 
 AllCops:
-  TargetRubyVersion: 3.0
   DisabledByDefault: true
   Include:
     - '**/*.rbi'

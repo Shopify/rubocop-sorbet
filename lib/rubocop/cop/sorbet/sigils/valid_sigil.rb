@@ -29,7 +29,8 @@ module RuboCop
           strictness = extract_strictness(sigil)
           return unless check_strictness_not_empty(sigil, strictness)
           return unless check_strictness_valid(sigil, strictness)
-          return unless check_strictness_level(sigil, strictness)
+
+          nil unless check_strictness_level(sigil, strictness)
         end
 
         def autocorrect(_node)

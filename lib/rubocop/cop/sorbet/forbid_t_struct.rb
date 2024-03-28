@@ -79,7 +79,7 @@ module RuboCop
             return unless t_struct_prop?(node)
 
             kind = node.method?(:const) ? :attr_reader : :attr_accessor
-            name = node.arguments[0].source.delete_prefix(":")
+            name = node.first_argument.source.delete_prefix(":")
             type = node.arguments[1].source
             default = nil
             factory = nil
