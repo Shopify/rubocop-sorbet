@@ -3,4 +3,5 @@
 #
 # See: https://docs.rubocop.org/rubocop/extensions.html#config-obsoletions
 #
-{}
+renamed:
+  Sorbet/ForbidRBIOutsideOfAllowedPaths: Sorbet/RBIFilePath

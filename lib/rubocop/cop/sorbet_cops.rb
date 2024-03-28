@@ -21,7 +21,7 @@ require_relative "sorbet/obsolete_strict_memoization"
 require_relative "sorbet/buggy_obsolete_strict_memoization"
 
 require_relative "sorbet/rbi/forbid_extend_t_sig_helpers_in_shims"
-require_relative "sorbet/rbi/forbid_rbi_outside_of_allowed_paths"
+require_relative "sorbet/rbi/rbi_file_path"
 require_relative "sorbet/rbi/single_line_rbi_class_module_definitions"
 
 require_relative "sorbet/signatures/allow_incompatible_override"
