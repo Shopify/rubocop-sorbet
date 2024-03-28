@@ -17,34 +17,42 @@ module RuboCop
       #   # good
       #   sig { params(b: String, a: Integer).void }
       #   def foo(b:, a: 1); end
-      class KeywordArgumentOrdering < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class KeywordArgumentOrdering < ::RuboCop::Cop::Base
         include SignatureHelp
+        extend AutoCorrector
 
-        def on_signature(node)
-          method_node = node.parent.children[node.sibling_index + 1]
-          return if method_node.nil?
+        MSG = "Optional keyword arguments must be at the end of the parameter list."
 
-          method_parameters = method_node.arguments
+        def on_signed_def(node)
+          kwoptargs = []
+          last_kwarg = nil
 
-          check_order_for_kwoptargs(method_parameters)
-        end
+          node.arguments.each do |arg|
+            if arg.kwoptarg_type?
+              kwoptargs << arg
+              next
+            elsif arg.kwarg_type?
+              last_kwarg = arg
+              next
+            end
+          end
 
-        private
+          return if last_kwarg.nil?
 
-        def check_order_for_kwoptargs(parameters)
-          out_of_kwoptarg = false
+          kwoptargs.each do |kwoptarg|
+            add_offense(kwoptarg) do |corrector|
+              # NOTE: Fixing the sig's param ordering is not this cop's responsibility
 
-          parameters.reverse.each do |param|
-            out_of_kwoptarg = true unless param.kwoptarg_type? || param.blockarg_type? || param.kwrestarg_type?
+              next_arg = kwoptarg.right_sibling
+              # We need the range of the kwoptarg and the comma and whitespace following it
+              kwoptarg_range_until_next_arg = kwoptarg.source_range.join(next_arg.source_range.begin)
 
-            next unless param.kwoptarg_type? && out_of_kwoptarg
-
-            add_offense(
-              param,
-              message: "Optional keyword arguments must be at the end of the parameter list.",
-            )
+              corrector.remove(kwoptarg_range_until_next_arg)
+              corrector.insert_after(last_kwarg, ", #{kwoptarg.source}")
+            end if kwoptarg.sibling_index < last_kwarg.sibling_index
           end
         end
+        alias_method :on_signed_defs, :on_signed_def
       end
     end
   end

@@ -28,11 +28,21 @@ module RuboCop
 
         def on_block(node)
           on_signature(node) if signature?(node)
+          on_signed_def(node.right_sibling) if node.right_sibling&.def_type?
+          on_signed_defs(node.right_sibling) if node.right_sibling&.defs_type?
         end
 
         alias_method :on_numblock, :on_block
 
         def on_signature(_node)
+          # To be defined by cop class as needed
+        end
+
+        def on_signed_def(_node)
+          # To be defined by cop class as needed
+        end
+
+        def on_signed_defs(_node)
           # To be defined by cop class as needed
         end
       end
