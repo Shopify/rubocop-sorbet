@@ -200,11 +200,6 @@ Sorbet/BuggyObsoleteStrictMemoization:
   Safe: true
   SafeAutoCorrect: false
 
-Sorbet/OneAncestorPerLine:
-  Description: 'Enforces one ancestor per call to requires_ancestor'
-  Enabled: false
-  VersionAdded: '0.6.0'
-
 Sorbet/RedundantExtendTSig:
   Description: >-
     Forbid the usage of redundant `extend T::Sig`.
