@@ -312,3 +312,8 @@ Sorbet/VoidCheckedTests:
   Description: 'Forbid `.void.checked(:tests)`'
   Enabled: true
   VersionAdded: 0.7.7
+
+Sorbet/MultipleTEnumValues:
+  Description: 'Ensures that all `T::Enum`s have multiple values.'
+  Enabled: true
+  VersionAdded: 0.8.2
