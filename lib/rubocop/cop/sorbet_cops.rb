@@ -5,6 +5,7 @@ require_relative "sorbet/mixin/signature_help.rb"
 
 require_relative "sorbet/binding_constant_without_type_alias"
 require_relative "sorbet/constants_from_strings"
+require_relative 'sorbet/forbid_single_value_t_enum'
 require_relative "sorbet/forbid_superclass_const_literal"
 require_relative "sorbet/forbid_include_const_literal"
 require_relative "sorbet/forbid_type_aliased_shapes"

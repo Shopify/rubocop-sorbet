@@ -94,6 +94,11 @@ Sorbet/ForbidTypeAliasedShapes:
   Enabled: false
   VersionAdded: 0.7.6
 
+Sorbet/ForbidSingleValueTEnum:
+  Description: 'Forbid T::Enum with only one value.'
+  Enabled: false
+  VersionAdded: '<<next>>'
+
 Sorbet/ForbidSuperclassConstLiteral:
   Description: 'Forbid superclasses which are non-literal constants.'
   Enabled: false
