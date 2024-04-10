@@ -16,6 +16,7 @@ GEM
     parser (3.3.0.5)
       ast (~> 2.4.1)
       racc
+    prism (0.24.0)
     racc (1.7.3)
     rainbow (3.1.1)
     rake (13.2.1)
@@ -49,7 +50,14 @@ GEM
       parser (>= 3.3.0.4)
     rubocop-shopify (2.14.0)
       rubocop (~> 1.51)
+    ruby-lsp (0.16.3)
+      language_server-protocol (~> 3.17.0)
+      prism (>= 0.22.0, < 0.25)
+      sorbet-runtime (>= 0.5.10782)
+    ruby-lsp-rspec (0.1.11)
+      ruby-lsp (~> 0.16.0)
     ruby-progressbar (1.13.0)
+    sorbet-runtime (0.5.11338)
     unicode-display_width (2.5.0)
     yard (0.9.36)
 
@@ -62,6 +70,7 @@ DEPENDENCIES
   rspec (~> 3.13)
   rubocop-shopify
   rubocop-sorbet!
+  ruby-lsp-rspec
   yard (~> 0.9)
 
 BUNDLED WITH

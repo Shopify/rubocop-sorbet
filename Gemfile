@@ -10,3 +10,4 @@ gem "rake", ">= 12.3.3"
 gem "rspec", "~> 3.13"
 gem "rubocop-shopify", require: false
 gem "yard", "~> 0.9"
+gem "ruby-lsp-rspec"
