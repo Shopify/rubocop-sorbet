@@ -2,7 +2,7 @@
 
 require "rubocop-sorbet"
 require "rubocop/rspec/support"
-require "byebug"
+require "debug/prelude"
 
 RSpec.configure do |config|
   config.include(RuboCop::RSpec::ExpectOffense)
