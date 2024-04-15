@@ -639,6 +639,33 @@ sig { params(b: String, a: Integer).void }
 def foo(b:, a: 1); end
 ```
 
+## Sorbet/MultipleTEnumValues
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | 0.8.2 | -
+
+Disallow creating a `T::Enum` with less than two values.
+
+### Examples
+
+```ruby
+# bad
+class ErrorMessages < T::Enum
+  enums do
+    ServerError = new("There was a server error.")
+  end
+end
+
+# good
+class ErrorMessages < T::Enum
+  enums do
+    ServerError = new("There was a server error.")
+    NotFound = new("The resource was not found.")
+  end
+end
+```
+
 ## Sorbet/ObsoleteStrictMemoization
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
