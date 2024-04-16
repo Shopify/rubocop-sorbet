@@ -31,7 +31,6 @@ In the following section you find all available cops:
 * [Sorbet/KeywordArgumentOrdering](cops_sorbet.md#sorbetkeywordargumentordering)
 * [Sorbet/MultipleTEnumValues](cops_sorbet.md#sorbetmultipletenumvalues)
 * [Sorbet/ObsoleteStrictMemoization](cops_sorbet.md#sorbetobsoletestrictmemoization)
-* [Sorbet/OneAncestorPerLine](cops_sorbet.md#sorbetoneancestorperline)
 * [Sorbet/RedundantExtendTSig](cops_sorbet.md#sorbetredundantextendtsig)
 * [Sorbet/SignatureBuildOrder](cops_sorbet.md#sorbetsignaturebuildorder)
 * [Sorbet/SingleLineRbiClassModuleDefinitions](cops_sorbet.md#sorbetsinglelinerbiclassmoduledefinitions)

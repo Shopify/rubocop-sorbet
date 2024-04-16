@@ -3,4 +3,6 @@
 #
 # See: https://docs.rubocop.org/rubocop/extensions.html#config-obsoletions
 #
-{}
+removed:
+  Sorbet/OneAncestorPerLine:
+    reason: '`require_ancestor` now takes a block instead of arguments'

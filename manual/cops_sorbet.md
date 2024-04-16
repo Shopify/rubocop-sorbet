@@ -703,30 +703,6 @@ def foo
 end
 ```
 
-## Sorbet/OneAncestorPerLine
-
-Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
---- | --- | --- | --- | ---
-Disabled | Yes | Yes  | 0.6.0 | -
-
-Ensures one ancestor per requires_ancestor line
-rather than chaining them as a comma-separated list.
-
-### Examples
-
-```ruby
-# bad
-module SomeModule
-  requires_ancestor Kernel, Minitest::Assertions
-end
-
-# good
-module SomeModule
-  requires_ancestor Kernel
-  requires_ancestor Minitest::Assertions
-end
-```
-
 ## Sorbet/RedundantExtendTSig
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
