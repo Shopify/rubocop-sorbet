@@ -48,8 +48,8 @@ module RuboCop
 
         include TargetSorbetVersion
 
-        MSG = "This might be a mistaken variant of the two-stage workaround that used to be needed for memoization in "\
-          "`#typed: strict` files. See https://sorbet.org/docs/type-assertions#put-type-assertions-behind-memoization."
+        MSG = "This might be a mistaken variant of the two-stage workaround that used to be needed for memoization " \
+          "in `#typed: strict` files. See https://sorbet.org/docs/type-assertions#put-type-assertions-behind-memoization."
 
         # @!method buggy_legacy_memoization_pattern?(node)
         def_node_matcher :buggy_legacy_memoization_pattern?, <<~PATTERN
