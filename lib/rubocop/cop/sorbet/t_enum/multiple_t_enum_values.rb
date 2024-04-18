@@ -22,17 +22,9 @@ module RuboCop
       #    end
       #  end
       class MultipleTEnumValues < Base
-        def initialize(*)
-          @scopes = []
-          super
-        end
+        include TEnum
 
         MSG = "`T::Enum` should have at least two values."
-
-        # @!method t_enum?(node)
-        def_node_matcher :t_enum?, <<~PATTERN
-          (class (const...) (const (const nil? :T) :Enum) ...)
-        PATTERN
 
         # @!method enums_block?(node)
         def_node_matcher :enums_block?, <<~PATTERN
@@ -40,17 +32,13 @@ module RuboCop
         PATTERN
 
         def on_class(node)
-          @scopes.push(node)
+          super
 
           add_offense(node) if t_enum?(node) && node.body.nil?
         end
 
-        def after_class(node)
-          @scopes.pop
-        end
-
         def on_block(node) # rubocop:disable InternalAffairs/NumblockHandler
-          return if @scopes.empty? || !t_enum?(@scopes.last)
+          return unless in_t_enum_class?
           return unless enums_block?(node)
 
           scope = @scopes.last
