@@ -295,6 +295,33 @@ SuggestedStrictness | `false` | String
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
+## Sorbet/ForbidComparableTEnum
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | 0.8.2 | -
+
+Disallow including the `Comparable` module in `T::Enum`.
+
+### Examples
+
+```ruby
+# bad
+class Priority < T::Enum
+  include Comparable
+
+  enums do
+    High = new(3)
+    Medium = new(2)
+    Low = new(1)
+  end
+
+  def <=>(other)
+    serialize <=> other.serialize
+  end
+end
+```
+
 ## Sorbet/ForbidExtendTSigHelpersInShims
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

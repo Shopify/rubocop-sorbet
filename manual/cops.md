@@ -16,6 +16,7 @@ In the following section you find all available cops:
 * [Sorbet/EnforceSignatures](cops_sorbet.md#sorbetenforcesignatures)
 * [Sorbet/EnforceSingleSigil](cops_sorbet.md#sorbetenforcesinglesigil)
 * [Sorbet/FalseSigil](cops_sorbet.md#sorbetfalsesigil)
+* [Sorbet/ForbidComparableTEnum](cops_sorbet.md#sorbetforbidcomparabletenum)
 * [Sorbet/ForbidExtendTSigHelpersInShims](cops_sorbet.md#sorbetforbidextendtsighelpersinshims)
 * [Sorbet/ForbidIncludeConstLiteral](cops_sorbet.md#sorbetforbidincludeconstliteral)
 * [Sorbet/ForbidRBIOutsideOfAllowedPaths](cops_sorbet.md#sorbetforbidrbioutsideofallowedpaths)
