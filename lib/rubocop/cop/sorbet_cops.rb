@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "sorbet/mixin/target_sorbet_version.rb"
-require_relative "sorbet/mixin/signature_help.rb"
+require_relative "sorbet/mixin/target_sorbet_version"
+require_relative "sorbet/mixin/t_enum"
+require_relative "sorbet/mixin/signature_help"
 
 require_relative "sorbet/binding_constant_without_type_alias"
 require_relative "sorbet/constants_from_strings"
@@ -18,7 +19,6 @@ require_relative "sorbet/redundant_extend_t_sig"
 require_relative "sorbet/type_alias_name"
 require_relative "sorbet/obsolete_strict_memoization"
 require_relative "sorbet/buggy_obsolete_strict_memoization"
-require_relative "sorbet/multiple_t_enum_values"
 
 require_relative "sorbet/rbi/forbid_extend_t_sig_helpers_in_shims"
 require_relative "sorbet/rbi/forbid_rbi_outside_of_allowed_paths"
@@ -41,5 +41,8 @@ require_relative "sorbet/sigils/strict_sigil"
 require_relative "sorbet/sigils/strong_sigil"
 require_relative "sorbet/sigils/enforce_sigil_order"
 require_relative "sorbet/sigils/enforce_single_sigil"
+
+require_relative "sorbet/t_enum/forbid_comparable_t_enum"
+require_relative "sorbet/t_enum/multiple_t_enum_values"
 
 require_relative "sorbet/mutable_constant_sorbet_aware_behaviour"

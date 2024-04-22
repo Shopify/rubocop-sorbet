@@ -312,3 +312,8 @@ Sorbet/MultipleTEnumValues:
   Description: 'Ensures that all `T::Enum`s have multiple values.'
   Enabled: true
   VersionAdded: 0.8.2
+
+Sorbet/ForbidComparableTEnum:
+  Description: 'Disallows including the `Comparable` module in a `T::Enum`.'
+  Enabled: true
+  VersionAdded: 0.8.2
