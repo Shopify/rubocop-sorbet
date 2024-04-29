@@ -211,9 +211,6 @@ Sorbet/ForbidIncludeConstLiteral:
 Sorbet/ForbidSuperclassConstLiteral:
   Enabled: true
 
-Sorbet/OneAncestorPerLine:
-  Enabled: true
-
 Sorbet/SignatureBuildOrder:
   Enabled: true
 
