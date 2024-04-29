@@ -37,7 +37,7 @@ jobs:
           bundler-cache: true
       # This is just to ensure the default config is valid. The target is intentionally set
       # to a directory that doesn't contain any .rb or .rbi files.
-      - name: Validate RBI config
+      - name: Validate default config
         run: |
           bin/rubocop --config config/rbi.yml config
           bin/rubocop --config config/default.yml config -r rubocop-sorbet
