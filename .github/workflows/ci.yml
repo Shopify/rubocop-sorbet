@@ -35,6 +35,9 @@ jobs:
         with:
           ruby-version: 3.2
           bundler-cache: true
+      # This repo doesn't contain any RBIs, but we can still verify the config for an arbitrary directory
+      - name: Validate RBI config
+        run: bin/rubocop --config config/rbi.yml config
       - name: Lint Ruby files
         run: bin/rubocop
       - name: Verify documentation is up to date
