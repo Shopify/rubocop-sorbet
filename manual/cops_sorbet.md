@@ -203,7 +203,7 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | 0.3.4 | -
 
-Checks that the Sorbet sigil comes as the first magic comment in the file, after the encoding comment.
+Checks that the Sorbet sigil comes as the first magic comment in the file, after the encoding comment if any.
 
 The expected order for magic comments is: (en)?coding, typed, warn_indent then frozen_string_literal.
 
