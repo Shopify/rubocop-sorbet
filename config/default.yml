@@ -89,6 +89,11 @@ Sorbet/ForbidIncludeConstLiteral:
   VersionAdded: 0.2.0
   VersionChanged: 0.5.0
 
+Sorbet/ForbidNestedTMust:
+  Description: 'Forbids nested T.must in favor of conditional-send (&.) chains.'
+  Enabled: false
+  VersionAdded: <<next>>
+
 Sorbet/ForbidTypeAliasedShapes:
   Description: 'Forbids defining type aliases that contain shapes'
   Enabled: false

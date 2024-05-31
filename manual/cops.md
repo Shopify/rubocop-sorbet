@@ -19,6 +19,7 @@ In the following section you find all available cops:
 * [Sorbet/ForbidComparableTEnum](cops_sorbet.md#sorbetforbidcomparabletenum)
 * [Sorbet/ForbidExtendTSigHelpersInShims](cops_sorbet.md#sorbetforbidextendtsighelpersinshims)
 * [Sorbet/ForbidIncludeConstLiteral](cops_sorbet.md#sorbetforbidincludeconstliteral)
+* [Sorbet/ForbidNestedTMust](cops_sorbet.md#sorbetforbidnestedtmust)
 * [Sorbet/ForbidRBIOutsideOfAllowedPaths](cops_sorbet.md#sorbetforbidrbioutsideofallowedpaths)
 * [Sorbet/ForbidSuperclassConstLiteral](cops_sorbet.md#sorbetforbidsuperclassconstliteral)
 * [Sorbet/ForbidTStruct](cops_sorbet.md#sorbetforbidtstruct)

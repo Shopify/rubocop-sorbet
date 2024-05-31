@@ -385,6 +385,40 @@ or
 include Polaris::Engine.helpers
 ```
 
+## Sorbet/ForbidNestedTMust
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | Yes  | <<next>> | -
+
+Checks for nested `T.must` calls and suggests to use
+a single `T.must` around a safe-navigation operator chain.
+
+### Examples
+
+```ruby
+# bad
+T.must(T.must(A.b).c)
+
+# bad
+T.must(T.must(T.must(A.b&.b).b).c)
+
+# bad
+T.must(T.must(A.b)[:test])
+
+# good
+T.must(A.b&.c)
+
+# good
+T.must(A.b&.b&.b&.c)
+
+# good
+T.must(A.b&.[](:test))
+
+# good
+T.must(A.d(T.must(A.b&.c)))
+```
+
 ## Sorbet/ForbidRBIOutsideOfAllowedPaths
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
