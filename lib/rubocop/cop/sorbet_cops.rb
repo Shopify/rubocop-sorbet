@@ -25,6 +25,7 @@ require_relative "sorbet/rbi/forbid_rbi_outside_of_allowed_paths"
 require_relative "sorbet/rbi/single_line_rbi_class_module_definitions"
 
 require_relative "sorbet/rbi_versioning/gem_version_annotation_helper"
+require_relative "sorbet/rbi_versioning/gem_range"
 require_relative "sorbet/rbi_versioning/valid_gem_version_annotations"
 
 require_relative "sorbet/signatures/allow_incompatible_override"
