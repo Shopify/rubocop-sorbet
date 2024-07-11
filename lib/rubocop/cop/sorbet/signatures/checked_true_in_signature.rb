@@ -16,7 +16,7 @@ module RuboCop
       #
       #   # good
       #   sig { void }
-      class CheckedTrueInSignature < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class CheckedTrueInSignature < ::RuboCop::Cop::Base
         include(RuboCop::Cop::RangeHelp)
         include(RuboCop::Cop::Sorbet::SignatureHelp)
 
@@ -37,8 +37,7 @@ module RuboCop
           return unless error
 
           add_offense(
-            error,
-            location: source_range(
+            source_range(
               processed_source.buffer,
               error.location.line,
               (error.location.selector.begin_pos)..(error.location.end.begin_pos),

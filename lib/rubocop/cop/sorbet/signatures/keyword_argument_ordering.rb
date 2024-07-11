@@ -17,7 +17,7 @@ module RuboCop
       #   # good
       #   sig { params(b: String, a: Integer).void }
       #   def foo(b:, a: 1); end
-      class KeywordArgumentOrdering < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class KeywordArgumentOrdering < ::RuboCop::Cop::Base
         include SignatureHelp
 
         def on_signature(node)
