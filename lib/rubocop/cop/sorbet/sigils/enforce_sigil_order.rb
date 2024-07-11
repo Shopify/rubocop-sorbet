@@ -32,37 +32,13 @@ module RuboCop
       class EnforceSigilOrder < ValidSigil
         include RangeHelp
 
-        def investigate(processed_source)
+        def on_new_investigation
           return if processed_source.tokens.empty?
 
           tokens = extract_magic_comments(processed_source)
           return if tokens.empty?
 
           check_magic_comments_order(tokens)
-        end
-
-        def autocorrect(_node)
-          lambda do |corrector|
-            tokens = extract_magic_comments(processed_source)
-
-            # Get the magic comments tokens in their expected order
-            expected = PREFERRED_ORDER.keys.map do |re|
-              tokens.select { |token| re.match?(token.text) }
-            end.flatten
-
-            tokens.each_with_index do |token, index|
-              corrector.replace(token.pos, expected[index].text)
-            end
-
-            # Remove blank lines between the magic comments
-            lines = tokens.map(&:line).to_set
-            (lines.min...lines.max).each do |line|
-              next if lines.include?(line)
-              next unless processed_source[line - 1].empty?
-
-              corrector.remove(source_range(processed_source.buffer, line, 0))
-            end
-          end
         end
 
         protected
@@ -105,11 +81,34 @@ module RuboCop
           if order != expected
             tokens.each do |token|
               add_offense(
-                token,
-                location: token.pos,
+                token.pos,
                 message: "Magic comments should be in the following order: #{PREFERRED_ORDER.values.join(", ")}.",
-              )
+              ) do |corrector|
+                autocorrect(corrector)
+              end
             end
+          end
+        end
+
+        def autocorrect(corrector)
+          tokens = extract_magic_comments(processed_source)
+
+          # Get the magic comments tokens in their expected order
+          expected = PREFERRED_ORDER.keys.map do |re|
+            tokens.select { |token| re.match?(token.text) }
+          end.flatten
+
+          tokens.each_with_index do |token, index|
+            corrector.replace(token.pos, expected[index].text)
+          end
+
+          # Remove blank lines between the magic comments
+          lines = tokens.map(&:line).to_set
+          (lines.min...lines.max).each do |line|
+            next if lines.include?(line)
+            next unless processed_source[line - 1].empty?
+
+            corrector.remove(source_range(processed_source.buffer, line, 0))
           end
         end
       end

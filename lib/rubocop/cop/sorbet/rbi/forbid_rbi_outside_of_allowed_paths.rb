@@ -20,23 +20,21 @@ module RuboCop
       #   # rbi/external_interface.rbi
       #   # sorbet/rbi/some_file.rbi
       #   # sorbet/rbi/any/path/for/file.rbi
-      class ForbidRBIOutsideOfAllowedPaths < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class ForbidRBIOutsideOfAllowedPaths < RuboCop::Cop::Base
         include RangeHelp
 
-        def investigate(processed_source)
+        def on_new_investigation
           paths = allowed_paths
 
           if paths.nil?
             add_offense(
-              nil,
-              location: source_range(processed_source.buffer, 1, 0),
+              source_range(processed_source.buffer, 1, 0),
               message: "AllowedPaths expects an array",
             )
             return
           elsif paths.empty?
             add_offense(
-              nil,
-              location: source_range(processed_source.buffer, 1, 0),
+              source_range(processed_source.buffer, 1, 0),
               message: "AllowedPaths cannot be empty",
             )
             return
@@ -47,8 +45,7 @@ module RuboCop
           rel_path = processed_source.file_path.sub("#{Dir.pwd}/", "")
 
           add_offense(
-            nil,
-            location: source_range(processed_source.buffer, 1, 0),
+            source_range(processed_source.buffer, 1, 0),
             message: "RBI file path should match one of: #{paths.join(", ")}",
           ) if paths.none? { |pattern| File.fnmatch(pattern, rel_path) }
         end

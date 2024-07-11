@@ -3,45 +3,37 @@
 require "spec_helper"
 
 RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
-  let(:source) { "print 1" }
-  let(:processed_source) { parse_source(source) }
-
-  before do
-    allow(processed_source.buffer).to(receive(:name).and_return(filename))
-    _investigate(cop, processed_source)
-  end
-
   describe "with default configuration" do
     context "with an .rbi file outside of AllowedPaths" do
-      let(:filename) { "some/dir/file.rbi" }
-
       it "makes an offense if an RBI file is outside of sorbet/rbi/**" do
-        expect(cop.offenses.size).to(eq(1))
-        expect(cop.messages).to(eq(["RBI file path should match one of: rbi/**, sorbet/rbi/**"]))
+        expect_offense(<<~RUBY, "some/dir/file.rbi")
+          print 1
+          ^ RBI file path should match one of: rbi/**, sorbet/rbi/**
+        RUBY
       end
     end
 
     context "with an .rbi file inside of rbi/**" do
-      let(:filename) { "rbi/some/dir/file.rbi" }
-
       it "makes no offense if an RBI file is inside the rbi/** directory" do
-        expect(cop.offenses.empty?).to(be(true))
+        expect_no_offenses(<<~RUBY, "rbi/some/dir/file.rbi")
+          print 1
+        RUBY
       end
     end
 
     context "with an .rbi file inside of sorbet/rbi/**" do
-      let(:filename) { "sorbet/rbi/some/dir/file.rbi" }
-
       it "makes no offense if an RBI file is inside the sorbet/rbi/** directory" do
-        expect(cop.offenses.empty?).to(be(true))
+        expect_no_offenses(<<~RUBY, "sorbet/rbi/some/dir/file.rbi")
+          print 1
+        RUBY
       end
     end
 
     context "with a the absolute path to the file" do
-      let(:filename) { "#{Dir.pwd}/sorbet/rbi/some/dir/file.rbi" }
-
       it "makes no offense if an RBI file is inside the sorbet/rbi/** directory" do
-        expect(cop.offenses.empty?).to(be(true))
+        expect_no_offenses(<<~RUBY, "#{Dir.pwd}/sorbet/rbi/some/dir/file.rbi")
+          print 1
+        RUBY
       end
     end
   end
@@ -55,27 +47,27 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
     end
 
     context "with an .rbi file outside of the allowed path" do
-      let(:filename) { "some/forbidden/directory/file.rbi" }
-
       it "makes an offense if an RBI file is outside of the allowed path" do
-        expect(cop.offenses.size).to(eq(1))
-        expect(cop.messages).to(eq(["RBI file path should match one of: some/allowed/**"]))
+        expect_offense(<<~RUBY, "some/forbidden/directory/file.rbi")
+          print 1
+          ^ RBI file path should match one of: some/allowed/**
+        RUBY
       end
     end
 
     context "with an .rbi file inside of allowed path" do
-      let(:filename) { "some/allowed/directory/file.rbi" }
-
       it "makes no offense if an RBI file is inside an allowed path" do
-        expect(cop.offenses.empty?).to(be(true))
+        expect_no_offenses(<<~RUBY, "some/allowed/directory/file.rbi")
+          print 1
+        RUBY
       end
     end
 
     context "with a the absolute path to the file" do
-      let(:filename) { "#{Dir.pwd}/some/allowed/directory/file.rbi" }
-
       it "makes no offense if an RBI file is inside the sorbet/rbi/** directory" do
-        expect(cop.offenses.empty?).to(be(true))
+        expect_no_offenses(<<~RUBY, "#{Dir.pwd}/some/allowed/directory/file.rbi")
+          print 1
+        RUBY
       end
     end
   end
@@ -89,19 +81,19 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
     end
 
     context "with an .rbi file inside of one of the allowed paths" do
-      let(:filename) { "hello/other/allowed/file.rbi" }
-
       it "makes no offense if an RBI file is inside one of the allowed paths" do
-        expect(cop.offenses.empty?).to(be(true))
+        expect_no_offenses(<<~RUBY, "hello/other/allowed/file.rbi")
+          print 1
+        RUBY
       end
     end
 
     context "with an .rbi file not in any of the allowed paths" do
-      let(:filename) { "some/forbidden/directory/file.rbi" }
-
       it "makes an offense if an RBI file is outside of the allowed path" do
-        expect(cop.offenses.size).to(eq(1))
-        expect(cop.messages).to(eq(["RBI file path should match one of: some/allowed/**, hello/other/allowed/**"]))
+        expect_offense(<<~RUBY, "some/forbidden/directory/file.rbi")
+          print 1
+          ^ RBI file path should match one of: some/allowed/**, hello/other/allowed/**
+        RUBY
       end
     end
   end
@@ -115,12 +107,11 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
         }
       end
 
-      let(:filename) { "sorbet/rbi/file.rbi" }
       it "makes an offense if AllowedPaths is set to an empty list" do
-        expect(cop.offenses.size).to(eq(1))
-        expect(cop.messages).to(eq(
-          ["AllowedPaths cannot be empty"],
-        ))
+        expect_offense(<<~RUBY, "sorbet/rbi/file.rbi")
+          print 1
+          ^ AllowedPaths cannot be empty
+        RUBY
       end
     end
 
@@ -132,13 +123,11 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
         }
       end
 
-      let(:filename) { "some/directory/file.rbi" }
-
       it "makes an offense if AllowedPaths is set to nil" do
-        expect(cop.offenses.size).to(eq(1))
-        expect(cop.messages).to(eq(
-          ["AllowedPaths expects an array"],
-        ))
+        expect_offense(<<~RUBY, "some/directory/file.rbi")
+          print 1
+          ^ AllowedPaths expects an array
+        RUBY
       end
     end
 
@@ -150,13 +139,11 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
         }
       end
 
-      let(:filename) { "some/directory/file.rbi" }
-
       it "makes an offense if AllowedPaths is a list containing only nil" do
-        expect(cop.offenses.size).to(eq(1))
-        expect(cop.messages).to(eq(
-          ["AllowedPaths cannot be empty"],
-        ))
+        expect_offense(<<~RUBY, "some/directory/file.rbi")
+          print 1
+          ^ AllowedPaths cannot be empty
+        RUBY
       end
     end
 
@@ -168,13 +155,11 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
         }
       end
 
-      let(:filename) { "some/directory/file.rbi" }
-
       it "makes an offense if AllowedPaths is not an array" do
-        expect(cop.offenses.size).to(eq(1))
-        expect(cop.messages).to(eq(
-          ["AllowedPaths expects an array"],
-        ))
+        expect_offense(<<~RUBY, "some/directory/file.rbi")
+          print 1
+          ^ AllowedPaths expects an array
+        RUBY
       end
     end
   end

@@ -17,10 +17,12 @@ module RuboCop
       #
       # If an `ExactStrictness` level is specified, it will be used in offense messages and autocorrect.
       # Otherwise, if a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
-      class ValidSigil < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class ValidSigil < RuboCop::Cop::Base
+        extend AutoCorrector
+
         @registry = Registry.global # So we can properly subclass this cop
 
-        def investigate(processed_source)
+        def on_new_investigation
           return if processed_source.tokens.empty?
 
           sigil = extract_sigil(processed_source)
@@ -31,22 +33,6 @@ module RuboCop
           return unless check_strictness_valid(sigil, strictness)
 
           nil unless check_strictness_level(sigil, strictness)
-        end
-
-        def autocorrect(_node)
-          lambda do |corrector|
-            return unless require_sigil_on_all_files?
-            return unless extract_sigil(processed_source).nil?
-
-            token = processed_source.tokens.first
-            replace_with = suggested_strictness_level
-            sigil = "# typed: #{replace_with}"
-            if token.text.start_with?("#!") # shebang line
-              corrector.insert_after(token.pos, "\n#{sigil}")
-            else
-              corrector.insert_before(token.pos, "#{sigil}\n")
-            end
-          end
         end
 
         protected
@@ -75,11 +61,12 @@ module RuboCop
           if require_sigil_on_all_files?
             strictness = suggested_strictness_level
             add_offense(
-              token,
-              location: token.pos,
+              token.pos,
               message: "No Sorbet sigil found in file. " \
                 "Try a `typed: #{strictness}` to start (you can also use `rubocop -a` to automatically add this).",
-            )
+            ) do |corrector|
+              autocorrect(corrector)
+            end
           end
           false
         end
@@ -110,10 +97,11 @@ module RuboCop
           return true if strictness
 
           add_offense(
-            sigil,
-            location: sigil.pos,
+            sigil.pos,
             message: "Sorbet sigil should not be empty.",
-          )
+          ) do |corrector|
+            autocorrect(corrector)
+          end
           false
         end
 
@@ -121,10 +109,11 @@ module RuboCop
           return true if STRICTNESS_LEVELS.include?(strictness)
 
           add_offense(
-            sigil,
-            location: sigil.pos,
+            sigil.pos,
             message: "Invalid Sorbet sigil `#{strictness}`.",
-          )
+          ) do |corrector|
+            autocorrect(corrector)
+          end
           false
         end
 
@@ -137,25 +126,41 @@ module RuboCop
             exact_level = STRICTNESS_LEVELS.index(exact_strictness)
             if current_level != exact_level
               add_offense(
-                sigil,
-                location: sigil.pos,
+                sigil.pos,
                 message: "Sorbet sigil should be `#{exact_strictness}` got `#{strictness}`.",
-              )
+              ) do |corrector|
+                autocorrect(corrector)
+              end
               return false
             end
           else
             minimum_level = STRICTNESS_LEVELS.index(minimum_strictness)
             if current_level < minimum_level
               add_offense(
-                sigil,
-                location: sigil.pos,
+                sigil.pos,
                 message: "Sorbet sigil should be at least `#{minimum_strictness}` got `#{strictness}`.",
-              )
+              ) do |corrector|
+                autocorrect(corrector)
+              end
               return false
             end
           end
 
           true
+        end
+
+        def autocorrect(corrector)
+          return unless require_sigil_on_all_files?
+          return unless extract_sigil(processed_source).nil?
+
+          token = processed_source.tokens.first
+          replace_with = suggested_strictness_level
+          sigil = "# typed: #{replace_with}"
+          if token.text.start_with?("#!") # shebang line
+            corrector.insert_after(token.pos, "\n#{sigil}")
+          else
+            corrector.insert_before(token.pos, "#{sigil}\n")
+          end
         end
 
         # options

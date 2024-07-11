@@ -24,7 +24,8 @@ module RuboCop
       #
       # * `ParameterTypePlaceholder`: placeholders used for parameter types (default: 'T.untyped')
       # * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
-      class EnforceSignatures < ::RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
+      class EnforceSignatures < ::RuboCop::Cop::Base
+        extend AutoCorrector
         include SignatureHelp
 
         def initialize(config = nil, options = nil)
@@ -53,25 +54,6 @@ module RuboCop
           @last_sig_for_scope[scope(node)] = node
         end
 
-        def autocorrect(node)
-          lambda do |corrector|
-            suggest = SigSuggestion.new(node.loc.column, param_type_placeholder, return_type_placeholder)
-
-            if node.is_a?(RuboCop::AST::DefNode) # def something
-              node.arguments.each do |arg|
-                suggest.params << arg.children.first
-              end
-            elsif accessor?(node) # attr reader, writer, accessor
-              method = node.children[1]
-              symbol = node.children[2]
-              suggest.params << symbol.value if symbol && (method == :attr_writer || method == :attr_accessor)
-              suggest.returns = "void" if method == :attr_writer
-            end
-
-            corrector.insert_before(node, suggest.to_autocorrect)
-          end
-        end
-
         def scope(node)
           return unless node.parent
           return node.parent if [:begin, :block, :class, :module].include?(node.parent.type)
@@ -87,9 +69,28 @@ module RuboCop
             add_offense(
               node,
               message: "Each method is required to have a signature.",
-            )
+            ) do |corrector|
+              autocorrect(corrector, node)
+            end
           end
           @last_sig_for_scope[scope] = nil
+        end
+
+        def autocorrect(corrector, node)
+          suggest = SigSuggestion.new(node.loc.column, param_type_placeholder, return_type_placeholder)
+
+          if node.is_a?(RuboCop::AST::DefNode) # def something
+            node.arguments.each do |arg|
+              suggest.params << arg.children.first
+            end
+          elsif accessor?(node) # attr reader, writer, accessor
+            method = node.children[1]
+            symbol = node.children[2]
+            suggest.params << symbol.value if symbol && (method == :attr_writer || method == :attr_accessor)
+            suggest.returns = "void" if method == :attr_writer
+          end
+
+          corrector.insert_before(node, suggest.to_autocorrect)
         end
 
         def param_type_placeholder
