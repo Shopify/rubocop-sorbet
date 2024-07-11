@@ -18,7 +18,7 @@ module RuboCop
       # If an `ExactStrictness` level is specified, it will be used in offense messages and autocorrect.
       # Otherwise, if a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
       class ValidSigil < RuboCop::Cop::Cop # rubocop:todo InternalAffairs/InheritDeprecatedCopClass
-        @registry = Cop.registry # So we can properly subclass this cop
+        @registry = Registry.global # So we can properly subclass this cop
 
         def investigate(processed_source)
           return if processed_source.tokens.empty?
