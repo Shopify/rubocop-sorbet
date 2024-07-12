@@ -15,8 +15,6 @@ module RuboCop
       #
       # If a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
       class HasSigil < ValidSigil
-        @registry = Registry.global # So we can properly subclass this cop
-
         def require_sigil_on_all_files?
           true
         end

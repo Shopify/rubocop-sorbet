@@ -20,8 +20,6 @@ module RuboCop
       class ValidSigil < RuboCop::Cop::Base
         extend AutoCorrector
 
-        @registry = Registry.global # So we can properly subclass this cop
-
         def on_new_investigation
           return if processed_source.tokens.empty?
 
