@@ -21,7 +21,7 @@ module RuboCop
       #      NotFound = new("The resource was not found.")
       #    end
       #  end
-      class MultipleTEnumValues < Base
+      class MultipleTEnumValues < RuboCop::Cop::Base
         include TEnum
 
         MSG = "`T::Enum` should have at least two values."
