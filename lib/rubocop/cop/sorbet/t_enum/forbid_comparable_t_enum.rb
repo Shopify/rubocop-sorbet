@@ -21,7 +21,7 @@ module RuboCop
       #      serialize <=> other.serialize
       #    end
       #  end
-      class ForbidComparableTEnum < Base
+      class ForbidComparableTEnum < RuboCop::Cop::Base
         include TEnum
 
         MSG = "Do not use `T::Enum` as a comparable object because of significant performance overhead."
