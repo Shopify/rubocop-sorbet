@@ -892,6 +892,30 @@ Name | Default value | Configurable values
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
+## Sorbet/ValidGemVersionAnnotations
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | - | -
+
+Checks that gem versions in RBI annotations are properly formatted per the Bundler gem specification.
+
+### Examples
+
+```ruby
+# bad
+# @version > not a version number
+
+# good
+# @version = 1
+
+# good
+# @version > 1.2.3
+
+# good
+# @version <= 4.3-preview
+```
+
 ## Sorbet/ValidSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
