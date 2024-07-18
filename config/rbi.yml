@@ -169,6 +169,9 @@ Layout/SpaceBeforeFirstArg:
 Layout/SpaceBeforeSemicolon:
   Enabled: true
 
+Layout/SpaceInsideBlockBraces:
+  Enabled: true
+
 Layout/SpaceInsideParens:
   Enabled: true
 
