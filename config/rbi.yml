@@ -223,6 +223,16 @@ Sorbet/SingleLineRbiClassModuleDefinitions:
 Sorbet/TypeAliasName:
   Enabled: true
 
+Sorbet/ValidGemVersionAnnotations:
+  Description: >-
+                  Ensures all gem version annotations in RBI files are correctly formatted per
+                  Ruby's gem version specification guidelines.
+
+                  See the rubygems.org documentation for more information on how to format gem
+                  versions: https://guides.rubygems.org/patterns/#pessimistic-version-constraint
+  Enabled: false
+  VersionAdded: 0.8.5
+
 Sorbet/ValidSigil:
   Enabled: true
   RequireSigilOnAllFiles: true
@@ -272,13 +282,3 @@ Style/MixinUsage:
 Style/ModuleFunction:
   Enabled: true
   EnforcedStyle: forbidden
-
-Sorbet/ValidGemVersionAnnotations:
-  Description: >-
-                  Ensures all gem version annotations in RBI files are correctly formatted per
-                  Ruby's gem version specification guidelines.
-
-                  See the rubygems.org documentation for more information on how to format gem
-                  versions: https://guides.rubygems.org/patterns/#pessimistic-version-constraint
-  Enabled: false
-  VersionAdded: 0.8.5
