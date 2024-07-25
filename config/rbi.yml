@@ -175,6 +175,9 @@ Layout/SpaceInsideBlockBraces:
 Layout/SpaceInsideParens:
   Enabled: true
 
+Layout/SpaceInsideReferenceBrackets:
+  Enabled: true
+
 Layout/TrailingEmptyLines:
   Enabled: true
   EnforcedStyle: final_newline
