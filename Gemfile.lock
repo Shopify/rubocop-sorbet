@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rubocop-sorbet (0.8.4)
+    rubocop-sorbet (0.8.5)
       rubocop (>= 1)
 
 GEM
