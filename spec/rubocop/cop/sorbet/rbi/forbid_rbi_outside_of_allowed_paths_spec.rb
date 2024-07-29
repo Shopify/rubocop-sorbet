@@ -8,7 +8,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if an RBI file is outside of sorbet/rbi/**" do
         expect_offense(<<~RUBY, "some/dir/file.rbi")
           print 1
-          ^ RBI file path should match one of: rbi/**, sorbet/rbi/**
+          ^{} RBI file path should match one of: rbi/**, sorbet/rbi/**
+        RUBY
+      end
+
+      it "registers an offense when the file is empty" do
+        expect_offense(<<~RUBY, "some/dir/file.rbi")
+          ^{} RBI file path should match one of: rbi/**, sorbet/rbi/**
         RUBY
       end
     end
@@ -50,7 +56,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if an RBI file is outside of the allowed path" do
         expect_offense(<<~RUBY, "some/forbidden/directory/file.rbi")
           print 1
-          ^ RBI file path should match one of: some/allowed/**
+          ^{} RBI file path should match one of: some/allowed/**
         RUBY
       end
     end
@@ -92,7 +98,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if an RBI file is outside of the allowed path" do
         expect_offense(<<~RUBY, "some/forbidden/directory/file.rbi")
           print 1
-          ^ RBI file path should match one of: some/allowed/**, hello/other/allowed/**
+          ^{} RBI file path should match one of: some/allowed/**, hello/other/allowed/**
         RUBY
       end
     end
@@ -110,7 +116,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is set to an empty list" do
         expect_offense(<<~RUBY, "sorbet/rbi/file.rbi")
           print 1
-          ^ AllowedPaths cannot be empty
+          ^{} AllowedPaths cannot be empty
         RUBY
       end
     end
@@ -126,7 +132,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is set to nil" do
         expect_offense(<<~RUBY, "some/directory/file.rbi")
           print 1
-          ^ AllowedPaths expects an array
+          ^{} AllowedPaths expects an array
         RUBY
       end
     end
@@ -142,7 +148,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is a list containing only nil" do
         expect_offense(<<~RUBY, "some/directory/file.rbi")
           print 1
-          ^ AllowedPaths cannot be empty
+          ^{} AllowedPaths cannot be empty
         RUBY
       end
     end
@@ -158,7 +164,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidRBIOutsideOfAllowedPaths, :config) do
       it "makes an offense if AllowedPaths is not an array" do
         expect_offense(<<~RUBY, "some/directory/file.rbi")
           print 1
-          ^ AllowedPaths expects an array
+          ^{} AllowedPaths expects an array
         RUBY
       end
     end
