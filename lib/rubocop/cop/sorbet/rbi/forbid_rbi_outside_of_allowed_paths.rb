@@ -27,16 +27,10 @@ module RuboCop
           paths = allowed_paths
 
           if paths.nil?
-            add_offense(
-              source_range(processed_source.buffer, 1, 0),
-              message: "AllowedPaths expects an array",
-            )
+            add_global_offense("AllowedPaths expects an array")
             return
           elsif paths.empty?
-            add_offense(
-              source_range(processed_source.buffer, 1, 0),
-              message: "AllowedPaths cannot be empty",
-            )
+            add_global_offense("AllowedPaths cannot be empty")
             return
           end
 
@@ -44,9 +38,8 @@ module RuboCop
           # We need to remove the exec path directory prefix before matching with the filename regular expressions.
           rel_path = processed_source.file_path.sub("#{Dir.pwd}/", "")
 
-          add_offense(
-            source_range(processed_source.buffer, 1, 0),
-            message: "RBI file path should match one of: #{paths.join(", ")}",
+          add_global_offense(
+            "RBI file path should match one of: #{paths.join(", ")}",
           ) if paths.none? { |pattern| File.fnmatch(pattern, rel_path) }
         end
 
