@@ -16,6 +16,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::ConstantsFromStrings, :config) do
       RUBY
     end
 
+    it("disallows constantize with safe navigation") do
+      expect_offense(<<~RUBY)
+        klass = class_name&.constantize
+                            ^^^^^^^^^^^ #{message("constantize")}
+      RUBY
+    end
+
     it("disallows const_get with receiver") do
       expect_offense(<<~RUBY)
         klass = Object.const_get("Foo")

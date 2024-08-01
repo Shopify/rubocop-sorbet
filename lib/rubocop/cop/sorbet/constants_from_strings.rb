@@ -46,6 +46,7 @@ module RuboCop
         def on_send(node)
           add_offense(node.selector, message: format(MSG, method_name: node.method_name))
         end
+        alias_method :on_csend, :on_send
       end
     end
   end
