@@ -12,6 +12,12 @@ module RuboCop
             base.def_node_matcher(:t_let, <<~PATTERN)
               (send (const nil? :T) :let $_constant _type)
             PATTERN
+            base.def_node_matcher(:t_type_alias?, <<~PATTERN)
+              (block (send (const {nil? cbase} :T) :type_alias ...) ...)
+            PATTERN
+            base.def_node_matcher(:type_member?, <<~PATTERN)
+              (block (send nil? :type_member ...) ...)
+            PATTERN
           end
         end
 
@@ -19,6 +25,8 @@ module RuboCop
           t_let(value) do |constant|
             value = constant
           end
+          return if t_type_alias?(value)
+          return if type_member?(value)
 
           super(value)
         end

@@ -465,6 +465,9 @@ RSpec.describe(RuboCop::Cop::Style::MutableConstant, :config) do
     it_behaves_like "immutable objects", "Struct.new"
     it_behaves_like "immutable objects", "::Struct.new"
     it_behaves_like "immutable objects", "Struct.new(:a, :b)"
+    it_behaves_like "immutable objects", "T.type_alias { T.nilable(T.any(Pathname, String)) }"
+    it_behaves_like "immutable objects", "::T.type_alias { T.nilable(T.any(Pathname, String)) }"
+    it_behaves_like "immutable objects", "type_member { { fixed: Module } }"
     it_behaves_like "immutable objects", <<~RUBY
       Struct.new(:node) do
         def assignment?
