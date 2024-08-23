@@ -448,6 +448,33 @@ Name | Default value | Configurable values
 --- | --- | ---
 Exclude | `db/migrate/*.rb` | Array
 
+## Sorbet/ForbidTEnum
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | No | No | <<next>> | <<next>>
+
+Disallow using `T::Enum`.
+
+### Examples
+
+```ruby
+# bad
+class MyEnum < T::Struct
+  enums do
+    A = new
+    B = new
+  end
+end
+
+# good
+class MyEnum
+  A = "a'
+  B = "b"
+  C = "c"
+end
+```
+
 ## Sorbet/ForbidTStruct
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
