@@ -44,7 +44,7 @@ module RuboCop
         def read_sorbet_static_version_from_bundler_lock_file
           require "bundler"
           ::Bundler.locked_gems.specs.find { |spec| spec.name == "sorbet-static" }&.version
-        rescue LoadError, Bundler::GemfileNotFound
+        rescue LoadError, ::Bundler::GemfileNotFound
           nil
         end
       end
