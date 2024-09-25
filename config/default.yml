@@ -1,3 +1,11 @@
+Sorbet/Refinement:
+  Description: >- 
+                  Checks for the use of Ruby Refinements library. Refinements add
+                  complexity and incur a performance penalty that can be significant
+                  for large code bases. They are also not supported by Sorbet.
+  Enabled: pending
+  VersionAdded: '<<next>>'
+
 inherit_mode:
   merge:
   - Exclude
