@@ -199,9 +199,6 @@ Lint/Syntax:
 
 ## Sorbet
 
-Sorbet:
-  DisabledByDefault: true
-
 Sorbet/EnforceSigilOrder:
   Enabled: true
 
