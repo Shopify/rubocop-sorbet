@@ -860,9 +860,22 @@ Include | `**/*.rbi` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes  | 0.3.3 | -
+Disabled | No | Yes  | 0.3.3 | -
 
 Makes the Sorbet `strict` sigil mandatory in all files.
+
+### Examples
+
+```ruby
+# bad
+# typed: true
+
+# bad
+# typed: false
+
+# good
+# typed: strict
+```
 
 ### Configurable attributes
 

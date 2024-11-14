@@ -252,6 +252,7 @@ Sorbet/SingleLineRbiClassModuleDefinitions:
 Sorbet/StrictSigil:
   Description: 'All files must be at least at strictness `strict`.'
   Enabled: false
+  Safe: false
   SuggestedStrictness: "strict"
   VersionAdded: 0.3.3
   Include:
