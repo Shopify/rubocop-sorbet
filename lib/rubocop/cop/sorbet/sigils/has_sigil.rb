@@ -13,6 +13,7 @@ module RuboCop
       # * `SuggestedStrictness`: Sorbet strictness level suggested in offense messages (default: 'false')
       # * `MinimumStrictness`: If set, make offense if the strictness level in the file is below this one
       #
+      # If a `SuggestedStrictness` level is specified, it will be used in autocorrect.
       # If a `MinimumStrictness` level is specified, it will be used in offense messages and autocorrect.
       class HasSigil < ValidSigil
         def require_sigil_on_all_files?
