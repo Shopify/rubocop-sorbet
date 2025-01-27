@@ -24,3 +24,18 @@ Layout/LineLength:
 
 InternalAffairs/UndefinedConfig:
   Enabled: false # Bug in implementation fails to find our configs
+
+InternalAffairs/OnSendWithoutOnCSend:
+  Exclude:
+    # Receiver of send is self
+    - lib/rubocop/cop/sorbet/callback_conditionals_binding.rb
+    - lib/rubocop/cop/sorbet/forbid_include_const_literal.rb
+    - lib/rubocop/cop/sorbet/forbid_t_struct.rb
+    - lib/rubocop/cop/sorbet/forbid_t_untyped.rb
+    - lib/rubocop/cop/sorbet/implicit_conversion_method.rb
+    - lib/rubocop/cop/sorbet/rbi/forbid_extend_t_sig_helpers_in_shims.rb
+    - lib/rubocop/cop/sorbet/redundant_extend_t_sig.rb
+    - lib/rubocop/cop/sorbet/refinement.rb
+    - lib/rubocop/cop/sorbet/signatures/allow_incompatible_override.rb
+    - lib/rubocop/cop/sorbet/signatures/enforce_signatures.rb
+    - lib/rubocop/cop/sorbet/t_enum/forbid_comparable_t_enum.rb

@@ -24,6 +24,7 @@ module RuboCop
         def on_send(node)
           add_offense(node) if t_unsafe?(node)
         end
+        alias_method :on_csend, :on_send
       end
     end
   end
