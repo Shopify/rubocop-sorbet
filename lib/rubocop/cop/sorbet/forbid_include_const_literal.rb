@@ -50,14 +50,14 @@ module RuboCop
         private
 
         def neither_const_nor_self?(node)
-          !node.const_type? && !node.self_type?
+          !node.type?(:const, :self)
         end
 
         # Returns true if the node is within a module declaration that is not anonymous.
         def within_onymous_module?(node)
           parent = node.parent
-          parent = parent.parent while parent&.begin_type? || parent&.block_type?
-          parent && (parent.module_type? || parent.class_type? || parent.sclass_type?)
+          parent = parent.parent while parent&.type?(:begin, :block)
+          parent&.type?(:module, :class, :sclass)
         end
       end
     end
