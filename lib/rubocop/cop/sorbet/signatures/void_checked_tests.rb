@@ -35,7 +35,7 @@ module RuboCop
 
         # @!method checked_tests(node)
         def_node_search(:checked_tests, <<~PATTERN)
-          ({csend send} _ :checked (sym :tests))
+          (call _ :checked (sym :tests))
         PATTERN
 
         MESSAGE =
