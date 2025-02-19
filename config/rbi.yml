@@ -103,11 +103,11 @@ Layout/InitialIndentation:
 
 Layout/LeadingCommentSpace:
   Enabled: true
+  AllowRBSInlineAnnotation: true
 
 Layout/LeadingEmptyLines:
   Enabled: true
 
-# TODO: make Tapioca break long lines?
 Layout/LineLength:
   Enabled: false
 
