@@ -24,7 +24,7 @@ module RuboCop
       #     C = "c"
       #   end
       class ForbidTEnum < RuboCop::Cop::Base
-        MSG = "Using `T::Enum` is deprecated."
+        MSG = "Using `T::Enum` is deprecated in this codebase."
 
         # @!method t_enum?(node)
         def_node_matcher(:t_enum?, <<~PATTERN)
