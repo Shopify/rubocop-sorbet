@@ -26,14 +26,14 @@ RSpec.describe(RuboCop::Cop::Sorbet::ConstantsFromStrings, :config) do
     it("disallows safe_constantize") do
       expect_offense(<<~RUBY)
         klass = "Foo".safe_constantize
-                      ^^^^^^^^^^^ #{message("safe_constantize")}
+                      ^^^^^^^^^^^^^^^^ #{message("safe_constantize")}
       RUBY
     end
 
     it("disallows safe_constantize with safe navigation") do
       expect_offense(<<~RUBY)
         klass = class_name&.safe_constantize
-                            ^^^^^^^^^^^ #{message("safe_constantize")}
+                            ^^^^^^^^^^^^^^^^ #{message("safe_constantize")}
       RUBY
     end
 
