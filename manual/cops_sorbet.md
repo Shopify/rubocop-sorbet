@@ -460,7 +460,7 @@ Disallow using `T::Enum`.
 
 ```ruby
 # bad
-class MyEnum < T::Struct
+class MyEnum < T::Enum
   enums do
     A = new
     B = new
@@ -469,7 +469,7 @@ end
 
 # good
 class MyEnum
-  A = "a'
+  A = "a"
   B = "b"
   C = "c"
 end
