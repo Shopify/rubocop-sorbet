@@ -43,8 +43,8 @@ module RuboCop
 
         RESTRICT_ON_SEND = [:include, :prepend, :extend].freeze
 
-        MSG_STRUCT = "Using `T::Struct` or its variants is deprecated."
-        MSG_PROPS = "Using `T::Props` or its variants is deprecated."
+        MSG_STRUCT = "Using `T::Struct` or its variants is deprecated in this codebase."
+        MSG_PROPS = "Using `T::Props` or its variants is deprecated in this codebase."
 
         # This class walks down the class body of a T::Struct and collects all the properties that will need to be
         # translated into `attr_reader` and `attr_accessor` methods.

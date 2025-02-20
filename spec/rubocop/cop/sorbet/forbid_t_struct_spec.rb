@@ -7,7 +7,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
     it "adds offense when inheriting T::Struct on a multiline class" do
       expect_offense(<<~RUBY)
         class Foo < T::Struct
-        ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated.
+        ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
         end
       RUBY
     end
@@ -15,21 +15,21 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
     it "adds offense when inheriting T::Struct on a singleline class" do
       expect_offense(<<~RUBY)
         class Foo < T::Struct; end
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
       RUBY
     end
 
     it "adds offense when inheriting ::T::Struct" do
       expect_offense(<<~RUBY)
         class Foo < ::T::Struct; end
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
       RUBY
     end
 
     it "adds offense when inheriting T::ImmutableStruct" do
       expect_offense(<<~RUBY)
         class Foo < T::ImmutableStruct
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
         end
       RUBY
     end
@@ -37,7 +37,7 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
     it "adds offense when inheriting T::InexactStruct" do
       expect_offense(<<~RUBY)
         class Foo < T::InexactStruct
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
         end
       RUBY
     end
@@ -46,17 +46,17 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
       expect_offense(<<~RUBY)
         class Foo
           include T::Props
-          ^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated.
+          ^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated in this codebase.
           include T::Props::Constructor
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated.
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated in this codebase.
           include T::Props::WeakConstructor
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated.
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated in this codebase.
           prepend T::Props::Foo
-          ^^^^^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated.
+          ^^^^^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated in this codebase.
           extend T::Props::Bar
-          ^^^^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated.
+          ^^^^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated in this codebase.
           extend ::T::Props
-          ^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated.
+          ^^^^^^^^^^^^^^^^^ Using `T::Props` or its variants is deprecated in this codebase.
         end
       RUBY
     end
@@ -64,9 +64,9 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidTStruct, :config) do
     it "adds offense for nested structs" do
       expect_offense(<<~RUBY)
         class Foo < T::Struct
-        ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated.
+        ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
           class Bar < T::Struct
-          ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated.
+          ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
           end
         end
       RUBY
