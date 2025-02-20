@@ -110,6 +110,13 @@ Sorbet/ForbidSuperclassConstLiteral:
   Exclude:
   - db/migrate/*.rb
 
+Sorbet/ForbidTEnum:
+  Description: 'Forbid usage of T::Enum.'
+  Enabled: false
+  VersionAdded: <<next>>
+  VersionChanged: <<next>>
+  Safe: false
+
 Sorbet/ForbidTStruct:
   Description: 'Forbid usage of T::Struct.'
   Enabled: false
