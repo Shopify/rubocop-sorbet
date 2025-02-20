@@ -41,6 +41,7 @@ module RuboCop
           :constantize,
           :constants,
           :const_get,
+          :safe_constantize,
         ].freeze
 
         def on_send(node)
