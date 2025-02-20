@@ -42,5 +42,7 @@ jobs:
           bin/rubocop --config config/default.yml config -r rubocop-sorbet
       - name: Lint Ruby files
         run: bin/rubocop
+      - name: Verify cop examples
+        run: bundle exec rake documentation_syntax_check
       - name: Verify documentation is up to date
         run: bundle exec rake generate_cops_documentation
