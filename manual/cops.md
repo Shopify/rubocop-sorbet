@@ -20,6 +20,7 @@ In the following section you find all available cops:
 * [Sorbet/ForbidExtendTSigHelpersInShims](cops_sorbet.md#sorbetforbidextendtsighelpersinshims)
 * [Sorbet/ForbidIncludeConstLiteral](cops_sorbet.md#sorbetforbidincludeconstliteral)
 * [Sorbet/ForbidRBIOutsideOfAllowedPaths](cops_sorbet.md#sorbetforbidrbioutsideofallowedpaths)
+* [Sorbet/ForbidSigWithoutRuntime](cops_sorbet.md#sorbetforbidsigwithoutruntime)
 * [Sorbet/ForbidSuperclassConstLiteral](cops_sorbet.md#sorbetforbidsuperclassconstliteral)
 * [Sorbet/ForbidTEnum](cops_sorbet.md#sorbetforbidtenum)
 * [Sorbet/ForbidTStruct](cops_sorbet.md#sorbetforbidtstruct)

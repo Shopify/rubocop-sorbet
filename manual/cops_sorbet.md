@@ -417,6 +417,28 @@ Name | Default value | Configurable values
 AllowedPaths | `rbi/**`, `sorbet/rbi/**` | Array
 Include | `**/*.rbi` | Array
 
+## Sorbet/ForbidSigWithoutRuntime
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | Yes  | <<next>> | -
+
+Check that `sig` is used instead of `T::Sig::WithoutRuntime.sig`.
+
+Good:
+
+```
+sig { void }
+def foo; end
+```
+
+Bad:
+
+```
+T::Sig::WithoutRuntime.sig { void }
+def foo; end
+```
+
 ## Sorbet/ForbidSuperclassConstLiteral
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

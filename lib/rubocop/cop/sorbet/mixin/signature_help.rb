@@ -9,21 +9,34 @@ module RuboCop
 
         # @!method signature?(node)
         def_node_matcher(:signature?, <<~PATTERN)
+          {#bare_sig? #sig_with_runtime? #sig_without_runtime?}
+        PATTERN
+
+        # @!method bare_sig?(node)
+        def_node_matcher(:bare_sig?, <<~PATTERN)
           (block (send
-            {nil? #with_runtime? #without_runtime?}
+            nil?
             :sig
             (sym :final)?
           ) (args) ...)
         PATTERN
 
-        # @!method with_runtime?(node)
-        def_node_matcher(:with_runtime?, <<~PATTERN)
-          (const (const {nil? cbase} :T) :Sig)
+        # @!method sig_with_runtime?(node)
+        def_node_matcher(:sig_with_runtime?, <<~PATTERN)
+          (block (send
+            (const (const {nil? cbase} :T) :Sig)
+            :sig
+            (sym :final)?
+          ) (args) ...)
         PATTERN
 
-        # @!method without_runtime?(node)
-        def_node_matcher(:without_runtime?, <<~PATTERN)
-          (const (const (const {nil? cbase} :T) :Sig) :WithoutRuntime)
+        # @!method sig_without_runtime?(node)
+        def_node_matcher(:sig_without_runtime?, <<~PATTERN)
+          (block (send
+            (const (const (const {nil? cbase} :T) :Sig) :WithoutRuntime)
+            :sig
+            (sym :final)?
+          ) (args) ...)
         PATTERN
 
         def on_block(node)

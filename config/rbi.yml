@@ -199,6 +199,9 @@ Lint/Syntax:
 
 ## Sorbet
 
+Sorbet/ForbidSigWithoutRuntime:
+  Enabled: true
+
 Sorbet/EnforceSigilOrder:
   Enabled: true
 
