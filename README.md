@@ -24,30 +24,33 @@ You need to tell RuboCop to load the Sorbet extension. There are three ways to d
 Put this into your `.rubocop.yml`:
 
 ```yaml
-require: rubocop-sorbet
+plugins: rubocop-sorbet
 ```
 
 Alternatively, use the following array notation when specifying multiple extensions:
 
 ```yaml
-require:
-  - rubocop-other-extension
+plugins:
   - rubocop-sorbet
+  - rubocop-other-extension
 ```
 
 Now you can run `rubocop` and it will automatically load the RuboCop Sorbet cops together with the standard cops.
 
+> [!NOTE]
+> The plugin system is supported in RuboCop 1.72+. In earlier versions, use `require` instead of `plugins`.
+
 ### Command line
 
 ```sh
-rubocop --require rubocop-sorbet
+rubocop --plugin rubocop-sorbet
 ```
 
 ### Rake task
 
 ```ruby
 RuboCop::RakeTask.new do |task|
-  task.requires << 'rubocop-sorbet'
+  task.plugins << 'rubocop-sorbet'
 end
 ```
 
