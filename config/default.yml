@@ -1,5 +1,5 @@
 Sorbet/Refinement:
-  Description: >- 
+  Description: >-
                   Checks for the use of Ruby Refinements library. Refinements add
                   complexity and incur a performance penalty that can be significant
                   for large code bases. They are also not supported by Sorbet.
@@ -101,6 +101,11 @@ Sorbet/ForbidTypeAliasedShapes:
   Description: 'Forbids defining type aliases that contain shapes'
   Enabled: false
   VersionAdded: 0.7.6
+
+Sorbet/ForbidSigWithoutRuntime:
+  Description: 'Forbid usage of T::Sig::WithoutRuntime.sig'
+  Enabled: false
+  VersionAdded: <<next>>
 
 Sorbet/ForbidSuperclassConstLiteral:
   Description: 'Forbid superclasses which are non-literal constants.'
