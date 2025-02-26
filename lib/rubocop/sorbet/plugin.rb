@@ -9,7 +9,7 @@ module RuboCop
       def about
         LintRoller::About.new(
           name: 'rubocop-sorbet',
-          version: Version::STRING,
+          version: VERSION,
           homepage: 'https://github.com/Shopify/rubocop-sorbet',
           description: 'A collection of Rubocop rules for Sorbet.'
         )
