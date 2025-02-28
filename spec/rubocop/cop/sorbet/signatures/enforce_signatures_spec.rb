@@ -11,6 +11,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
+    it "makes no offense if a top-level method has an RBS signature" do
+      expect_no_offenses(<<~RUBY)
+        #: -> void
+        def foo; end
+      RUBY
+    end
+
     it "makes no offense if a top-level method has a signature" do
       expect_no_offenses(<<~RUBY)
         sig(:final) { void }
@@ -32,10 +39,26 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
+    it "does not check RBS signature validity" do
+      expect_no_offenses(<<~RUBY)
+        #: hello world
+        def foo; end
+      RUBY
+    end
+
     it "makes no offense if a method has a signature" do
       expect_no_offenses(<<~RUBY)
         class Foo
           sig { void }
+          def foo1; end
+        end
+      RUBY
+    end
+
+    it "makes no offense if a method has a RBS signature" do
+      expect_no_offenses(<<~RUBY)
+        class Foo
+          #: -> void
           def foo1; end
         end
       RUBY
@@ -110,10 +133,62 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
+    it "registers offenses even when methods with the same name have RBS sigs in other scopes" do
+      expect_offense(<<~RUBY)
+        module Foo
+          #: -> void
+        end
+
+        class Bar
+          def foo; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+
+          #: -> void
+        end
+
+        def foo; end
+        ^^^^^^^^^^^^ Each method is required to have a signature.
+
+        class Baz
+          #: -> void
+          def foo; end
+
+          def baz; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+        end
+
+        foo do
+          #: -> void
+          def foo; end
+
+          def baz; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+        end
+
+        foo do
+          #: -> void
+        end
+
+        foo do
+          def foo; end
+          ^^^^^^^^^^^^ Each method is required to have a signature.
+        end
+      RUBY
+    end
+
     it "makes no offense if a singleton method has a signature" do
       expect_no_offenses(<<~RUBY)
         class Foo
           sig { void }
+          def self.foo1; end
+        end
+      RUBY
+    end
+
+    it "makes no offense if a singleton method has an RBS signature" do
+      expect_no_offenses(<<~RUBY)
+        class Foo
+          #: -> void
           def self.foo1; end
         end
       RUBY
@@ -136,6 +211,19 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
           sig { params(bar: String).void }
           attr_writer :bar
           sig { params(bar: String).returns(String) }
+          attr_accessor :baz
+        end
+      RUBY
+    end
+
+    it "makes no offense if an accessor has an RBS signature" do
+      expect_no_offenses(<<~RUBY)
+        class Foo
+          #: -> String
+          attr_reader :foo
+          #: (String) -> void
+          attr_writer :bar
+          #: (String) -> String
           attr_accessor :baz
         end
       RUBY
@@ -190,10 +278,28 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
       RUBY
     end
 
+    it "makes no offense if method has a comment separating RBS signature" do
+      expect_no_offenses(<<~RUBY)
+        # before
+        #: -> void
+        # after
+        def foo; end
+      RUBY
+    end
+
     it "does not check the signature for accessors" do # Validity will be checked by Sorbet
       expect_no_offenses(<<~RUBY)
         class Foo
           sig { void }
+          attr_reader :foo, :bar
+        end
+      RUBY
+    end
+
+    it "does not check the RBS signature for accessors" do # Validity will be checked by Sorbet
+      expect_no_offenses(<<~RUBY)
+        class Foo
+          #: -> void
           attr_reader :foo, :bar
         end
       RUBY
@@ -211,6 +317,22 @@ RSpec.describe(RuboCop::Cop::Sorbet::EnforceSignatures, :config) do
         protected def foo; end
 
         sig { void }
+        foo bar baz def foo; end
+      RUBY
+    end
+
+    it("supports visibility modifiers for RBS signatures") do
+      expect_no_offenses(<<~RUBY)
+        #: -> void
+        private def foo; end
+
+        #: -> void
+        public def foo; end
+
+        #: -> void
+        protected def foo; end
+
+        #: -> void
         foo bar baz def foo; end
       RUBY
     end
