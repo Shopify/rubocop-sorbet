@@ -439,6 +439,28 @@ sig { void }
 def foo; end
 ```
 
+## Sorbet/ForbidSigWithRuntime
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Check that definitions do not use a `sig` block.
+
+Good:
+
+```
+#: -> void
+def foo; end
+```
+
+Bad:
+
+```
+T::Sig.sig { void }
+def foo; end
+```
+
 ## Sorbet/ForbidSigWithoutRuntime
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
