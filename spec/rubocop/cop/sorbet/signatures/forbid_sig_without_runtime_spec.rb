@@ -15,6 +15,13 @@ RSpec.describe(RuboCop::Cop::Sorbet::ForbidSigWithoutRuntime, :config) do
       RUBY
     end
 
+    it("allows using T::Sig.sig") do
+      expect_no_offenses(<<~RUBY)
+        T::Sig.sig { void }
+        def foo; end
+      RUBY
+    end
+
     it("disallows using T::Sig::WithoutRuntime.sig { ... }") do
       expect_offense(<<~RUBY)
         T::Sig::WithoutRuntime.sig { void }
