@@ -102,6 +102,11 @@ Sorbet/ForbidTypeAliasedShapes:
   Enabled: false
   VersionAdded: 0.7.6
 
+Sorbet/ForbidSig:
+  Description: 'Forbid usage of sig'
+  Enabled: false
+  VersionAdded: <<next>>
+
 Sorbet/ForbidSigWithoutRuntime:
   Description: 'Forbid usage of T::Sig::WithoutRuntime.sig'
   Enabled: false

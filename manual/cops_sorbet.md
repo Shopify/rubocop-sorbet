@@ -417,6 +417,28 @@ Name | Default value | Configurable values
 AllowedPaths | `rbi/**`, `sorbet/rbi/**` | Array
 Include | `**/*.rbi` | Array
 
+## Sorbet/ForbidSig
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Check that definitions do not use a `sig` block.
+
+Good:
+
+```
+#: -> void
+def foo; end
+```
+
+Bad:
+
+```
+sig { void }
+def foo; end
+```
+
 ## Sorbet/ForbidSigWithoutRuntime
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
