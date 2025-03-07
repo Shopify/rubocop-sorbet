@@ -24,15 +24,12 @@ module RuboCop
         include SignatureHelp
         extend AutoCorrector
 
-        MSG = "Do not use `T::Sig::WithoutRuntime.sig`. Use `sig` instead."
+        MSG = "Do not use `T::Sig::WithoutRuntime.sig`."
 
         def on_signature(node)
           return unless sig_without_runtime?(node)
 
           sig = node.children[0]
-          # puts "source: #{sig.children.inspect}"
-          # puts "sig: #{sig.source}"
-
           add_offense(sig) do |corrector|
             corrector.replace(sig, sig.source.gsub(/T\s*::\s*Sig\s*::\s*WithoutRuntime\s*\.\s*/m, ""))
           end
