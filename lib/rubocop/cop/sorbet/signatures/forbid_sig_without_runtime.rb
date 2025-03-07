@@ -24,7 +24,7 @@ module RuboCop
         include SignatureHelp
         extend AutoCorrector
 
-        MSG = "Do not use `T::Sig::WithoutRuntime.sig`. Use `sig` instead."
+        MSG = "Do not use `T::Sig::WithoutRuntime.sig`."
 
         def on_signature(node)
           return unless sig_without_runtime?(node)
