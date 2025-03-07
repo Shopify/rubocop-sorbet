@@ -28,6 +28,8 @@ module RuboCop
         extend AutoCorrector
         include SignatureHelp
 
+        RBS_COMMENT_REGEX = /^#:.*$/
+
         def initialize(config = nil, options = nil)
           super(config, options)
           @last_sig_for_scope = {}
@@ -65,7 +67,7 @@ module RuboCop
 
         def check_node(node)
           scope = self.scope(node)
-          unless @last_sig_for_scope[scope]
+          unless @last_sig_for_scope[scope] || has_rbs_comment?(node)
             add_offense(
               node,
               message: "Each method is required to have a signature.",
@@ -74,6 +76,22 @@ module RuboCop
             end
           end
           @last_sig_for_scope[scope] = nil
+        end
+
+        def has_rbs_comment?(node)
+          return false unless cop_config["AllowRBS"] == true
+
+          node = node.parent while RuboCop::AST::SendNode === node.parent
+          return false if (comments = preceeding_comments(node)).empty?
+
+          last_comment = comments.last
+          return false if last_comment.loc.line + 1 < node.loc.line
+
+          comments.any? { |comment| RBS_COMMENT_REGEX.match?(comment.text) }
+        end
+
+        def preceeding_comments(node)
+          processed_source.ast_with_comments[node].select { |comment| comment.loc.line < node.loc.line }
         end
 
         def autocorrect(corrector, node)
