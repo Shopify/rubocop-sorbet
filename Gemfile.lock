@@ -1,7 +1,8 @@
 PATH
   remote: .
   specs:
-    rubocop-sorbet (0.8.9)
+    rubocop-sorbet (0.9.0)
+      lint_roller (~> 1.1)
       rubocop (>= 1)
 
 GEM
