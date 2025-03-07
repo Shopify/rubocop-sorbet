@@ -8,15 +8,15 @@ module RuboCop
   module Sorbet
     # A plugin that integrates RuboCop Sorbet with RuboCop's plugin system.
     class Plugin < LintRoller::Plugin
-      RUBOCOP_MIN_VERSION = '1.72.1'
+      RUBOCOP_MIN_VERSION = "1.72.1"
       SUPPORTED = Gem::Version.create(RuboCop::Version.version) < RUBOCOP_MIN_VERSION
 
       def about
         LintRoller::About.new(
-          name: 'rubocop-sorbet',
+          name: "rubocop-sorbet",
           version: VERSION,
-          homepage: 'https://github.com/Shopify/rubocop-sorbet',
-          description: 'A collection of Rubocop rules for Sorbet.'
+          homepage: "https://github.com/Shopify/rubocop-sorbet",
+          description: "A collection of Rubocop rules for Sorbet.",
         )
       end
 
@@ -25,11 +25,11 @@ module RuboCop
       end
 
       def rules(_context)
-        project_root = Pathname.new(__dir__).join('../../..')
+        project_root = Pathname.new(__dir__).join("../../..")
 
-        ConfigObsoletion.files << project_root.join('config', 'obsoletion.yml')
+        ConfigObsoletion.files << project_root.join("config", "obsoletion.yml")
 
-        LintRoller::Rules.new(type: :path, config_format: :rubocop, value: project_root.join('config', 'default.yml'))
+        LintRoller::Rules.new(type: :path, config_format: :rubocop, value: project_root.join("config", "default.yml"))
       end
     end
   end
