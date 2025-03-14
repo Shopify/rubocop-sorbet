@@ -3,8 +3,8 @@
 inherit_gem:
   rubocop-shopify: rubocop.yml
 
-require:
-  - rubocop/cop/internal_affairs
+plugins:
+  - rubocop-internal_affairs
 
 AllCops:
   Exclude:
