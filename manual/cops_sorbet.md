@@ -254,6 +254,12 @@ You can configure the placeholders used by changing the following options:
 * `ParameterTypePlaceholder`: placeholders used for parameter types (default: 'T.untyped')
 * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
 
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+AllowRBS | `false` | Boolean
+
 ## Sorbet/EnforceSingleSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
