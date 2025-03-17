@@ -28,6 +28,7 @@ InternalAffairs/UndefinedConfig:
 InternalAffairs/OnSendWithoutOnCSend:
   Exclude:
     # Cases where we don't expect a conditional send
+    - lib/rubocop/cop/sorbet/anonymous_class_block.rb
     - lib/rubocop/cop/sorbet/callback_conditionals_binding.rb
     - lib/rubocop/cop/sorbet/forbid_include_const_literal.rb
     - lib/rubocop/cop/sorbet/forbid_t_struct.rb

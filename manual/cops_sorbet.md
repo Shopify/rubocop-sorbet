@@ -22,6 +22,41 @@ sig.override(allow_incompatible: true)
 sig.override
 ```
 
+## Sorbet/AnonymousClassBlock
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | <<next>> | -
+
+Disallow calling `Class.new` with a block.
+
+Sorbet incorrectly assumes any methods or constants defined in these blocks
+are privately defined on `Object`, which can lead to false positives when type-
+checking (Sorbet may think that a method is defined when it isn't).
+See https://github.com/sorbet/sorbet/issues/3609#issuecomment-727137772:
+> Sorbet is somewhat fundamentally incompatible with anonymous classes,
+> and [Sorbet recommends] avoiding them.
+
+### Examples
+
+```ruby
+# bad
+Class.new do
+  def this_is_bad
+  end
+end
+
+# good
+class NamedClass
+  def this_is_good
+  end
+end
+
+# good
+anonymous_class = Class.new
+anonymous_class.define_method(:this_is_good) { }
+```
+
 ## Sorbet/BindingConstantWithoutTypeAlias
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
