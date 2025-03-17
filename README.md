@@ -95,7 +95,7 @@ You can read about each cop supplied by RuboCop Sorbet in [the manual](manual/co
 Sorbet cops support the following versions:
 
 - Sorbet >= 0.5
-- Ruby >= 2.5
+- Ruby >= 3.1
 
 ## Contributing
 
