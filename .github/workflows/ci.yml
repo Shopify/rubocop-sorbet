@@ -38,7 +38,7 @@ jobs:
       # to a directory that doesn't contain any .rb or .rbi files.
       - name: Validate default config
         run: |
-          bin/rubocop --config config/rbi.yml config
+          bin/rubocop --plugin rubocop-sorbet --config config/rbi.yml config
           bin/rubocop --config config/default.yml config -r rubocop-sorbet
       - name: Lint Ruby files
         run: bin/rubocop
