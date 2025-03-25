@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+rubocop_min_version = Gem::Version.create("1.72.1")
+rubocop_version = Gem::Version.create(RuboCop::Version.version)
+
+return if rubocop_version < rubocop_min_version
+
 require "rubocop"
 require "lint_roller"
 require "pathname"
@@ -8,9 +13,6 @@ module RuboCop
   module Sorbet
     # A plugin that integrates RuboCop Sorbet with RuboCop's plugin system.
     class Plugin < LintRoller::Plugin
-      RUBOCOP_MIN_VERSION = "1.72.1"
-      SUPPORTED = Gem::Version.create(RuboCop::Version.version) < RUBOCOP_MIN_VERSION
-
       def about
         LintRoller::About.new(
           name: "rubocop-sorbet",
