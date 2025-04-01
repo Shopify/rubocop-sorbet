@@ -2,6 +2,6 @@
 
 module RuboCop
   module Sorbet
-    VERSION = "0.9.0"
+    VERSION = "0.10.0"
   end
 end
