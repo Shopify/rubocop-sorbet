@@ -54,7 +54,7 @@ module RuboCop
           # The first sigil encountered represents the "real" strictness so remove any below
           sigils[1..sigils.size].each do |token|
             corrector.remove(
-              source_range(processed_source.buffer, token.line, (0..token.pos.last_column)),
+              source_range(processed_source.buffer, token.line, 0..token.pos.last_column),
             )
           end
         end
