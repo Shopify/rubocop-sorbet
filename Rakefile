@@ -5,13 +5,14 @@ require("bundler/gem_tasks")
 Dir["tasks/**/*.rake"].each { |t| load t }
 
 require "rubocop/rake_task"
-require "rspec/core/rake_task"
 
-RSpec::Core::RakeTask.new(:spec) do |spec|
-  spec.pattern = FileList["spec/**/*_spec.rb"]
+require "minitest/test_task"
+
+Minitest::TestTask.create(:test) do |test|
+  test.test_globs = FileList["test/**/*_test.rb"]
 end
 
-task(default: [:documentation_syntax_check, :generate_cops_documentation, :spec])
+task(default: [:documentation_syntax_check, :generate_cops_documentation, :test])
 
 desc("Generate a new cop with a template")
 task :new_cop, [:cop] do |_task, args|
