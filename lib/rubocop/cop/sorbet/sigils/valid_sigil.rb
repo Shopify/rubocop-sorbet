@@ -28,6 +28,8 @@ module RuboCop
           return unless check_sigil_present(sigil)
 
           strictness = extract_strictness(sigil)
+          check_double_commented_sigil(sigil, strictness)
+
           return unless check_strictness_not_empty(sigil, strictness)
           return unless check_strictness_valid(sigil, strictness)
 
@@ -37,7 +39,8 @@ module RuboCop
         protected
 
         STRICTNESS_LEVELS = ["ignore", "false", "true", "strict", "strong"]
-        SIGIL_REGEX = /^[[:blank:]]*#[[:blank:]]+typed:(?:[[:blank:]]+([\S]+))?/
+        SIGIL_REGEX = /^[[:blank:]]*(?:#[[:blank:]]*)?#[[:blank:]]+typed:(?:[[:blank:]]+([\S]+))?/
+        INVALID_SIGIL_MSG = "Invalid Sorbet sigil `%<sigil>s`."
 
         # extraction
 
@@ -104,12 +107,27 @@ module RuboCop
           false
         end
 
+        def check_double_commented_sigil(sigil, strictness)
+          return unless sigil.text.start_with?(/[[:blank:]]*#[[:blank:]]*#/)
+
+          add_offense(
+            sigil.pos,
+            message: format(INVALID_SIGIL_MSG, sigil: sigil.text),
+          ) do |corrector|
+            # Remove the extra comment and normalize spaces
+            corrector.replace(
+              sigil.pos,
+              "# typed: #{strictness}",
+            )
+          end
+        end
+
         def check_strictness_valid(sigil, strictness)
           return true if STRICTNESS_LEVELS.include?(strictness)
 
           add_offense(
             sigil.pos,
-            message: "Invalid Sorbet sigil `#{strictness}`.",
+            message: format(INVALID_SIGIL_MSG, sigil: strictness),
           ) do |corrector|
             autocorrect(corrector)
           end
