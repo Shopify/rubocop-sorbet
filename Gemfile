@@ -7,6 +7,8 @@ gemspec
 
 gem "debug"
 gem "rake", ">= 12.3.3"
-gem "rspec", "~> 3.13"
+gem "minitest"
+gem "rubocop-minitest"
+gem "mocha"
 gem "rubocop-shopify", require: false
 gem "yard", "~> 0.9"

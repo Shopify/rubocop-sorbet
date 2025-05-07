@@ -7,5 +7,5 @@ up:
   - "bundler"
 
 commands:
-  test:   "bin/rspec"
+  test:   "bin/rake test"
   style:  "bin/rubocop"
