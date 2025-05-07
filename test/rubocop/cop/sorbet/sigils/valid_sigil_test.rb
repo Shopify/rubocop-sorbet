@@ -110,6 +110,42 @@ module RuboCop
             RUBY
           end
 
+          def test_makes_offense_for_double_commented_sigil
+            assert_offense(<<~RUBY)
+              # # typed: true
+              ^^^^^^^^^^^^^^^ #{format(INVALID_SIGIL_MSG, sigil: "# # typed: true")}
+              class Foo; end
+            RUBY
+            assert_correction(<<~RUBY)
+              # typed: true
+              class Foo; end
+            RUBY
+          end
+
+          def test_makes_offense_for_double_commented_sigil_with_strictness
+            assert_offense(<<~RUBY)
+              # # typed: strict
+              ^^^^^^^^^^^^^^^^^ #{format(INVALID_SIGIL_MSG, sigil: "# # typed: strict")}
+              class Foo; end
+            RUBY
+            assert_correction(<<~RUBY)
+              # typed: strict
+              class Foo; end
+            RUBY
+          end
+
+          def test_makes_offense_for_double_commented_sigil_with_extra_spaces
+            assert_offense(<<~RUBY)
+              # #  typed:  true
+              ^^^^^^^^^^^^^^^^^ #{format(INVALID_SIGIL_MSG, sigil: "# #  typed:  true")}
+              class Foo; end
+            RUBY
+            assert_correction(<<~RUBY)
+              # typed: true
+              class Foo; end
+            RUBY
+          end
+
           def test_autocorrects_by_adding_typed_false_to_file_without_sigil_when_required
             @cop = target_cop.new(cop_config({ "RequireSigilOnAllFiles" => true }))
             assert_offense(<<~RUBY)
@@ -176,6 +212,18 @@ module RuboCop
               # frozen_string_literal: true
               # typed: false
               ^^^^^^^^^^^^^^ #{format(MINIMUM_STRICTNESS_MSG, minimum: "true", actual: "false")}
+              class Foo; end
+            RUBY
+          end
+
+          def test_makes_offense_for_double_commented_sigil_with_arbitrary_spaces
+            assert_offense(<<~RUBY)
+              #    # typed: false
+              ^^^^^^^^^^^^^^^^^^^ Invalid Sorbet sigil `#    # typed: false`.
+              class Foo; end
+            RUBY
+            assert_correction(<<~RUBY)
+              # typed: false
               class Foo; end
             RUBY
           end

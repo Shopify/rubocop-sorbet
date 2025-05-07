@@ -61,6 +61,17 @@ module RuboCop
             RUBY
           end
 
+          def test_makes_offense_on_every_extra_sigil_beyond_the_first_one_even_if_the_first_one_is_a_double_commented_sigil
+            assert_offense(<<~RUBY)
+              # # typed: true
+              # typed: false
+              ^^^^^^^^^^^^^^ #{MSG}
+              # # typed: true
+              ^^^^^^^^^^^^^^^ #{MSG}
+              class Foo; end
+            RUBY
+          end
+
           def test_makes_offense_on_every_extra_sigil_beyond_the_first_one_when_there_are_other_comments_in_between
             assert_offense(<<~RUBY)
               # typed: true
@@ -109,6 +120,27 @@ module RuboCop
             RUBY
             assert_correction(<<~RUBY)
               # typed: true
+              # frozen_string_literal: true
+              class Foo; end
+            RUBY
+          end
+
+          def test_autocorrects_duplicate_sigils_by_selecting_the_first_as_the_real_sigil_even_if_it_is_double_commented
+            assert_offense(<<~RUBY)
+              # # typed: true
+              # typed: false
+              ^^^^^^^^^^^^^^ #{MSG}
+              # typed: strict
+              ^^^^^^^^^^^^^^^ #{MSG}
+              # frozen_string_literal: true
+              # typed: strong
+              ^^^^^^^^^^^^^^^ #{MSG}
+              # typed: ignore
+              ^^^^^^^^^^^^^^^ #{MSG}
+              class Foo; end
+            RUBY
+            assert_correction(<<~RUBY)
+              # # typed: true
               # frozen_string_literal: true
               class Foo; end
             RUBY
