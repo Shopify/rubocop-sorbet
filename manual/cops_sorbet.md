@@ -896,6 +896,26 @@ module Foo
 end
 ```
 
+## Sorbet/SelectByIsA
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | <<next>> | -
+
+Suggests using `grep` over `select` when using it only for type narrowing.
+
+### Examples
+
+```ruby
+# bad
+strings_or_integers.select { |e| e.is_a?(String) }
+strings_or_integers.filter { |e| e.is_a?(String) }
+strings_or_integers.select { |e| e.kind_of?(String) }
+
+# good
+strings_or_integers.grep(String)
+```
+
 ## Sorbet/SignatureBuildOrder
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
