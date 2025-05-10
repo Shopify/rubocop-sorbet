@@ -1,3 +1,14 @@
+Sorbet/AnonymousClassBlock:
+  Description: >-
+                  Checks for the use of anonymous classes. Anonymous classes are
+                  not cleanly supported by Sorbet (methods and constants defined
+                  in an anonymous class are falsely considered by Sorbet to be
+                  privately defined on `Object`).
+
+                  https://github.com/sorbet/sorbet/issues/3609#issuecomment-727137772
+  Enabled: pending
+  VersionAdded: '<<next>>'
+
 Sorbet/Refinement:
   Description: >-
                   Checks for the use of Ruby Refinements library. Refinements add

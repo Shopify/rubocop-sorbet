@@ -6,6 +6,7 @@ In the following section you find all available cops:
 #### Department [Sorbet](cops_sorbet.md)
 
 * [Sorbet/AllowIncompatibleOverride](cops_sorbet.md#sorbetallowincompatibleoverride)
+* [Sorbet/AnonymousClassBlock](cops_sorbet.md#sorbetanonymousclassblock)
 * [Sorbet/BindingConstantWithoutTypeAlias](cops_sorbet.md#sorbetbindingconstantwithouttypealias)
 * [Sorbet/BuggyObsoleteStrictMemoization](cops_sorbet.md#sorbetbuggyobsoletestrictmemoization)
 * [Sorbet/CallbackConditionalsBinding](cops_sorbet.md#sorbetcallbackconditionalsbinding)

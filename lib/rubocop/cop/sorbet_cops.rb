@@ -4,6 +4,7 @@ require_relative "sorbet/mixin/target_sorbet_version"
 require_relative "sorbet/mixin/t_enum"
 require_relative "sorbet/mixin/signature_help"
 
+require_relative "sorbet/anonymous_class_block"
 require_relative "sorbet/binding_constant_without_type_alias"
 require_relative "sorbet/constants_from_strings"
 require_relative "sorbet/forbid_superclass_const_literal"
