@@ -132,17 +132,17 @@ Sorbet/ForbidRBIOutsideOfAllowedPaths:
 Sorbet/ForbidSig:
   Description: 'Forbid usage of sig'
   Enabled: false
-  VersionAdded: <<next>>
+  VersionAdded: 0.9.0
 
 Sorbet/ForbidSigWithRuntime:
   Description: 'Forbid usage of T::Sig.sig'
   Enabled: false
-  VersionAdded: <<next>>
+  VersionAdded: 0.9.0
 
 Sorbet/ForbidSigWithoutRuntime:
   Description: 'Forbid usage of T::Sig::WithoutRuntime.sig'
   Enabled: false
-  VersionAdded: <<next>>
+  VersionAdded: 0.9.0
 
 Sorbet/ForbidSuperclassConstLiteral:
   Description: 'Forbid superclasses which are non-literal constants.'
@@ -155,15 +155,13 @@ Sorbet/ForbidSuperclassConstLiteral:
 Sorbet/ForbidTEnum:
   Description: 'Forbid usage of T::Enum.'
   Enabled: false
-  VersionAdded: <<next>>
-  VersionChanged: <<next>>
+  VersionAdded: 0.8.9
   Safe: false
 
 Sorbet/ForbidTStruct:
   Description: 'Forbid usage of T::Struct.'
   Enabled: false
-  VersionAdded: <<next>>
-  VersionChanged: <<next>>
+  VersionAdded: 0.7.4
   Safe: false
 
 Sorbet/ForbidTUnsafe:
@@ -221,7 +219,7 @@ Sorbet/ImplicitConversionMethod:
     This cop disallows declaring implicit conversion methods, as sorbet does
     not support implicit conversion.
   Enabled: false
-  VersionAdded: '<<next>>'
+  VersionAdded: 0.7.1
 
 Sorbet/KeywordArgumentOrdering:
   Description: >-
@@ -266,7 +264,7 @@ Sorbet/Refinement:
                   complexity and incur a performance penalty that can be significant
                   for large code bases. They are also not supported by Sorbet.
   Enabled: pending
-  VersionAdded: '<<next>>'
+  VersionAdded: 0.8.6
 
 Sorbet/SelectByIsA:
   Description: >-
