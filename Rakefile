@@ -26,7 +26,7 @@ task :new_cop, [:cop] do |_task, args|
   generator = RuboCop::Cop::Generator.new(cop_name)
 
   generator.write_source
-  generator.write_spec
+  generator.write_test
   generator.inject_require(root_file_path: "lib/rubocop/cop/sorbet_cops.rb")
   generator.inject_config(config_file_path: "config/default.yml")
 
