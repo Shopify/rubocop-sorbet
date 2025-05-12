@@ -427,7 +427,7 @@ Include | `**/*.rbi` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.9.0 | -
 
 Check that definitions do not use a `sig` block.
 
@@ -449,7 +449,7 @@ def foo; end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.9.0 | -
 
 Check that definitions do not use a `sig` block.
 
@@ -471,7 +471,7 @@ def foo; end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes  | <<next>> | -
+Disabled | Yes | Yes  | 0.9.0 | -
 
 Check that `sig` is used instead of `T::Sig::WithoutRuntime.sig`.
 
@@ -524,7 +524,7 @@ Exclude | `db/migrate/*.rb` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | No | No | <<next>> | <<next>>
+Disabled | No | No | 0.8.9 | -
 
 Disallow using `T::Enum`.
 
@@ -551,7 +551,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | No | Yes  | <<next>> | <<next>>
+Disabled | No | Yes  | 0.7.4 | -
 
 Disallow using `T::Struct` and `T::Props`.
 
@@ -720,7 +720,7 @@ Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.7.1 | -
 
 Disallows declaring implicit conversion methods.
 Since Sorbet is a nominal (not structural) type system,
@@ -863,7 +863,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | No | <<next>> | -
+Enabled | Yes | No | 0.8.6 | -
 
 Checks for the use of Ruby Refinements library. Refinements add
 complexity and incur a performance penalty that can be significant
