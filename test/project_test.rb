@@ -43,6 +43,6 @@ class ProjectTest < Minitest::Test
   end
 
   def cops_on(config)
-    config.keys.reject { |key| key == "inherit_mode" }.sort
+    config.keys.reject { |key| key == "inherit_mode" }
   end
 end

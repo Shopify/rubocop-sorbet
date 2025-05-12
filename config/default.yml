@@ -2,15 +2,6 @@ inherit_mode:
   merge:
   - Exclude
 
-Sorbet/Refinement:
-  Description: >-
-                  Checks for the use of Ruby Refinements library. Refinements add
-                  complexity and incur a performance penalty that can be significant
-                  for large code bases. They are also not supported by Sorbet.
-  Enabled: pending
-  VersionAdded: '<<next>>'
-
-
 Sorbet/AllowIncompatibleOverride:
   Description: 'Disallows using `.override(allow_incompatible: true)`.'
   Enabled: true
@@ -33,6 +24,23 @@ Sorbet/BlockMethodDefinition:
   SafeAutoCorrect: false
   VersionAdded: '<<next>>'
 
+Sorbet/BuggyObsoleteStrictMemoization:
+  Description: >-
+    Checks for the a mistaken variant of the "obsolete memoization pattern" that used to be required
+    for older Sorbet versions in `#typed: strict` files. The mistaken variant would overwrite the ivar with `nil`
+    on every call, causing the memoized value to be discarded and recomputed on every call.
+
+    This cop will correct it to read from the ivar instead of `nil`, which will memoize it correctly.
+
+    The result of this correction will be the "obsolete memoization pattern", which can further be corrected by
+    the `Sorbet/ObsoleteStrictMemoization` cop.
+
+    See `Sorbet/ObsoleteStrictMemoization` for more details.
+  Enabled: true
+  VersionAdded: '0.7.3'
+  Safe: true
+  SafeAutoCorrect: false
+
 Sorbet/CallbackConditionalsBinding:
   Description: 'Ensures callback conditionals are bound to the right type.'
   Enabled: false
@@ -44,12 +52,6 @@ Sorbet/CheckedTrueInSignature:
   Enabled: true
   VersionAdded: 0.2.0
 
-Sorbet/EmptyLineAfterSig:
-  Description: 'Ensures that there are no blank lines after signatures'
-  Enabled: true
-  VersionAdded: 0.7.0
-  VersionChanged: '<<next>>'
-
 Sorbet/ConstantsFromStrings:
   Description: >-
                   Forbids constant access through meta-programming.
@@ -59,21 +61,27 @@ Sorbet/ConstantsFromStrings:
   Enabled: true
   VersionAdded: 0.2.0
 
+Sorbet/EmptyLineAfterSig:
+  Description: 'Ensures that there are no blank lines after signatures'
+  Enabled: true
+  VersionAdded: 0.7.0
+  VersionChanged: '<<next>>'
+
 Sorbet/EnforceSigilOrder:
   Description: 'Ensures that Sorbet sigil comes first in a file.'
   Enabled: true
   VersionAdded: 0.3.4
-
-Sorbet/EnforceSingleSigil:
-  Description: 'Ensures that there is only one Sorbet sigil in a file.'
-  Enabled: true
-  VersionAdded: 0.7.0
 
 Sorbet/EnforceSignatures:
   Description: 'Ensures all methods have a valid signature.'
   Enabled: false
   AllowRBS: false
   VersionAdded: 0.3.4
+
+Sorbet/EnforceSingleSigil:
+  Description: 'Ensures that there is only one Sorbet sigil in a file.'
+  Enabled: true
+  VersionAdded: 0.7.0
 
 Sorbet/FalseSigil:
   Description: 'All files must be at least at strictness `false`.'
@@ -87,12 +95,29 @@ Sorbet/FalseSigil:
   - db/**/*.rb
   - script/**/*
 
+Sorbet/ForbidComparableTEnum:
+  Description: 'Disallows including the `Comparable` module in a `T::Enum`.'
+  Enabled: true
+  VersionAdded: 0.8.2
+
 Sorbet/ForbidExtendTSigHelpersInShims:
   Description: 'Forbid the use of `extend T::Sig` and `extend T::Helpers` in RBI shims'
   Enabled: true
   VersionAdded: '0.6.0'
   Include:
   - "**/*.rbi"
+
+Sorbet/ForbidIncludeConstLiteral:
+  Description: 'Forbids include of non-literal constants.'
+  Enabled: false
+  VersionAdded: 0.2.0
+  VersionChanged: 0.5.0
+
+Sorbet/ForbidMixesInClassMethods:
+  Description: >-
+    Disallows the usage of `mixes_in_class_methods` in favor of `extend ActiveSupport::Concern`.
+  Enabled: false
+  VersionAdded: '<<next>>'
 
 Sorbet/ForbidRBIOutsideOfAllowedPaths:
   Description: 'Forbids RBI files outside of the allowed paths'
@@ -103,17 +128,6 @@ Sorbet/ForbidRBIOutsideOfAllowedPaths:
   - "sorbet/rbi/**"
   Include:
   - "**/*.rbi"
-
-Sorbet/ForbidIncludeConstLiteral:
-  Description: 'Forbids include of non-literal constants.'
-  Enabled: false
-  VersionAdded: 0.2.0
-  VersionChanged: 0.5.0
-
-Sorbet/ForbidTypeAliasedShapes:
-  Description: 'Forbids defining type aliases that contain shapes'
-  Enabled: false
-  VersionAdded: 0.7.6
 
 Sorbet/ForbidSig:
   Description: 'Forbid usage of sig'
@@ -163,6 +177,11 @@ Sorbet/ForbidTUntyped:
   Enabled: false
   VersionAdded: 0.6.9
   VersionChanged: 0.7.0
+
+Sorbet/ForbidTypeAliasedShapes:
+  Description: 'Forbids defining type aliases that contain shapes'
+  Enabled: false
+  VersionAdded: 0.7.6
 
 Sorbet/ForbidUntypedStructProps:
   Description: >-
@@ -214,6 +233,11 @@ Sorbet/KeywordArgumentOrdering:
   Enabled: true
   VersionAdded: 0.2.0
 
+Sorbet/MultipleTEnumValues:
+  Description: 'Ensures that all `T::Enum`s have multiple values.'
+  Enabled: true
+  VersionAdded: 0.8.2
+
 Sorbet/ObsoleteStrictMemoization:
   Description: >-
     This cop checks for the obsolete pattern for initializing instance variables that was required for older Sorbet
@@ -226,23 +250,6 @@ Sorbet/ObsoleteStrictMemoization:
   Safe: true
   SafeAutoCorrect: true
 
-Sorbet/BuggyObsoleteStrictMemoization:
-  Description: >-
-    Checks for the a mistaken variant of the "obsolete memoization pattern" that used to be required
-    for older Sorbet versions in `#typed: strict` files. The mistaken variant would overwrite the ivar with `nil`
-    on every call, causing the memoized value to be discarded and recomputed on every call.
-
-    This cop will correct it to read from the ivar instead of `nil`, which will memoize it correctly.
-
-    The result of this correction will be the "obsolete memoization pattern", which can further be corrected by
-    the `Sorbet/ObsoleteStrictMemoization` cop.
-
-    See `Sorbet/ObsoleteStrictMemoization` for more details.
-  Enabled: true
-  VersionAdded: '0.7.3'
-  Safe: true
-  SafeAutoCorrect: false
-
 Sorbet/RedundantExtendTSig:
   Description: >-
     Forbid the usage of redundant `extend T::Sig`.
@@ -252,6 +259,23 @@ Sorbet/RedundantExtendTSig:
   Enabled: false
   Safe: false
   VersionAdded: 0.7.0
+
+Sorbet/Refinement:
+  Description: >-
+                  Checks for the use of Ruby Refinements library. Refinements add
+                  complexity and incur a performance penalty that can be significant
+                  for large code bases. They are also not supported by Sorbet.
+  Enabled: pending
+  VersionAdded: '<<next>>'
+
+Sorbet/SelectByIsA:
+  Description: >-
+    Suggests using `grep` over `select` when using it only for type narrowing.
+    This is because Sorbet can properly infer types when using `grep` but not with `select`.
+  Enabled: true
+  VersionAdded: '<<next>>'
+  Safe: true
+  SafeAutoCorrect: true
 
 Sorbet/SignatureBuildOrder:
   Description: >-
@@ -351,28 +375,3 @@ Sorbet/VoidCheckedTests:
   Description: 'Forbid `.void.checked(:tests)`'
   Enabled: true
   VersionAdded: 0.7.7
-
-Sorbet/MultipleTEnumValues:
-  Description: 'Ensures that all `T::Enum`s have multiple values.'
-  Enabled: true
-  VersionAdded: 0.8.2
-
-Sorbet/ForbidComparableTEnum:
-  Description: 'Disallows including the `Comparable` module in a `T::Enum`.'
-  Enabled: true
-  VersionAdded: 0.8.2
-
-Sorbet/SelectByIsA:
-  Description: >-
-    Suggests using `grep` over `select` when using it only for type narrowing.
-    This is because Sorbet can properly infer types when using `grep` but not with `select`.
-  Enabled: true
-  VersionAdded: '<<next>>'
-  Safe: true
-  SafeAutoCorrect: true
-
-Sorbet/ForbidMixesInClassMethods:
-  Description: >-
-    Disallows the usage of `mixes_in_class_methods` in favor of `extend ActiveSupport::Concern`.
-  Enabled: false
-  VersionAdded: '<<next>>'
