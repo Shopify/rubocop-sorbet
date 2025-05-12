@@ -27,6 +27,14 @@ class ProjectTest < Minitest::Test
     assert_equal(code_cop_names.sort, cops_on(config))
   end
 
+  def test_requires_a_nicely_formatted_version_added_metadata_for_all_cops
+    code_cop_names.each do |cop|
+      assert_match(/\A\d+\.\d+\.\d+\z|\A<<next>>\z/, config[cop]["VersionAdded"])
+    end
+  end
+
+  private
+
   def cop_names
     @cop_names ||= RuboCop::Cop::Registry
       .global
