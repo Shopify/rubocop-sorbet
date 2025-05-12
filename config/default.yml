@@ -1,3 +1,7 @@
+inherit_mode:
+  merge:
+  - Exclude
+
 Sorbet/Refinement:
   Description: >-
                   Checks for the use of Ruby Refinements library. Refinements add
@@ -6,9 +10,6 @@ Sorbet/Refinement:
   Enabled: pending
   VersionAdded: '<<next>>'
 
-inherit_mode:
-  merge:
-  - Exclude
 
 Sorbet/AllowIncompatibleOverride:
   Description: 'Disallows using `.override(allow_incompatible: true)`.'
