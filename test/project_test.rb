@@ -3,7 +3,7 @@
 require "test_helper"
 require "pathname"
 
-class DocumentationTest < Minitest::Test
+class ProjectTest < Minitest::Test
   def test_no_rogue_rubocop_comments
     root_directory = Pathname.new(File.expand_path("..", __dir__))
 
