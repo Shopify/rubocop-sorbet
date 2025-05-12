@@ -349,3 +349,12 @@ Sorbet/ForbidComparableTEnum:
   Description: 'Disallows including the `Comparable` module in a `T::Enum`.'
   Enabled: true
   VersionAdded: 0.8.2
+
+Sorbet/SelectByIsA:
+  Description: >-
+    Suggests using `grep` over `select` when using it only for type narrowing.
+    This is because Sorbet can properly infer types when using `grep` but not with `select`.
+  Enabled: true
+  VersionAdded: '<<next>>'
+  Safe: true
+  SafeAutoCorrect: true
