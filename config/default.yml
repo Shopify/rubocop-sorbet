@@ -37,6 +37,7 @@ Sorbet/EmptyLineAfterSig:
   Description: 'Ensures that there are no blank lines after signatures'
   Enabled: true
   VersionAdded: 0.7.0
+  VersionChanged: '<<next>>'
 
 Sorbet/ConstantsFromStrings:
   Description: >-

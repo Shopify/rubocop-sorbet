@@ -87,6 +87,34 @@ module RuboCop
             RUBY
           end
 
+          def test_registers_offense_for_attr
+            assert_offense(<<~RUBY)
+              sig { void }
+
+              ^{} #{MSG}
+              attr :bar
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { void }
+              attr :bar
+            RUBY
+          end
+
+          def test_registers_offense_for_attr_with_boolean
+            assert_offense(<<~RUBY)
+              sig { void }
+
+              ^{} #{MSG}
+              attr :bar, true
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { void }
+              attr :bar, true
+            RUBY
+          end
+
           def test_registers_offense_for_multiline_sigs_with_indentation
             assert_offense(<<~RUBY)
               module Example

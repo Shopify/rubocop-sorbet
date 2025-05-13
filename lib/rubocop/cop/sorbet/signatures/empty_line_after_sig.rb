@@ -25,7 +25,7 @@ module RuboCop
         def_node_matcher :sig_or_signable_method_definition?, <<~PATTERN
           ${
             any_def
-            (send nil? {:attr_reader :attr_writer :attr_accessor} ...)
+            (send nil? {:attr :attr_reader :attr_writer :attr_accessor} ...)
             #signature?
           }
         PATTERN
