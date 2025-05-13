@@ -180,7 +180,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | 0.7.0 | -
+Enabled | Yes | Yes  | 0.7.0 | <<next>>
 
 Checks for blank lines after signatures.
 
