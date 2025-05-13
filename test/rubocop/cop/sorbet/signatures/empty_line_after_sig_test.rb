@@ -278,6 +278,42 @@ module RuboCop
               def foo; end
             RUBY
           end
+
+          def test_does_not_move_rubocop_directive_comments
+            assert_no_offenses(<<~RUBY)
+              sig { void }
+              # rubocop:disable Style/Foo
+              def foo; end
+              # rubocop:enable Style/Foo
+            RUBY
+          end
+
+          def test_does_not_move_rubocop_todo_comments
+            assert_no_offenses(<<~RUBY)
+              sig { void }
+              # rubocop:todo Style/Foo
+              def foo; end
+            RUBY
+          end
+
+          def test_does_not_move_rubocop_comments_but_moves_other_comments
+            assert_offense(<<~RUBY)
+              # rubocop:todo Style/Foo
+              sig { void }
+              # rubocop:enable Style/Foo
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # Comment
+              def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # rubocop:todo Style/Foo
+              # Comment
+              sig { void }
+              # rubocop:enable Style/Foo
+              def foo; end
+            RUBY
+          end
         end
       end
     end

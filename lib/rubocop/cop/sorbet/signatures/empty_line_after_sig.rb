@@ -33,16 +33,22 @@ module RuboCop
         def on_signature(sig)
           sig_or_signable_method_definition?(next_sibling(sig)) do |definition|
             range = lines_between(sig, definition)
-            next if range.empty? || range.single_line?
+            next if range.empty? || range.single_line? || contains_only_rubocop_directives?(range)
 
             add_offense(range) do |corrector|
-              corrector.insert_before(
-                range_by_whole_lines(sig.source_range),
-                range.source
-                  .sub(/\A\n+/, "") # remove initial newline(s)
-                  .gsub(/\n{2,}/, "\n"), # remove empty line(s)
-              )
-              corrector.remove(range)
+              lines = range.source.lines
+              rubocop_lines, other_lines = lines.partition { |line| line.strip.start_with?("# rubocop:") }
+
+              unless other_lines.empty?
+                corrector.insert_before(
+                  range_by_whole_lines(sig.source_range),
+                  other_lines.join
+                    .sub(/\A\n+/, "") # remove initial newline(s)
+                    .gsub(/\n{2,}/, "\n"), # remove empty line(s)
+                )
+              end
+
+              corrector.replace(range, rubocop_lines.empty? ? "" : rubocop_lines.join)
             end
           end
         end
@@ -51,6 +57,10 @@ module RuboCop
 
         def next_sibling(node)
           node.parent&.children&.at(node.sibling_index + 1)
+        end
+
+        def contains_only_rubocop_directives?(range)
+          range.source.lines.all? { |line| line.strip.start_with?("# rubocop:") }
         end
 
         def lines_between(node1, node2, buffer: processed_source.buffer)
