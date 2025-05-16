@@ -391,6 +391,40 @@ or
 include Polaris::Engine.helpers
 ```
 
+## Sorbet/ForbidMixesInClassMethods
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Check that code does not call `mixes_in_class_methods` from Sorbet `T::Helpers`.
+
+Good:
+
+```
+module M
+  extend ActiveSupport::Concern
+
+  class_methods do
+    ...
+  end
+end
+```
+
+Bad:
+
+```
+module M
+  extend T::Helpers
+
+  module ClassMethods
+    ...
+  end
+
+  mixes_in_class_methods(ClassMethods)
+end
+```
+
 ## Sorbet/ForbidRBIOutsideOfAllowedPaths
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

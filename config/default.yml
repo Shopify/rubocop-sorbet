@@ -359,3 +359,9 @@ Sorbet/SelectByIsA:
   VersionAdded: '<<next>>'
   Safe: true
   SafeAutoCorrect: true
+
+Sorbet/ForbidMixesInClassMethods:
+  Description: >-
+    Disallows the usage of `mixes_in_class_methods` in favor of `extend ActiveSupport::Concern`.
+  Enabled: false
+  VersionAdded: '<<next>>'
