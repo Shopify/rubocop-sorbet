@@ -41,6 +41,46 @@ FooOrBar = T.any(Foo, Bar)
 FooOrBar = T.type_alias { T.any(Foo, Bar) }
 ```
 
+## Sorbet/BlockMethodDefinition
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
+
+
+
+### Examples
+
+```ruby
+# bad
+yielding_method do
+  def bad(args)
+    # ...
+  end
+end
+
+# bad
+Class.new do
+  def bad(args)
+    # ...
+  end
+end
+
+# good
+yielding_method do
+  define_method(:good) do |args|
+    # ...
+  end
+end
+
+# good
+MyClass = Class.new do
+  def good(args)
+    # ...
+  end
+end
+```
+
 ## Sorbet/BuggyObsoleteStrictMemoization
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
