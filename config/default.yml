@@ -22,6 +22,16 @@ Sorbet/BindingConstantWithoutTypeAlias:
   Enabled: true
   VersionAdded: 0.2.0
 
+Sorbet/BlockMethodDefinition:
+  Description: >-
+                  Disallows defining methods inside blocks without using `define_method`,
+                  unless the block is a named class definition. This is to avoid running
+                  into https://github.com/sorbet/sorbet/issues/3609.
+  Enabled: pending
+  Safe: true
+  SafeAutoCorrect: false
+  VersionAdded: '<<next>>'
+
 Sorbet/CallbackConditionalsBinding:
   Description: 'Ensures callback conditionals are bound to the right type.'
   Enabled: false
