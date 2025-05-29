@@ -44,19 +44,32 @@ module RuboCop
         ].freeze
         private_constant :FORBIDDEN_YARD_TAGS
 
+        Signature = Struct.new(:params, :return_type, keyword_init: true) do
+          def initialize(params: [], return_type: "void")
+            super
+          end
+
+          def to_comment_s
+            "#: (#{params.join(", ")}) -> #{return_type}"
+          end
+        end
+        private_constant :Signature
+
         def on_new_investigation
           return if processed_source.comments.empty?
 
           comment_blocks.each do |comment_block|
+            signature = Signature.new
             forbidden_blocks = forbidden_yard_tag_blocks(comment_block)
             forbidden_blocks.each_with_index do |tag_block, index|
               add_offense(tag_block.first) do |corrector|
+                update_signature(signature, tag_block)
                 corrector.remove(range_of_lines_for(tag_block))
 
                 if index + 1 == forbidden_blocks.size
                   corrector.insert_after(
                     comment_block.last.source_range.end.resize(1).end,
-                    "#{offset(tag_block.first)}#: () -> void\n",
+                    "#{offset(tag_block.first)}#{signature.to_comment_s}\n",
                   )
                 end
               end
@@ -98,27 +111,27 @@ module RuboCop
           tag_indent_level = 0
 
           comment_block.each do |comment|
-              scanner = StringScanner.new(comment.text)
-              next unless scanner.skip("#")
+            scanner = StringScanner.new(comment.text)
+            next unless scanner.skip("#")
 
-              indent_level = scanner.skip(ANY_WHITESPACE)
+            indent_level = scanner.skip(ANY_WHITESPACE)
 
-              if !current_tag_chunk.empty? &&
-                  comment.location.line == previous_line + 1 &&
-                  indent_level >= tag_indent_level + 2
-                current_tag_chunk << comment
-              else
+            if !current_tag_chunk.empty? &&
+                comment.location.line == previous_line + 1 &&
+                indent_level >= tag_indent_level + 2
+              current_tag_chunk << comment
+            else
               result << current_tag_chunk unless current_tag_chunk.empty?
-                current_tag_chunk = []
+              current_tag_chunk = []
 
               if scanner.skip("@") && forbidden_yard_tag_next?(scanner)
-                  current_tag_chunk << comment
-                  tag_indent_level = indent_level
-                end
+                current_tag_chunk << comment
+                tag_indent_level = indent_level
               end
-
-              previous_line = comment.location.line
             end
+
+            previous_line = comment.location.line
+          end
 
           result << current_tag_chunk unless current_tag_chunk.empty?
 
@@ -142,6 +155,30 @@ module RuboCop
             begin_pos: range.begin_pos - range.column,
             end_pos: range.end_pos + 1,
           )
+        end
+
+        def update_signature(signature, tag_block)
+          buffer = tag_block.first.text
+          tag_block[1..].each do |comment|
+            buffer += comment.text.sub(/^\s*#\s*/, " ")
+          end
+          scanner = StringScanner.new(buffer)
+          scanner.skip_until(/@/)
+          tag_name = scanner.scan_until(/\s|$/)
+          tag_name&.rstrip!
+          return unless FORBIDDEN_YARD_TAGS.include?(tag_name)
+
+          scanner.skip_until(/\[/)
+          type = scanner.scan_until(/\]/)
+          type&.delete_suffix!("]")
+          return unless type
+
+          case tag_name
+          when "param"
+            signature.params << type
+          when "return"
+            signature.return_type = type
+          end
         end
       end
     end
