@@ -1,3 +1,8 @@
+Sorbet/ForbidYardAnnotations:
+  Description: 'Forbids using YARD tags for method signature annotation.'
+  Enabled: pending
+  VersionAdded: '<<next>>'
+
 Sorbet/Refinement:
   Description: >-
                   Checks for the use of Ruby Refinements library. Refinements add

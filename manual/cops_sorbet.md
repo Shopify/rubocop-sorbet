@@ -748,6 +748,31 @@ class SomeClass < T::Struct
 end
 ```
 
+## Sorbet/ForbidYardAnnotations
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | <<next>> | -
+
+Prevents the use of YARD method annotations (ex. `@param` and `@return`).
+
+### Examples
+
+```ruby
+# bad
+# @param name [String] the name
+# @return [String] the greeting
+def greet(name)
+  "Hello #{name}"
+end
+
+# good
+# name: String -> String
+def greet(name)
+  "Hello #{name}"
+end
+```
+
 ## Sorbet/HasSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

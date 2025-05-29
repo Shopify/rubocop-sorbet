@@ -32,6 +32,7 @@ In the following section you find all available cops:
 * [Sorbet/ForbidTUntyped](cops_sorbet.md#sorbetforbidtuntyped)
 * [Sorbet/ForbidTypeAliasedShapes](cops_sorbet.md#sorbetforbidtypealiasedshapes)
 * [Sorbet/ForbidUntypedStructProps](cops_sorbet.md#sorbetforbiduntypedstructprops)
+* [Sorbet/ForbidYardAnnotations](cops_sorbet.md#sorbetforbidyardannotations)
 * [Sorbet/HasSigil](cops_sorbet.md#sorbethassigil)
 * [Sorbet/IgnoreSigil](cops_sorbet.md#sorbetignoresigil)
 * [Sorbet/ImplicitConversionMethod](cops_sorbet.md#sorbetimplicitconversionmethod)
