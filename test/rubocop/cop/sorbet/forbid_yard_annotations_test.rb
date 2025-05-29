@@ -35,6 +35,15 @@ module RuboCop
               end
             end
           RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: (String) -> void
+              def greet(name)
+                "Hello \#{name}"
+              end
+            end
+          RUBY
         end
 
         def test_registers_offense_for_return_annotation
@@ -42,6 +51,15 @@ module RuboCop
             class Example
               # @return [String] the greeting
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def greet(name)
+                "Hello \#{name}"
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: () -> String
               def greet(name)
                 "Hello \#{name}"
               end
@@ -58,9 +76,18 @@ module RuboCop
               # @param last_name [String] the last name
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
               #    of the person
-              # @return [String] the full name for
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
-              #   the person
+              # @return
+              ^^^^^^^^^ #{MSG}
+              #   [String] the full name for the person
+              def full_name(first_name, last_name)
+                "\#{first_name} \#{last_name}"
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: (String, String) -> String
               def full_name(first_name, last_name)
                 "\#{first_name} \#{last_name}"
               end

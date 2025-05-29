@@ -26,6 +26,8 @@ module RuboCop
       #   end
       #
       class ForbidYardAnnotations < Base
+        extend AutoCorrector
+
         MSG = "Avoid using YARD method annotations. Use RBS comment syntax instead."
 
         ANY_WHITESPACE = /\s*/
@@ -48,7 +50,10 @@ module RuboCop
             next unless (tag_block = block.first)
             next unless contains_forbidden_yard_tag?(tag_block.text)
 
-            add_offense(tag_block)
+            add_offense(tag_block) do |corrector|
+              corrector.remove(range_of_lines_for(block))
+              range_of_lines_for(block)
+            end
           end
         end
 
@@ -106,6 +111,14 @@ module RuboCop
               false
             end
           end
+        end
+
+        def range_of_lines_for(block)
+          range = block.first.source_range.join(block.last.source_range)
+          range.with(
+            begin_pos: range.begin_pos - range.column,
+            end_pos: range.end_pos + 1,
+          )
         end
       end
     end
