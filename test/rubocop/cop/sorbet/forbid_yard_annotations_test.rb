@@ -420,6 +420,85 @@ module RuboCop
           RUBY
         end
 
+        def test_handles_type_specification_for_container_types
+          assert_offense(<<~RUBY)
+            class Example
+              # @param a [Array<String>] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [Array<String, Symbol>] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [<String>] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param d [<String, Integer>] the fourth parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def array_examples(a,b,c,d); end
+
+              # @param a [Hash<String, Integer>] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [Hash{Symbol=>Boolean}] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [Hash{Symbol, String => String, Integer}] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param d [{Symbol, String=>String, Boolean}] the fourth parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def hash_examples(a,b,c,d); end
+
+              # @param a [Set<Numeric>] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [Set<Symbol, String>] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [List<String>] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [List<Integer, Float>] the fourth parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def custom_container_examples(a,b,c,d); end
+
+              # @param a [Array(String)] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [Array(String, Integer)] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [(String)] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param d [(String, Integer)] the fourth parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def tuple_examples(a,b,c,d); end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: (Array[String], Array[String | Symbol], Array[String], Array[String | Integer]) -> void
+              def array_examples(a,b,c,d); end
+
+              #: (Hash[String, Integer], Hash[Symbol, bool], Hash[Symbol | String, String | Integer], Hash[Symbol | String, String | bool]) -> void
+              def hash_examples(a,b,c,d); end
+
+              #: (Set[Numeric], Set[Symbol | String], List[String], List[Integer | Float]) -> void
+              def custom_container_examples(a,b,c,d); end
+
+              #: ([String], [String, Integer], [String], [String, Integer]) -> void
+              def tuple_examples(a,b,c,d); end
+            end
+          RUBY
+        end
+
+        def test_handles_nested_container_type_specifications
+          assert_offense(<<~RUBY)
+            class Example
+              # @param a [Array<{Symbol,String=>(Set<Integer>, (String,String), <{Symbol=>Boolean}>)}>] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def nested_container_example(a); end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: (Array[Hash[Symbol | String, [Set[Integer], [String, String], Array[Hash[Symbol, bool]]]]]) -> void
+              def nested_container_example(a); end
+            end
+          RUBY
+        end
+
         def test_registers_offense_for_overload_annotation
           assert_offense(<<~RUBY)
             class Example

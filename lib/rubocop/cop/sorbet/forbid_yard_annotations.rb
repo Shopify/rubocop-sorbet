@@ -180,7 +180,7 @@ module RuboCop
           yard_type&.delete_suffix!("]")
           return unless yard_type
 
-          type = yard_type.split(/,(?:\s*)/).map { rbs_type_from(_1) }.join(" | ")
+          type = rbs_type_string_from_yard_type_string(yard_type)
 
           case tag_name
           when "param"
@@ -216,6 +216,47 @@ module RuboCop
           end
         end
 
+        def rbs_type_string_from_yard_type_string(yard_type_string, join: " | ")
+          new_types = []
+          scanner = StringScanner.new(yard_type_string)
+
+          scanner.skip(ANY_WHITESPACE)
+          while !scanner.eos? && (current_tag = scanner.scan_until(/[,<({]|$/))
+            if current_tag.end_with?("<")
+              current_tag.chop!
+              current_tag = "Array" if current_tag.empty?
+              inner_yard_string = scan_until_matching_bracket(scanner, "<>")
+
+              inner_type_string = if current_tag == "Hash"
+                rbs_type_string_from_yard_type_string(inner_yard_string, join: ", ")
+              else
+                rbs_type_string_from_yard_type_string(inner_yard_string)
+              end
+              new_types << "#{current_tag}[#{inner_type_string}]"
+            elsif current_tag.end_with?("{")
+              current_tag.chop!
+              current_tag = "Hash" if current_tag.empty?
+              inner_yard_string = scan_until_matching_bracket(scanner, "{}")
+
+              # For now, don't support nested hashes as keys
+              key_yard_string, value_yard_string = inner_yard_string.split("=>", 2)
+              key_yard_string&.strip!
+              value_yard_string&.strip!
+              new_types << "#{current_tag}[#{rbs_type_string_from_yard_type_string(key_yard_string)}, #{rbs_type_string_from_yard_type_string(value_yard_string)}]"
+            elsif current_tag.end_with?("(")
+              current_tag.chop!
+              inner_yard_string = scan_until_matching_bracket(scanner, "()")
+              new_types << "[#{rbs_type_string_from_yard_type_string(inner_yard_string, join: ", ")}]"
+            else
+              current_tag.chop! if current_tag.end_with?(",")
+              new_types << rbs_type_from(current_tag) unless current_tag.empty?
+            end
+            scanner.skip(ANY_WHITESPACE)
+          end
+
+          new_types.join(join)
+        end
+
         def rbs_type_from(yard_type)
           case yard_type
           when "Boolean" then "bool"
@@ -243,6 +284,27 @@ module RuboCop
           else
             key + " =>"
           end
+        end
+
+        def scan_until_matching_bracket(scanner, brackets)
+          open_char, close_char = brackets.split("", 3)
+          current_pos = start_pos = scanner.pos
+          bracket_matcher = /[#{Regexp.quote(open_char)}#{Regexp.quote(close_char)}]/
+          bracket_count = 1
+          while bracket_count > 0 && !scanner.eos?
+            break unless scanner.skip_until(bracket_matcher)
+
+            if scanner.matched == open_char
+              bracket_count += 1
+            elsif scanner.matched == close_char &&
+                (close_char != ">" || !scanner.pre_match.end_with?("="))
+              bracket_count -= 1
+            end
+
+            current_pos = scanner.pos
+          end
+
+          scanner.string[start_pos...(current_pos - 1)]
         end
       end
     end
