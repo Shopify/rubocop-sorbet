@@ -176,9 +176,11 @@ module RuboCop
           return unless FORBIDDEN_YARD_TAGS.include?(tag_name)
 
           scanner.skip_until(/\[/)
-          type = scanner.scan_until(/\]/)
-          type&.delete_suffix!("]")
-          return unless type
+          yard_type = scanner.scan_until(/\]/)
+          yard_type&.delete_suffix!("]")
+          return unless yard_type
+
+          type = rbs_type_from(yard_type)
 
           case tag_name
           when "param"
@@ -211,6 +213,22 @@ module RuboCop
           when "yieldreturn"
             signature.block_signature ||= Signature.new
             signature.block_signature.return_type = type
+          end
+        end
+
+        def rbs_type_from(yard_type)
+          case yard_type
+          when "Boolean" then "bool"
+          when "true" then "TrueClass"
+          when "false" then "FalseClass"
+          when "nil" then "NilClass"
+          when "self", /\A#/ then "untyped"
+          when /\A:/ then "Symbol"
+          when /\A\d+\z/ then "Integer"
+          when /\A\d+\.\d+\z/ then "Float"
+          when /\A(?:"|').*(?:"|')\z/ then "String"
+          else
+            yard_type
           end
         end
 

@@ -176,26 +176,6 @@ module RuboCop
           RUBY
         end
 
-
-        def test_registers_offense_for_overload_annotation
-          assert_offense(<<~RUBY)
-            class Example
-              # @overload greet(name)
-              ^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
-              #   @param name [String]
-              #   @return [String]
-              # @overload greet(first, last)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
-              #   @param first [String]
-              #   @param last [String]
-              #   @return [String]
-              def greet(*args)
-                # implementation
-              end
-            end
-          RUBY
-        end
-
         def test_registers_offense_for_option_annotation
           assert_offense(<<~RUBY)
             class Example
@@ -319,6 +299,120 @@ module RuboCop
               #: (String) -> void
               def greet(name)
                 "Hello \#{name}"
+              end
+            end
+          RUBY
+        end
+
+        def test_converting_common_types
+          assert_offense(<<~RUBY)
+            class Example
+              # @param a [String] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [Integer] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [Float] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param d [Numeric] the fourth parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param e [Symbol] the fifth parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def basics(a,b,c,d,e); end
+
+              # @param a [:monkey] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [42] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [3.14] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param d ["banana"] the fourth parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def basic_literals(a, b, c, d); end
+
+              # @param a [Boolean] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [TrueClass] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [true] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param d [FalseClass] the fourth parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param e [false] the fifth parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def booleans(a,b,c,d,e); end
+
+              # @param a [NilClass] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [nil] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [void] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def nothings(a, b, c); end
+
+              # @param a [Array] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [Hash] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [Set] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def flexible_containers(a, b, c); end
+
+              # @param a [Module] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [Class] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param c [Object] the third parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def inheritence_basics(a, b, c); end
+
+              # @param a [self] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [#duck_type] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def disallows(a, b); end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: (String, Integer, Float, Numeric, Symbol) -> void
+              def basics(a,b,c,d,e); end
+
+              #: (Symbol, Integer, Float, String) -> void
+              def basic_literals(a, b, c, d); end
+
+              #: (bool, TrueClass, TrueClass, FalseClass, FalseClass) -> void
+              def booleans(a,b,c,d,e); end
+
+              #: (NilClass, NilClass, void) -> void
+              def nothings(a, b, c); end
+
+              #: (Array, Hash, Set) -> void
+              def flexible_containers(a, b, c); end
+
+              #: (Module, Class, Object) -> void
+              def inheritence_basics(a, b, c); end
+
+              #: (untyped, untyped) -> void
+              def disallows(a, b); end
+            end
+          RUBY
+        end
+
+        def test_registers_offense_for_overload_annotation
+          assert_offense(<<~RUBY)
+            class Example
+              # @overload greet(name)
+              ^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              #   @param name [String]
+              #   @return [String]
+              # @overload greet(first, last)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              #   @param first [String]
+              #   @param last [String]
+              #   @return [String]
+              def greet(*args)
+                # implementation
               end
             end
           RUBY
