@@ -185,6 +185,23 @@ module RuboCop
             signature.params << type
           when "return"
             signature.return_type = type
+
+          # Right now, I'm making a bunch of assumptions. I'm assuming that if the last
+          # param is a Hash, then I should delete it when encountering an option. I'm also
+          # assuming that if the last param ends with a hash shape ("}"), then I should
+          # append the current option to it. It would be better to do this based on matching
+          # param names, but I don't currently track or store that.
+          when "option"
+            key_and_separator = scan_for_option_key_and_separator(scanner)
+            return if key_and_separator.empty?
+
+            signature.params.pop if signature.params.last =~ /Hash(?:$|\[)/
+
+            if signature.params.last&.end_with?("}")
+              signature.params.last.insert(-3, ", #{key_and_separator} #{type}")
+            else
+              signature.params << "{ #{key_and_separator} #{type} }"
+            end
           when "yield"
             signature.block_signature ||= Signature.new
             signature.block_signature.params = Array.new(type.split(",").size, "untyped")
@@ -194,6 +211,19 @@ module RuboCop
           when "yieldreturn"
             signature.block_signature ||= Signature.new
             signature.block_signature.return_type = type
+          end
+        end
+
+        def scan_for_option_key_and_separator(scanner)
+          scanner.skip(ANY_WHITESPACE)
+          key = scanner.scan_until(/\s|$/)
+          key&.rstrip!
+          return "" unless key
+
+          if key.start_with?(":")
+            key.delete_prefix(":").concat(":")
+          else
+            key + " =>"
           end
         end
       end

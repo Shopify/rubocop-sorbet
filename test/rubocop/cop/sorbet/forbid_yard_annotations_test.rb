@@ -206,6 +206,28 @@ module RuboCop
               def process_options(opts = {})
                 # implementation
               end
+
+              # @param opts [Hash] The options to pass
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @option opts [String] :name The name
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @option opts [Integer] :age The age
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def with_param_annotation_too(opts = {})
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: ({ name: String, age: Integer }) -> void
+              def process_options(opts = {})
+                # implementation
+              end
+
+              #: ({ name: String, age: Integer }) -> void
+              def with_param_annotation_too(opts = {})
+              end
             end
           RUBY
         end
