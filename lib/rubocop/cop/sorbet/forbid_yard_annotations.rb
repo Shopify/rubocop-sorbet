@@ -44,13 +44,20 @@ module RuboCop
         ].freeze
         private_constant :FORBIDDEN_YARD_TAGS
 
-        Signature = Struct.new(:params, :return_type, keyword_init: true) do
-          def initialize(params: [], return_type: "void")
+        Signature = Struct.new(:params, :return_type, :block_signature, keyword_init: true) do
+          def initialize(params: [], return_type: "void", block_signature: nil)
             super
           end
 
           def to_comment_s
-            "#: (#{params.join(", ")}) -> #{return_type}"
+            block_string = block_signature.nil? ? "" : " #{block_signature_s}"
+            "#: (#{params.join(", ")})#{block_string} -> #{return_type}"
+          end
+
+          def block_signature_s
+            return "" unless block_signature
+
+            "{ #{block_signature.to_comment_s.delete_prefix("#: ")} }"
           end
         end
         private_constant :Signature
@@ -178,6 +185,15 @@ module RuboCop
             signature.params << type
           when "return"
             signature.return_type = type
+          when "yield"
+            signature.block_signature ||= Signature.new
+            signature.block_signature.params = Array.new(type.split(",").size, "untyped")
+          when "yieldparam"
+            signature.block_signature ||= Signature.new
+            signature.block_signature.params << type
+          when "yieldreturn"
+            signature.block_signature ||= Signature.new
+            signature.block_signature.return_type = type
           end
         end
       end

@@ -98,18 +98,84 @@ module RuboCop
         def test_registers_offense_for_yield_annotations
           assert_offense(<<~RUBY)
             class Example
-              # @yield [value] yields the processed value
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
-              # @yieldparam value [String] the value to process
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @yield [block_arg, two_arg] yields the processed value
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
               # @yieldreturn [String] the processed result
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
               def process_value(value)
-                yield(value)
+                yield(value, 2)
+              end
+
+              # @yield [block_arg] yields the processed value
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def just_yield
+                yield(1)
+              end
+
+              # @yieldreturn [String] the processed result
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def just_yieldreturn
+                yield(1, 2)
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: () { (untyped, untyped) -> String } -> void
+              def process_value(value)
+                yield(value, 2)
+              end
+
+              #: () { (untyped) -> void } -> void
+              def just_yield
+                yield(1)
+              end
+
+              #: () { () -> String } -> void
+              def just_yieldreturn
+                yield(1, 2)
               end
             end
           RUBY
         end
+
+        def test_registers_offense_for_yieldparam_annotations
+          assert_offense(<<~RUBY)
+            class Example
+              # @yieldparam block_arg [String] the value to process
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @yieldparam two_arg [Integer] the value to process
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @yieldreturn [String] the processed result
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def process_value(value)
+                yield(value, 2)
+              end
+
+              # @yieldparam block_arg [String] the value to process
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def just_yieldparam
+                yield(1)
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: () { (String, Integer) -> String } -> void
+              def process_value(value)
+                yield(value, 2)
+              end
+
+              #: () { (String) -> void } -> void
+              def just_yieldparam
+                yield(1)
+              end
+            end
+          RUBY
+        end
+
 
         def test_registers_offense_for_overload_annotation
           assert_offense(<<~RUBY)
