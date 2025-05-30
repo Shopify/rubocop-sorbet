@@ -247,6 +247,18 @@ module RuboCop
               end
             end
           RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              # This is a regular comment
+              # Another regular comment
+              # Final comment
+              #: (String) -> String
+              def greet(name)
+                "Hello \#{name}"
+              end
+            end
+          RUBY
         end
 
         def test_does_not_register_offense_for_yard_like_tag_inside_comment_line
@@ -278,6 +290,15 @@ module RuboCop
               end
             end
           RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: (String) -> String
+              def greet(name)
+                "Hello \#{name}"
+              end
+            end
+          RUBY
         end
 
         def test_registers_offense_for_yard_annotation_but_skips_wrapped_lines
@@ -287,6 +308,15 @@ module RuboCop
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
               #   @return [String] the greeting with extra spaces
               #   No error on return because it's wrapped and part of the @param
+              def greet(name)
+                "Hello \#{name}"
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: (String) -> void
               def greet(name)
                 "Hello \#{name}"
               end
