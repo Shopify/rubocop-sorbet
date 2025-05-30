@@ -399,6 +399,27 @@ module RuboCop
           RUBY
         end
 
+        def test_handles_union_types
+          assert_offense(<<~RUBY)
+            class Example
+              # @param a [String, Integer] the first parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @param b [Symbol, nil] the second parameter
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              # @yieldparam block_arg [String, Integer] the value to process
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def union_types(a, b); end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              #: (String | Integer, Symbol | NilClass) { (String | Integer) -> void } -> void
+              def union_types(a, b); end
+            end
+          RUBY
+        end
+
         def test_registers_offense_for_overload_annotation
           assert_offense(<<~RUBY)
             class Example

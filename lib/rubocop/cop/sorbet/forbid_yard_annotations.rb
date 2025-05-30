@@ -180,7 +180,7 @@ module RuboCop
           yard_type&.delete_suffix!("]")
           return unless yard_type
 
-          type = rbs_type_from(yard_type)
+          type = yard_type.split(/,(?:\s*)/).map { rbs_type_from(_1) }.join(" | ")
 
           case tag_name
           when "param"
@@ -206,7 +206,7 @@ module RuboCop
             end
           when "yield"
             signature.block_signature ||= Signature.new
-            signature.block_signature.params = Array.new(type.split(",").size, "untyped")
+            signature.block_signature.params = Array.new(yard_type.split(",").size, "untyped")
           when "yieldparam"
             signature.block_signature ||= Signature.new
             signature.block_signature.params << type
