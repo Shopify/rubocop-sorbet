@@ -24,16 +24,10 @@ module RuboCop
       #
       # * `ParameterTypePlaceholder`: placeholders used for parameter types (default: 'T.untyped')
       # * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
+      # * `Style`: signature style to enforce - 'sig' for sig blocks, 'rbs' for RBS comments, 'both' to allow either (default: 'sig')
       class EnforceSignatures < ::RuboCop::Cop::Base
         extend AutoCorrector
         include SignatureHelp
-
-        RBS_COMMENT_REGEX = /^#:.*$/
-
-        def initialize(config = nil, options = nil)
-          super(config, options)
-          @last_sig_for_scope = {}
-        end
 
         # @!method accessor?(node)
         def_node_matcher(:accessor?, <<-PATTERN)
@@ -53,7 +47,13 @@ module RuboCop
         end
 
         def on_signature(node)
-          @last_sig_for_scope[scope(node)] = node
+          sig_checker.on_signature(node, scope(node))
+        end
+
+        def on_new_investigation
+          super
+          @sig_checker = nil
+          @rbs_checker = nil
         end
 
         def scope(node)
@@ -67,35 +67,81 @@ module RuboCop
 
         def check_node(node)
           scope = self.scope(node)
-          unless @last_sig_for_scope[scope] || has_rbs_comment?(node)
-            add_offense(
-              node,
-              message: "Each method is required to have a signature.",
-            ) do |corrector|
-              autocorrect(corrector, node)
+          sig_node = sig_checker.signature_node(scope)
+          rbs_node = rbs_checker.signature_node(node)
+
+          case signature_style
+          when "rbs"
+            # RBS style - only RBS signatures allowed
+            if sig_node
+              add_offense(
+                sig_node,
+                message: "Use RBS signature comments rather than sig blocks.",
+              )
+              return
+            end
+
+            unless rbs_node
+              add_offense(
+                node,
+                message: "Each method is required to have an RBS signature.",
+              ) do |corrector|
+                autocorrect_rbs(corrector, node)
+              end
+              nil
+            end
+          when "both"
+            # Both styles allowed - require at least one
+            unless sig_node || rbs_node
+              add_offense(
+                node,
+                message: "Each method is required to have a signature.",
+              ) do |corrector|
+                autocorrect(corrector, node)
+              end
+            end
+          else # "sig" (default)
+            # Sig style - only sig signatures allowed
+            unless sig_node
+              add_offense(
+                node,
+                message: "Each method is required to have a sig block signature.",
+              ) do |corrector|
+                autocorrect(corrector, node)
+              end
             end
           end
-          @last_sig_for_scope[scope] = nil
+        ensure
+          sig_checker.clear_signature(scope)
         end
 
-        def has_rbs_comment?(node)
-          return false unless cop_config["AllowRBS"] == true
-
-          node = node.parent while RuboCop::AST::SendNode === node.parent
-          return false if (comments = preceeding_comments(node)).empty?
-
-          last_comment = comments.last
-          return false if last_comment.loc.line + 1 < node.loc.line
-
-          comments.any? { |comment| RBS_COMMENT_REGEX.match?(comment.text) }
+        def sig_checker
+          @sig_checker ||= SigSignatureChecker.new(processed_source)
         end
 
-        def preceeding_comments(node)
-          processed_source.ast_with_comments[node].select { |comment| comment.loc.line < node.loc.line }
+        def rbs_checker
+          @rbs_checker ||= RBSSignatureChecker.new(processed_source)
         end
 
         def autocorrect(corrector, node)
           suggest = SigSuggestion.new(node.loc.column, param_type_placeholder, return_type_placeholder)
+
+          if node.is_a?(RuboCop::AST::DefNode) # def something
+            node.arguments.each do |arg|
+              suggest.params << arg.children.first
+            end
+          elsif accessor?(node) # attr reader, writer, accessor
+            method = node.children[1]
+            symbol = node.children[2]
+            suggest.params << symbol.value if symbol && (method == :attr_writer || method == :attr_accessor)
+            suggest.returns = "void" if method == :attr_writer
+          end
+
+          corrector.insert_before(node, suggest.to_autocorrect)
+        end
+
+        def autocorrect_rbs(corrector, node)
+          suggest = RBSSuggestion.new(node.loc.column)
 
           if node.is_a?(RuboCop::AST::DefNode) # def something
             node.arguments.each do |arg|
@@ -117,6 +163,67 @@ module RuboCop
 
         def return_type_placeholder
           cop_config["ReturnTypePlaceholder"] || "T.untyped"
+        end
+
+        def allow_rbs?
+          cop_config["AllowRBS"] == true
+        end
+
+        def signature_style
+          config_value = cop_config["Style"]
+          return config_value if config_value
+
+          return "both" if allow_rbs?
+
+          "sig"
+        end
+
+        class SignatureChecker
+          def initialize(processed_source)
+            @processed_source = processed_source
+          end
+
+          protected
+
+          attr_reader :processed_source
+
+          def preceding_comments(node)
+            processed_source.ast_with_comments[node].select { |comment| comment.loc.line < node.loc.line }
+          end
+        end
+
+        class RBSSignatureChecker < SignatureChecker
+          RBS_COMMENT_REGEX = /^#\s*:.*$/
+
+          def signature_node(node)
+            node = node.parent while RuboCop::AST::SendNode === node.parent
+            comments = preceding_comments(node)
+            return if comments.empty?
+
+            last_comment = comments.last
+            return if last_comment.loc.line + 1 < node.loc.line
+
+            comments.find { |comment| RBS_COMMENT_REGEX.match?(comment.text) }
+          end
+        end
+
+        class SigSignatureChecker < SignatureChecker
+          def initialize(processed_source)
+            super(processed_source)
+            @last_sig_for_scope = {}
+          end
+
+          def signature_node(scope)
+            @last_sig_for_scope[scope]
+          end
+
+          def on_signature(node, scope)
+            @last_sig_for_scope[scope] = node
+          end
+
+          def clear_signature(scope)
+            @last_sig_for_scope[scope] = nil
+          end
         end
 
         class SigSuggestion
@@ -159,6 +266,38 @@ module RuboCop
             return @returns if @returns == "void"
 
             "returns(#{@returns})"
+          end
+        end
+
+        class RBSSuggestion
+          attr_accessor :params, :returns
+
+          def initialize(indent)
+            @params = []
+            @returns = nil
+            @indent = indent
+          end
+
+          def to_autocorrect
+            out = StringIO.new
+            out << "#: "
+            out << generate_signature
+            out << "\n"
+            out << " " * @indent # preserve indent for the next line
+            out.string
+          end
+
+          private
+
+          def generate_signature
+            param_types = @params.map { "untyped" }.join(", ")
+            return_type = @returns || "untyped"
+
+            if @params.empty?
+              "() -> #{return_type}"
+            else
+              "(#{param_types}) -> #{return_type}"
+            end
           end
         end
       end

@@ -6,3 +6,8 @@
 removed:
   Sorbet/OneAncestorPerLine:
     reason: '`require_ancestor` now takes a block instead of arguments'
+
+changed_parameters:
+  - cops: 'Sorbet/EnforceSignatures'
+    parameters: 'AllowRBS'
+    alternative: 'Style'
