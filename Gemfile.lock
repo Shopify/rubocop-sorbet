@@ -75,7 +75,7 @@ DEPENDENCIES
   minitest
   mocha
   rake (>= 12.3.3)
-  rubocop-minitest
+  rubocop-minitest (>= 0.38.1)
   rubocop-shopify
   rubocop-sorbet!
   yard (~> 0.9)

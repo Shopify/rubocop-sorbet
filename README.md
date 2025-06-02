@@ -99,21 +99,7 @@ Sorbet cops support the following versions:
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/Shopify/rubocop-sorbet. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-To contribute a new cop, please use the supplied generator like this:
-
-```sh
-bundle exec rake "new_cop[Sorbet/NewCopName]"
-```
-
-which will create a skeleton cop, a skeleton spec, an entry in the default config file and will require the new cop so that it is properly exported from the gem.
-
-Don't forget to update the documentation with:
-
-```sh
-bundle exec rake generate_cops_documentation
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
 
 ## License
 
