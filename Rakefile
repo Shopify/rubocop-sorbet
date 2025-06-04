@@ -34,6 +34,7 @@ task :new_cop, [:cop] do |_task, args|
   # We don't use Rubocop's changelog automation workflow
   todo_without_changelog_instruction = generator.todo
     .sub(/$\s+4\. Run.*changelog.*for your new cop\.$/m, "")
+    .sub(/^  3./, "  3. Run `bundle exec rake generate_cops_documentation` to generate\n     documentation for your new cop.\n  4.")
   puts todo_without_changelog_instruction
 end
 
