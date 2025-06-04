@@ -60,10 +60,10 @@ module Releaser
 
     sh "git add lib/rubocop/sorbet/version.rb config/default.yml Gemfile.lock VERSION manual"
 
-    puts "git commit -m 'Release #{version}'"
-    puts "git push origin main"
-    puts "git tag -a v#{version} -m 'Release #{version}'"
-    puts "git push origin v#{version}"
+    sh "git commit -m 'Release v#{version}'"
+    sh "git push origin main"
+    sh "git tag -a v#{version} -m 'Release v#{version}'"
+    sh "git push origin v#{version}"
   end
 
   private
