@@ -22,7 +22,7 @@ Sorbet/BlockMethodDefinition:
   Enabled: pending
   Safe: true
   SafeAutoCorrect: false
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.10.1'
 
 Sorbet/BuggyObsoleteStrictMemoization:
   Description: >-
@@ -65,7 +65,7 @@ Sorbet/EmptyLineAfterSig:
   Description: 'Ensures that there are no blank lines after signatures'
   Enabled: true
   VersionAdded: 0.7.0
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.10.1'
 
 Sorbet/EnforceSigilOrder:
   Description: 'Ensures that Sorbet sigil comes first in a file.'
@@ -117,7 +117,7 @@ Sorbet/ForbidMixesInClassMethods:
   Description: >-
     Disallows the usage of `mixes_in_class_methods` in favor of `extend ActiveSupport::Concern`.
   Enabled: false
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.10.1'
 
 Sorbet/ForbidRBIOutsideOfAllowedPaths:
   Description: 'Forbids RBI files outside of the allowed paths'
@@ -271,7 +271,7 @@ Sorbet/SelectByIsA:
     Suggests using `grep` over `select` when using it only for type narrowing.
     This is because Sorbet can properly infer types when using `grep` but not with `select`.
   Enabled: true
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.10.1'
   Safe: true
   SafeAutoCorrect: true
 

@@ -45,7 +45,7 @@ FooOrBar = T.type_alias { T.any(Foo, Bar) }
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | 0.10.1 | -
 
 
 
@@ -220,7 +220,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | 0.7.0 | <<next>>
+Enabled | Yes | Yes  | 0.7.0 | 0.10.1
 
 Checks for blank lines after signatures.
 
@@ -435,7 +435,7 @@ include Polaris::Engine.helpers
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.10.1 | -
 
 Check that code does not call `mixes_in_class_methods` from Sorbet `T::Helpers`.
 
@@ -974,7 +974,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | <<next>> | -
+Enabled | Yes | Yes  | 0.10.1 | -
 
 Suggests using `grep` over `select` when using it only for type narrowing.
 
