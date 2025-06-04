@@ -3,7 +3,7 @@ PATH
   specs:
     rubocop-sorbet (0.10.1)
       lint_roller
-      rubocop (>= 1)
+      rubocop (>= 1.75.2)
 
 GEM
   remote: https://rubygems.org/
