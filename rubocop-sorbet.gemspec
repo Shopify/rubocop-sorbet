@@ -29,5 +29,5 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency("lint_roller")
-  spec.add_runtime_dependency("rubocop", ">= 1")
+  spec.add_runtime_dependency("rubocop", ">= 1.75.2")
 end
