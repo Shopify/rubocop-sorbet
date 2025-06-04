@@ -47,6 +47,12 @@ Sorbet/CallbackConditionalsBinding:
   Safe: false
   VersionAdded: 0.7.0
 
+Sorbet/CapitalizedTypeParameters:
+  Description: 'Ensures that type parameters are capitalized.'
+  Enabled: true
+  SafeAutoCorrect: false
+  VersionAdded: <<next>>
+
 Sorbet/CheckedTrueInSignature:
   Description: 'Disallows the usage of `checked(true)` in signatures.'
   Enabled: true
