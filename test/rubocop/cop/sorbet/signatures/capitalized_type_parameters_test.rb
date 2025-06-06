@@ -18,7 +18,10 @@ module RuboCop
               sig { type_parameters(:x).params(a: T.type_parameter(:x)).void }
                                     ^^ #{MSG}
                                                                    ^^ #{MSG}
-              def foo(a); end
+              def foo(a)
+                puts T.type_parameter(:x)
+                                      ^^ Sorbet/CapitalizedTypeParameters: Type parameters must be capitalized.
+              end
 
               sig do
                 type_parameters(:foo, :Bar, :baz)
@@ -58,7 +61,10 @@ module RuboCop
               sig { type_parameters(:x).params(a: T.type_parameter(:x)).void }
                                     ^^ #{MSG}
                                                                    ^^ #{MSG}
-              def foo(a); end
+              def foo(a)
+                puts T.type_parameter(:x)
+                                      ^^ Sorbet/CapitalizedTypeParameters: Type parameters must be capitalized.
+              end
 
               sig do
                 type_parameters(:foo, :Bar, :baz)
@@ -77,7 +83,9 @@ module RuboCop
 
             assert_correction(<<~RUBY)
               sig { type_parameters(:X).params(a: T.type_parameter(:X)).void }
-              def foo(a); end
+              def foo(a)
+                puts T.type_parameter(:X)
+              end
 
               sig do
                 type_parameters(:Foo, :Bar, :Baz)
