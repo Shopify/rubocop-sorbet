@@ -33,6 +33,7 @@ require_relative "sorbet/rbi_versioning/gem_version_annotation_helper"
 require_relative "sorbet/rbi_versioning/valid_gem_version_annotations"
 
 require_relative "sorbet/signatures/allow_incompatible_override"
+require_relative "sorbet/signatures/capitalized_type_parameters"
 require_relative "sorbet/signatures/checked_true_in_signature"
 require_relative "sorbet/signatures/empty_line_after_sig"
 require_relative "sorbet/signatures/enforce_signatures"

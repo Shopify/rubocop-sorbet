@@ -10,6 +10,7 @@ In the following section you find all available cops:
 * [Sorbet/BlockMethodDefinition](cops_sorbet.md#sorbetblockmethoddefinition)
 * [Sorbet/BuggyObsoleteStrictMemoization](cops_sorbet.md#sorbetbuggyobsoletestrictmemoization)
 * [Sorbet/CallbackConditionalsBinding](cops_sorbet.md#sorbetcallbackconditionalsbinding)
+* [Sorbet/CapitalizedTypeParameters](cops_sorbet.md#sorbetcapitalizedtypeparameters)
 * [Sorbet/CheckedTrueInSignature](cops_sorbet.md#sorbetcheckedtrueinsignature)
 * [Sorbet/ConstantsFromStrings](cops_sorbet.md#sorbetconstantsfromstrings)
 * [Sorbet/EmptyLineAfterSig](cops_sorbet.md#sorbetemptylineaftersig)

@@ -157,6 +157,26 @@ class Post < ApplicationRecord
 end
 ```
 
+## Sorbet/CapitalizedTypeParameters
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
+
+Ensure type parameters used in generic methods are always capitalized.
+
+### Examples
+
+```ruby
+# bad
+sig { type_parameters(:x).params(a: T.type_parameter(:x)).void }
+def foo(a); end
+
+# good
+sig { type_parameters(:X).params(a: T.type_parameter(:X)).void }
+def foo(a: 1); end
+```
+
 ## Sorbet/CheckedTrueInSignature
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
