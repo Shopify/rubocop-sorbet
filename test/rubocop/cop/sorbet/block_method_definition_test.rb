@@ -128,6 +128,92 @@ module RuboCop
             end
           RUBY
         end
+
+        def test_does_not_register_an_offense_when_defining_a_method_in_activesupport_concern_class_methods_block
+          assert_no_offenses(<<~RUBY)
+            module SomeConcern
+              extend ActiveSupport::Concern
+
+              class_methods do
+                def good_method(args)
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_an_offense_when_defining_a_method_in_class_methods_block_without_activesupport_concern
+          assert_offense(<<~RUBY)
+            module SomeModule
+              class_methods do
+                def bad_method(args)
+                ^^^^^^^^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_an_offense_when_defining_a_method_in_class_methods_block_without_activesupport_concern_in_a_class
+          assert_offense(<<~RUBY)
+            class SomeClass
+              class_methods do
+                def bad_method(args)
+                ^^^^^^^^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_an_offense_when_defining_a_method_in_other_block_even_in_activesupport_concern
+          assert_offense(<<~RUBY)
+            module SomeConcern
+              extend ActiveSupport::Concern
+
+              some_other_block do
+                def bad_method(args)
+                ^^^^^^^^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_does_not_register_an_offense_when_defining_a_method_in_activesupport_concern_class_methods_block_with_double_colon
+          assert_no_offenses(<<~RUBY)
+            module SomeConcern
+              extend ::ActiveSupport::Concern
+
+              class_methods do
+                def good_method(args)
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_an_offense_when_nested_module_without_activesupport_concern_uses_class_methods
+          assert_offense(<<~RUBY)
+            module OuterModule
+              extend ActiveSupport::Concern
+
+              module InnerModule
+                class_methods do
+                  def bad_method(args)
+                  ^^^^^^^^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                    args.present?
+                  end
+                end
+              end
+            end
+          RUBY
+        end
       end
     end
   end

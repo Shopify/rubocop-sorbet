@@ -23,6 +23,7 @@ Sorbet/BlockMethodDefinition:
   Safe: true
   SafeAutoCorrect: false
   VersionAdded: '0.10.1'
+  VersionChanged: '<<next>>'
 
 Sorbet/BuggyObsoleteStrictMemoization:
   Description: >-
