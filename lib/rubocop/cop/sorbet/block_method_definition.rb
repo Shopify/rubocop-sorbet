@@ -66,13 +66,14 @@ module RuboCop
 
           method_name = node.method_name
           args = node.arguments.map(&:source).join(", ")
+          args = " |#{args}|" unless args.empty?
           body = node.body&.source&.prepend("\n#{indent}  ")
 
           if node.def_type?
-            replacement = "define_method(:#{method_name}) do |#{args}|#{body}\n#{indent}end"
+            replacement = "define_method(:#{method_name}) do#{args}#{body}\n#{indent}end"
           elsif node.defs_type?
             receiver = node.receiver.source
-            replacement = "#{receiver}.define_singleton_method(:#{method_name}) do |#{args}|#{body}\n#{indent}end"
+            replacement = "#{receiver}.define_singleton_method(:#{method_name}) do#{args}#{body}\n#{indent}end"
           end
 
           corrector.replace(node, replacement)

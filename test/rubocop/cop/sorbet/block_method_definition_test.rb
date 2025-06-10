@@ -105,6 +105,29 @@ module RuboCop
             end
           RUBY
         end
+
+        def test_autocorrects_a_method_with_no_arguments
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def bad_method
+              ^^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                if arg0
+                  arg0 + arg1
+                end
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:bad_method) do
+                if arg0
+                  arg0 + arg1
+                end
+              end
+            end
+          RUBY
+        end
       end
     end
   end
