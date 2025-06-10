@@ -214,6 +214,54 @@ module RuboCop
             end
           RUBY
         end
+
+        def test_autocorrects_a_method_with_heredoc
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def example
+              ^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                <<~XML
+                  abc
+                XML
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:example) do
+                <<~XML
+                  abc
+                XML
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_a_method_with_regular_heredoc
+          assert_offense(<<~RUBY)
+                        yielding_method do
+                          def example
+                          ^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                            <<EOF
+            This is a test
+            with multiple lines
+            EOF
+                          end
+                        end
+          RUBY
+
+          assert_correction(<<~RUBY)
+                        yielding_method do
+                          define_method(:example) do
+                            <<EOF
+            This is a test
+            with multiple lines
+            EOF
+                          end
+                        end
+          RUBY
+        end
       end
     end
   end

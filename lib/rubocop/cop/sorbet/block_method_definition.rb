@@ -109,16 +109,28 @@ module RuboCop
           method_name = node.method_name
           args = node.arguments.map(&:source).join(", ")
           args = " |#{args}|" unless args.empty?
-          body = node.body&.source&.prepend("\n#{indent}  ")
 
+          # Build the method signature replacement
           if node.def_type?
-            replacement = "define_method(:#{method_name}) do#{args}#{body}\n#{indent}end"
+            signature_replacement = "define_method(:#{method_name}) do#{args}"
           elsif node.defs_type?
             receiver = node.receiver.source
-            replacement = "#{receiver}.define_singleton_method(:#{method_name}) do#{args}#{body}\n#{indent}end"
+            signature_replacement = "#{receiver}.define_singleton_method(:#{method_name}) do#{args}"
           end
 
-          corrector.replace(node, replacement)
+          if node.body
+            end_pos = node.body.source_range.begin_pos
+
+            body_replacement = "\n#{indent}  "
+          else
+            end_pos = node.loc.end.begin_pos
+
+            body_replacement = "\n#{indent}"
+          end
+
+          signature_range = node.source_range.with(end_pos: end_pos)
+
+          corrector.replace(signature_range, signature_replacement + body_replacement)
         end
       end
     end
