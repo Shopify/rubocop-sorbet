@@ -23,6 +23,7 @@ In the following section you find all available cops:
 * [Sorbet/ForbidIncludeConstLiteral](cops_sorbet.md#sorbetforbidincludeconstliteral)
 * [Sorbet/ForbidMixesInClassMethods](cops_sorbet.md#sorbetforbidmixesinclassmethods)
 * [Sorbet/ForbidRBIOutsideOfAllowedPaths](cops_sorbet.md#sorbetforbidrbioutsideofallowedpaths)
+* [Sorbet/ForbidRBSAbstract](cops_sorbet.md#sorbetforbidrbsabstract)
 * [Sorbet/ForbidSig](cops_sorbet.md#sorbetforbidsig)
 * [Sorbet/ForbidSigWithRuntime](cops_sorbet.md#sorbetforbidsigwithruntime)
 * [Sorbet/ForbidSigWithoutRuntime](cops_sorbet.md#sorbetforbidsigwithoutruntime)

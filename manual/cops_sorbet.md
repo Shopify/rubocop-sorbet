@@ -517,6 +517,35 @@ Name | Default value | Configurable values
 AllowedPaths | `rbi/**`, `sorbet/rbi/**` | Array
 Include | `**/*.rbi` | Array
 
+## Sorbet/ForbidRBSAbstract
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | <<next>> | -
+
+Forbids usage of the `@abstract` annotation with RBS signatures.
+
+Good:
+
+```
+#: -> void
+def foo; end
+```
+
+Bad:
+
+```
+# @abstract
+#: -> void
+def foo; end
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Exclude | `**/*.rbi` | Array
+
 ## Sorbet/ForbidSig
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

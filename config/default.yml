@@ -135,6 +135,13 @@ Sorbet/ForbidRBIOutsideOfAllowedPaths:
   Include:
   - "**/*.rbi"
 
+Sorbet/ForbidRBSAbstract:
+  Description: 'Forbids usage of the `@abstract` annotation with RBS signatures.'
+  Enabled: true
+  VersionAdded: <<next>>
+  Exclude:
+  - "**/*.rbi"
+
 Sorbet/ForbidSig:
   Description: 'Forbid usage of sig'
   Enabled: false
