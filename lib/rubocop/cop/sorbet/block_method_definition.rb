@@ -107,8 +107,7 @@ module RuboCop
           indent = offset(node)
 
           method_name = node.method_name
-          args = node.arguments.map(&:source).join(", ")
-          args = " |#{args}|" unless args.empty?
+          args = transform_args_to_block_args(node)
 
           # Build the method signature replacement
           if node.def_type?
@@ -128,6 +127,17 @@ module RuboCop
           signature_range = node.source_range.with(end_pos: end_pos)
 
           corrector.replace(signature_range, signature_replacement + indentation)
+        end
+
+        def transform_args_to_block_args(node)
+          args = node.arguments
+
+          if args.empty?
+            ""
+          else
+            args_string = args.map(&:source).join(", ")
+            " |#{args_string}|"
+          end
         end
 
         def handle_method_without_body(node, indent)
