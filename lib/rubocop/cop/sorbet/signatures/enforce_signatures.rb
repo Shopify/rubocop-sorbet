@@ -86,7 +86,7 @@ module RuboCop
                 node,
                 message: "Each method is required to have an RBS signature.",
               ) do |corrector|
-                autocorrect_rbs(corrector, node)
+                autocorrect_with_signature_type(corrector, node, :rbs)
               end
               nil
             end
@@ -97,7 +97,7 @@ module RuboCop
                 node,
                 message: "Each method is required to have a signature.",
               ) do |corrector|
-                autocorrect(corrector, node)
+                autocorrect_with_signature_type(corrector, node, :sig)
               end
             end
           else # "sig" (default)
@@ -107,7 +107,7 @@ module RuboCop
                 node,
                 message: "Each method is required to have a sig block signature.",
               ) do |corrector|
-                autocorrect(corrector, node)
+                autocorrect_with_signature_type(corrector, node, :sig)
               end
             end
           end
@@ -123,38 +123,55 @@ module RuboCop
           @rbs_checker ||= RBSSignatureChecker.new(processed_source)
         end
 
-        def autocorrect(corrector, node)
-          suggest = SigSuggestion.new(node.loc.column, param_type_placeholder, return_type_placeholder)
-
-          if node.is_a?(RuboCop::AST::DefNode) # def something
-            node.arguments.each do |arg|
-              suggest.params << arg.children.first
-            end
-          elsif accessor?(node) # attr reader, writer, accessor
-            method = node.children[1]
-            symbol = node.children[2]
-            suggest.params << symbol.value if symbol && (method == :attr_writer || method == :attr_accessor)
-            suggest.returns = "void" if method == :attr_writer
-          end
-
+        def autocorrect_with_signature_type(corrector, node, type)
+          suggest = create_signature_suggestion(node, type)
+          populate_signature_suggestion(suggest, node)
           corrector.insert_before(node, suggest.to_autocorrect)
         end
 
-        def autocorrect_rbs(corrector, node)
-          suggest = RBSSuggestion.new(node.loc.column)
-
-          if node.is_a?(RuboCop::AST::DefNode) # def something
-            node.arguments.each do |arg|
-              suggest.params << arg.children.first
-            end
-          elsif accessor?(node) # attr reader, writer, accessor
-            method = node.children[1]
-            symbol = node.children[2]
-            suggest.params << symbol.value if symbol && (method == :attr_writer || method == :attr_accessor)
-            suggest.returns = "void" if method == :attr_writer
+        def create_signature_suggestion(node, type)
+          case type
+          when :rbs
+            RBSSuggestion.new(node.loc.column)
+          else # :sig
+            SigSuggestion.new(node.loc.column, param_type_placeholder, return_type_placeholder)
           end
+        end
 
-          corrector.insert_before(node, suggest.to_autocorrect)
+        def populate_signature_suggestion(suggest, node)
+          if node.any_def_type?
+            populate_method_definition_suggestion(suggest, node)
+          elsif accessor?(node)
+            populate_accessor_suggestion(suggest, node)
+          end
+        end
+
+        def populate_method_definition_suggestion(suggest, node)
+          node.arguments.each do |arg|
+            suggest.params << arg.children.first
+          end
+        end
+
+        def populate_accessor_suggestion(suggest, node)
+          method = node.children[1]
+          symbol = node.children[2]
+
+          add_accessor_parameter_if_needed(suggest, symbol, method)
+          set_void_return_for_writer(suggest, method)
+        end
+
+        def add_accessor_parameter_if_needed(suggest, symbol, method)
+          return unless symbol && writer_or_accessor?(method)
+
+          suggest.params << symbol.value
+        end
+
+        def set_void_return_for_writer(suggest, method)
+          suggest.returns = "void" if method == :attr_writer
+        end
+
+        def writer_or_accessor?(method)
+          method == :attr_writer || method == :attr_accessor
         end
 
         def param_type_placeholder
