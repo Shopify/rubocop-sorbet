@@ -120,17 +120,73 @@ module RuboCop
 
           if node.body
             end_pos = node.body.source_range.begin_pos
-
-            body_replacement = "\n#{indent}  "
+            indentation = "\n#{indent}  "
           else
-            end_pos = node.loc.end.begin_pos
-
-            body_replacement = "\n#{indent}"
+            end_pos, indentation = handle_method_without_body(node, indent)
           end
 
           signature_range = node.source_range.with(end_pos: end_pos)
 
-          corrector.replace(signature_range, signature_replacement + body_replacement)
+          corrector.replace(signature_range, signature_replacement + indentation)
+        end
+
+        def handle_method_without_body(node, indent)
+          if single_line_method?(node)
+            handle_single_line_method(node, indent)
+          else
+            handle_multiline_method_without_body(node)
+          end
+        end
+
+        def single_line_method?(node)
+          !node.source.include?("\n")
+        end
+
+        def handle_single_line_method(node, indent)
+          end_pos = node.source_range.end_pos
+          indentation = "\n#{indent}end"
+          [end_pos, indentation]
+        end
+
+        def handle_multiline_method_without_body(node)
+          end_pos = find_method_signature_end_position(node)
+          indentation = ""
+          [end_pos, indentation]
+        end
+
+        def find_method_signature_end_position(node)
+          if node.arguments.any?
+            find_end_position_with_arguments(node)
+          else
+            find_end_position_without_arguments(node)
+          end
+        end
+
+        def find_end_position_with_arguments(node)
+          last_arg = node.last_argument
+          end_pos = last_arg.source_range.end_pos
+
+          adjust_for_closing_parenthesis(end_pos)
+        end
+
+        def find_end_position_without_arguments(node)
+          node.loc.name.end_pos
+        end
+
+        def adjust_for_closing_parenthesis(end_pos)
+          source_after_last_arg = processed_source.buffer.source[end_pos..-1]
+
+          match = closing_parenthesis_follows(source_after_last_arg)
+
+          if match
+            end_pos + match.end(0)
+          else
+            end_pos
+          end
+        end
+
+        def closing_parenthesis_follows(source)
+          source.match(/\A\s*\)/)
         end
       end
     end

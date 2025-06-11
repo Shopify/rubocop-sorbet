@@ -262,6 +262,82 @@ module RuboCop
                         end
           RUBY
         end
+
+        def test_autocorrects_a_method_with_comments_preserves_comments
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def example
+              ^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                # abc
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:example) do
+                # abc
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_a_method_with_only_comment_preserves_comment
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def example
+              ^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                # abc
+                # def
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:example) do
+                # abc
+                # def
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_single_line_method
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def nome; end
+              ^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:nome) do
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_multiline_method_without_body_with_multiple_arguments_in_new_lines
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def nome(
+              ^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                arg,
+                other_arg
+              )
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:nome) do |arg, other_arg|
+              end
+            end
+          RUBY
+        end
       end
     end
   end
