@@ -128,6 +128,216 @@ module RuboCop
             end
           RUBY
         end
+
+        def test_does_not_register_an_offense_when_defining_a_method_in_activesupport_concern_class_methods_block
+          assert_no_offenses(<<~RUBY)
+            module SomeConcern
+              extend ActiveSupport::Concern
+
+              class_methods do
+                def good_method(args)
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_an_offense_when_defining_a_method_in_class_methods_block_without_activesupport_concern
+          assert_offense(<<~RUBY)
+            module SomeModule
+              class_methods do
+                def bad_method(args)
+                ^^^^^^^^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_an_offense_when_defining_a_method_in_class_methods_block_without_activesupport_concern_in_a_class
+          assert_offense(<<~RUBY)
+            class SomeClass
+              class_methods do
+                def bad_method(args)
+                ^^^^^^^^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_an_offense_when_defining_a_method_in_other_block_even_in_activesupport_concern
+          assert_offense(<<~RUBY)
+            module SomeConcern
+              extend ActiveSupport::Concern
+
+              some_other_block do
+                def bad_method(args)
+                ^^^^^^^^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_does_not_register_an_offense_when_defining_a_method_in_activesupport_concern_class_methods_block_with_double_colon
+          assert_no_offenses(<<~RUBY)
+            module SomeConcern
+              extend ::ActiveSupport::Concern
+
+              class_methods do
+                def good_method(args)
+                  args.present?
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_an_offense_when_nested_module_without_activesupport_concern_uses_class_methods
+          assert_offense(<<~RUBY)
+            module OuterModule
+              extend ActiveSupport::Concern
+
+              module InnerModule
+                class_methods do
+                  def bad_method(args)
+                  ^^^^^^^^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                    args.present?
+                  end
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_a_method_with_heredoc
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def example
+              ^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                <<~XML
+                  abc
+                XML
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:example) do
+                <<~XML
+                  abc
+                XML
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_a_method_with_regular_heredoc
+          assert_offense(<<~RUBY)
+                        yielding_method do
+                          def example
+                          ^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                            <<EOF
+            This is a test
+            with multiple lines
+            EOF
+                          end
+                        end
+          RUBY
+
+          assert_correction(<<~RUBY)
+                        yielding_method do
+                          define_method(:example) do
+                            <<EOF
+            This is a test
+            with multiple lines
+            EOF
+                          end
+                        end
+          RUBY
+        end
+
+        def test_autocorrects_a_method_with_comments_preserves_comments
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def example
+              ^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                # abc
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:example) do
+                # abc
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_a_method_with_only_comment_preserves_comment
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def example
+              ^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                # abc
+                # def
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:example) do
+                # abc
+                # def
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_single_line_method
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def nome; end
+              ^^^^^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:nome) do
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_multiline_method_without_body_with_multiple_arguments_in_new_lines
+          assert_offense(<<~RUBY)
+            yielding_method do
+              def nome(
+              ^^^^^^^^^ Sorbet/BlockMethodDefinition: Do not define methods in blocks (use `define_method` as a workaround).
+                arg,
+                other_arg
+              )
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            yielding_method do
+              define_method(:nome) do |arg, other_arg|
+              end
+            end
+          RUBY
+        end
       end
     end
   end

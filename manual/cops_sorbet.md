@@ -45,9 +45,16 @@ FooOrBar = T.type_alias { T.any(Foo, Bar) }
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | 0.10.1 | -
+Enabled | Yes | Yes (Unsafe) | 0.10.1 | <<next>>
 
+Disallow defining methods in blocks, to prevent running into issues
+caused by https://github.com/sorbet/sorbet/issues/3609.
 
+As a workaround, use `define_method` instead.
+
+The one exception is for `Class.new` blocks, as long as the result is
+assigned to a constant (i.e. as long as it is not an anonymous class).
+Another exception is for ActiveSupport::Concern `class_methods` blocks.
 
 ### Examples
 
@@ -77,6 +84,17 @@ end
 MyClass = Class.new do
   def good(args)
     # ...
+  end
+end
+
+# good
+module SomeConcern
+  extend ActiveSupport::Concern
+
+  class_methods do
+    def good(args)
+      # ...
+    end
   end
 end
 ```
