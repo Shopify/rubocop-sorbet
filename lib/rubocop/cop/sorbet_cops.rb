@@ -3,6 +3,7 @@
 require_relative "sorbet/mixin/target_sorbet_version"
 require_relative "sorbet/mixin/t_enum"
 require_relative "sorbet/mixin/signature_help"
+require_relative "sorbet/mixin/rbs_help"
 
 require_relative "sorbet/binding_constant_without_type_alias"
 require_relative "sorbet/block_method_definition"
