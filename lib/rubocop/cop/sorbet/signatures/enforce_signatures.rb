@@ -213,7 +213,7 @@ module RuboCop
           RBS_COMMENT_REGEX = /^#\s*:.*$/
 
           def signature_node(node)
-            node = node.parent while RuboCop::AST::SendNode === node.parent
+            node = find_non_send_ancestor(node)
             comments = preceding_comments(node)
             return if comments.empty?
 
@@ -221,6 +221,13 @@ module RuboCop
             return if last_comment.loc.line + 1 < node.loc.line
 
             comments.find { |comment| RBS_COMMENT_REGEX.match?(comment.text) }
+          end
+
+          private
+
+          def find_non_send_ancestor(node)
+            node = node.parent while node.parent&.send_type?
+            node
           end
         end
 
