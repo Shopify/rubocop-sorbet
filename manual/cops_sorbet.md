@@ -45,7 +45,7 @@ FooOrBar = T.type_alias { T.any(Foo, Bar) }
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | 0.10.1 | <<next>>
+Enabled | Yes | Yes (Unsafe) | 0.10.1 | 0.10.3
 
 Disallow defining methods in blocks, to prevent running into issues
 caused by https://github.com/sorbet/sorbet/issues/3609.
@@ -179,7 +179,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | 0.10.3 | -
 
 Ensure type parameters used in generic methods are always capitalized.
 

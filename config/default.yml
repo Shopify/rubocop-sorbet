@@ -23,7 +23,7 @@ Sorbet/BlockMethodDefinition:
   Safe: true
   SafeAutoCorrect: false
   VersionAdded: '0.10.1'
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.10.3'
 
 Sorbet/BuggyObsoleteStrictMemoization:
   Description: >-
@@ -52,7 +52,7 @@ Sorbet/CapitalizedTypeParameters:
   Description: 'Ensures that type parameters are capitalized.'
   Enabled: true
   SafeAutoCorrect: false
-  VersionAdded: <<next>>
+  VersionAdded: '0.10.3'
 
 Sorbet/CheckedTrueInSignature:
   Description: 'Disallows the usage of `checked(true)` in signatures.'
