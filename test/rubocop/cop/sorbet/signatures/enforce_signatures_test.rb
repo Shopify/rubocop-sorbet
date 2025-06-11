@@ -8,10 +8,11 @@ module RuboCop
       module Signatures
         class EnforceSignaturesTest < ::Minitest::Test
           MSG = "Each method is required to have a signature."
+          MSG_SIG = "Each method is required to have a sig block signature."
 
           def setup
             cop_config = cop_config({
-              "AllowRBS" => true,
+              "Style" => "both",
             })
             @cop = target_cop.new(cop_config)
           end
@@ -416,17 +417,18 @@ module RuboCop
 
           def test_makes_offense_if_allow_rbs_false
             @cop = target_cop.new(cop_config({
-              "AllowRBS" => false,
+              "Style" => "sig",
             }))
             assert_offense(<<~RUBY)
               #: -> void
               def foo; end
-              ^^^^^^^^^^^^ #{MSG}
+              ^^^^^^^^^^^^ #{MSG_SIG}
             RUBY
           end
 
           def test_autocorrects_with_custom_values
             @cop = target_cop.new(cop_config({
+              "Style" => "both",
               "ParameterTypePlaceholder" => "PARAM",
               "ReturnTypePlaceholder" => "RET",
             }))
@@ -471,6 +473,7 @@ module RuboCop
 
           def test_autocorrects_accessors_with_custom_values
             @cop = target_cop.new(cop_config({
+              "Style" => "both",
               "ParameterTypePlaceholder" => "PARAM",
               "ReturnTypePlaceholder" => "RET",
             }))
@@ -493,6 +496,249 @@ module RuboCop
                 sig { params(baz: PARAM).returns(RET) }
                 attr_accessor :baz
               end
+            RUBY
+          end
+
+          def test_enforce_rbs_accepts_rbs_signatures
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_no_offenses(<<~RUBY)
+              #: -> void
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_rbs_requires_rbs_signature
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              def foo; end
+              ^^^^^^^^^^^^ Each method is required to have an RBS signature.
+            RUBY
+          end
+
+          def test_enforce_rbs_with_class_methods
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                sig { void }
+                ^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+                def foo; end
+
+                #: -> void
+                def bar; end
+
+                def baz; end
+                ^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_with_singleton_methods
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                sig { void }
+                ^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+                def self.foo; end
+
+                #: -> void
+                def self.bar; end
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_with_accessors
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                sig { returns(String) }
+                ^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+                attr_reader :foo
+
+                #: -> String
+                attr_reader :bar
+
+                attr_writer :baz
+                ^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_takes_precedence_over_allow_rbs
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              sig { void }
+              ^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_missing_signatures
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              def foo; end
+              ^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def bar(a, b = 2, c: Foo.new); end
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def baz(&blk); end
+              ^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def self.foo(a, b, &c); end
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def self.bar(a, *b, **c); end
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def self.baz(a:); end
+              ^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: () -> untyped
+              def foo; end
+              #: (untyped, untyped, untyped) -> untyped
+              def bar(a, b = 2, c: Foo.new); end
+              #: (untyped) -> untyped
+              def baz(&blk); end
+              #: (untyped, untyped, untyped) -> untyped
+              def self.foo(a, b, &c); end
+              #: (untyped, untyped, untyped) -> untyped
+              def self.bar(a, *b, **c); end
+              #: (untyped) -> untyped
+              def self.baz(a:); end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_accessors
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                attr_reader :foo
+                ^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+                attr_writer :bar
+                ^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+                attr_accessor :baz
+                ^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                #: () -> untyped
+                attr_reader :foo
+                #: (untyped) -> void
+                attr_writer :bar
+                #: (untyped) -> untyped
+                attr_accessor :baz
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_with_proper_indentation
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                def foo
+                ^^^^^^^ Each method is required to have an RBS signature.
+                end
+
+                def bar(a, b, c)
+                ^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+                end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                #: () -> untyped
+                def foo
+                end
+
+                #: (untyped, untyped, untyped) -> untyped
+                def bar(a, b, c)
+                end
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_does_not_autocorrect_sig_signatures
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              sig { void }
+              ^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def foo; end
+            RUBY
+
+            assert_no_corrections
+          end
+
+          def test_enforce_rbs_rejects_sig_signatures
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              sig { void }
+              ^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def foo; end
+            RUBY
+          end
+
+          def test_allow_rbs_deprecation_warning
+            config = RuboCop::Config.new({
+              "AllCops" => { "TargetRubyVersion" => 2.7 },
+              "Sorbet/EnforceSignatures" => {
+                "Enabled" => true,
+                "AllowRBS" => true,
+              },
+            })
+            @cop = target_cop.new(config)
+
+            assert_no_offenses(<<~RUBY)
+              sig { void }
+              def foo; end
+
+              #: -> void
+              def bar; end
+            RUBY
+          end
+
+          def test_allow_rbs_with_style_uses_style
+            @cop = target_cop.new(cop_config({
+              "AllowRBS" => true,
+              "Style" => "sig",
+            }))
+
+            assert_offense(<<~RUBY)
+              #: -> void
+              def foo; end
+              ^^^^^^^^^^^^ #{MSG_SIG}
             RUBY
           end
 
