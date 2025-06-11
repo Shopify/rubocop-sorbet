@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "stringio"
-
 module RuboCop
   module Cop
     module Sorbet
@@ -262,34 +260,26 @@ module RuboCop
           end
 
           def to_autocorrect
-            out = StringIO.new
-            out << "sig { "
-            out << generate_params
-            out << generate_return
-            out << " }\n"
-            out << " " * @indent # preserve indent for the next line
-            out.string
+            "sig { #{generate_params}#{generate_return} }\n#{" " * @indent}"
           end
 
           private
 
           def generate_params
-            return if @params.empty?
+            return "" if @params.empty?
 
-            out = StringIO.new
-            out << "params("
-            out << @params.map do |param|
-              "#{param}: #{@param_placeholder}"
-            end.join(", ")
-            out << ")."
-            out.string
+            param_list = @params.map { |param| "#{param}: #{@param_placeholder}" }.join(", ")
+            "params(#{param_list})."
           end
 
           def generate_return
-            return "returns(#{@return_placeholder})" if @returns.nil?
-            return @returns if @returns == "void"
-
-            "returns(#{@returns})"
+            if @returns.nil?
+              "returns(#{@return_placeholder})"
+            elsif @returns == "void"
+              "void"
+            else
+              "returns(#{@returns})"
+            end
           end
         end
 
@@ -303,12 +293,7 @@ module RuboCop
           end
 
           def to_autocorrect
-            out = StringIO.new
-            out << "#: "
-            out << generate_signature
-            out << "\n"
-            out << " " * @indent # preserve indent for the next line
-            out.string
+            "#: #{generate_signature}\n#{" " * @indent}"
           end
 
           private
