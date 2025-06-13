@@ -34,6 +34,7 @@ In the following section you find all available cops:
 * [Sorbet/ForbidTLet](cops_sorbet.md#sorbetforbidtlet)
 * [Sorbet/ForbidTMust](cops_sorbet.md#sorbetforbidtmust)
 * [Sorbet/ForbidTStruct](cops_sorbet.md#sorbetforbidtstruct)
+* [Sorbet/ForbidTTypeAlias](cops_sorbet.md#sorbetforbidttypealias)
 * [Sorbet/ForbidTUnsafe](cops_sorbet.md#sorbetforbidtunsafe)
 * [Sorbet/ForbidTUntyped](cops_sorbet.md#sorbetforbidtuntyped)
 * [Sorbet/ForbidTypeAliasedShapes](cops_sorbet.md#sorbetforbidtypealiasedshapes)

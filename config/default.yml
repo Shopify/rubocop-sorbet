@@ -196,6 +196,11 @@ Sorbet/ForbidTMust:
   Enabled: false
   VersionAdded: <<next>>
 
+Sorbet/ForbidTTypeAlias:
+  Description: 'Forbid usage of T.type_alias.'
+  Enabled: false
+  VersionAdded: <<next>>
+
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'
   Enabled: false
