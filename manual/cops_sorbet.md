@@ -632,6 +632,60 @@ Name | Default value | Configurable values
 --- | --- | ---
 Exclude | `db/migrate/*.rb` | Array
 
+## Sorbet/ForbidTAbsurd
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Disallows using `T.absurd` anywhere.
+
+### Examples
+
+```ruby
+# bad
+T.absurd(foo)
+
+# good
+x #: absurd
+```
+
+## Sorbet/ForbidTBind
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Disallows using `T.bind` anywhere.
+
+### Examples
+
+```ruby
+# bad
+T.bind(self, Integer)
+
+# good
+#: self as Integer
+```
+
+## Sorbet/ForbidTCast
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Disallows using `T.cast` anywhere.
+
+### Examples
+
+```ruby
+# bad
+T.cast(foo, Integer)
+
+# good
+foo #: as Integer
+```
+
 ## Sorbet/ForbidTEnum
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
@@ -657,6 +711,42 @@ class MyEnum
   B = "b"
   C = "c"
 end
+```
+
+## Sorbet/ForbidTLet
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Disallows using `T.let` anywhere.
+
+### Examples
+
+```ruby
+# bad
+T.let(foo, Integer)
+
+# good
+foo #: Integer
+```
+
+## Sorbet/ForbidTMust
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Disallows using `T.must` anywhere.
+
+### Examples
+
+```ruby
+# bad
+T.must(foo)
+
+# good
+foo #: as !nil
 ```
 
 ## Sorbet/ForbidTStruct
@@ -696,6 +786,24 @@ class MyStruct
 
   def some_method; end
 end
+```
+
+## Sorbet/ForbidTTypeAlias
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Disallows using `T.type_alias` anywhere.
+
+### Examples
+
+```ruby
+# bad
+STRING_OR_INTEGER = T.type_alias { T.any(Integer, String) }
+
+# good
+#: type string_or_integer = Integer | String
 ```
 
 ## Sorbet/ForbidTUnsafe
