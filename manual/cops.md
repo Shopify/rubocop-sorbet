@@ -29,6 +29,7 @@ In the following section you find all available cops:
 * [Sorbet/ForbidSuperclassConstLiteral](cops_sorbet.md#sorbetforbidsuperclassconstliteral)
 * [Sorbet/ForbidTAbsurd](cops_sorbet.md#sorbetforbidtabsurd)
 * [Sorbet/ForbidTBind](cops_sorbet.md#sorbetforbidtbind)
+* [Sorbet/ForbidTCast](cops_sorbet.md#sorbetforbidtcast)
 * [Sorbet/ForbidTEnum](cops_sorbet.md#sorbetforbidtenum)
 * [Sorbet/ForbidTStruct](cops_sorbet.md#sorbetforbidtstruct)
 * [Sorbet/ForbidTUnsafe](cops_sorbet.md#sorbetforbidtunsafe)

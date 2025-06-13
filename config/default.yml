@@ -181,6 +181,11 @@ Sorbet/ForbidTBind:
   Enabled: false
   VersionAdded: <<next>>
 
+Sorbet/ForbidTCast:
+  Description: 'Forbid usage of T.cast.'
+  Enabled: false
+  VersionAdded: <<next>>
+
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'
   Enabled: false
