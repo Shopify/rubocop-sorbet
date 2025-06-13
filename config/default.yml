@@ -191,6 +191,11 @@ Sorbet/ForbidTLet:
   Enabled: false
   VersionAdded: <<next>>
 
+Sorbet/ForbidTMust:
+  Description: 'Forbid usage of T.must.'
+  Enabled: false
+  VersionAdded: <<next>>
+
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'
   Enabled: false
