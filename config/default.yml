@@ -171,6 +171,11 @@ Sorbet/ForbidTStruct:
   VersionAdded: 0.7.4
   Safe: false
 
+Sorbet/ForbidTAbsurd:
+  Description: 'Forbid usage of T.absurd.'
+  Enabled: false
+  VersionAdded: <<next>>
+
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'
   Enabled: false
