@@ -16,6 +16,9 @@ module RuboCop
           assert_offense(<<~RUBY)
             T.unsafe(foo)
             ^^^^^^^^^^^^^ #{MSG}
+
+            x = T.unsafe(foo)
+                ^^^^^^^^^^^^^ #{MSG}
           RUBY
         end
       end
