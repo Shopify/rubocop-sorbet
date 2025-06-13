@@ -24,7 +24,7 @@ class ProjectTest < Minitest::Test
   end
 
   def test_has_configuration_for_all_cops
-    assert_equal(code_cop_names.sort, cops_on(config))
+    assert_equal(code_cop_names.sort, cops_on(config).sort)
   end
 
   def test_requires_a_nicely_formatted_version_added_metadata_for_all_cops
