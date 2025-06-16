@@ -171,6 +171,36 @@ Sorbet/ForbidTStruct:
   VersionAdded: 0.7.4
   Safe: false
 
+Sorbet/ForbidTAbsurd:
+  Description: 'Forbid usage of T.absurd.'
+  Enabled: false
+  VersionAdded: <<next>>
+
+Sorbet/ForbidTBind:
+  Description: 'Forbid usage of T.bind.'
+  Enabled: false
+  VersionAdded: <<next>>
+
+Sorbet/ForbidTCast:
+  Description: 'Forbid usage of T.cast.'
+  Enabled: false
+  VersionAdded: <<next>>
+
+Sorbet/ForbidTLet:
+  Description: 'Forbid usage of T.let.'
+  Enabled: false
+  VersionAdded: <<next>>
+
+Sorbet/ForbidTMust:
+  Description: 'Forbid usage of T.must.'
+  Enabled: false
+  VersionAdded: <<next>>
+
+Sorbet/ForbidTTypeAlias:
+  Description: 'Forbid usage of T.type_alias.'
+  Enabled: false
+  VersionAdded: <<next>>
+
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'
   Enabled: false

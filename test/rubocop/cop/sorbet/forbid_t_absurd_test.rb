@@ -5,19 +5,19 @@ require "test_helper"
 module RuboCop
   module Cop
     module Sorbet
-      class ForbidTUnsafeTest < ::Minitest::Test
-        MSG = "Sorbet/ForbidTUnsafe: Do not use `T.unsafe`."
+      class ForbidTAbsurdTest < ::Minitest::Test
+        MSG = "Sorbet/ForbidTAbsurd: Do not use `T.absurd`."
 
         def setup
-          @cop = ForbidTUnsafe.new
+          @cop = ForbidTAbsurd.new
         end
 
-        def test_adds_offense_when_using_t_unsafe
+        def test_adds_offense_when_using_t_absurd
           assert_offense(<<~RUBY)
-            T.unsafe(foo)
+            T.absurd(foo)
             ^^^^^^^^^^^^^ #{MSG}
 
-            x = T.unsafe(foo)
+            x = T.absurd(foo)
                 ^^^^^^^^^^^^^ #{MSG}
           RUBY
         end
