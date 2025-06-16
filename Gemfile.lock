@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rubocop-sorbet (0.10.3)
+    rubocop-sorbet (0.10.4)
       lint_roller
       rubocop (>= 1.75.2)
 
