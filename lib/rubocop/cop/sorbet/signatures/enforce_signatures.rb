@@ -72,40 +72,28 @@ module RuboCop
           when "rbs"
             # RBS style - only RBS signatures allowed
             if sig_node
-              add_offense(
-                sig_node,
-                message: "Use RBS signature comments rather than sig blocks.",
-              )
+              add_offense(sig_node, message: "Use RBS signature comments rather than sig blocks.")
               return
             end
 
             unless rbs_node
-              add_offense(
-                node,
-                message: "Each method is required to have an RBS signature.",
-              ) do |corrector|
-                autocorrect_with_signature_type(corrector, node, :rbs)
+              add_offense(node, message: "Each method is required to have an RBS signature.") do |corrector|
+                autocorrect_with_signature_type(corrector, node, "rbs")
               end
               nil
             end
           when "both"
             # Both styles allowed - require at least one
             unless sig_node || rbs_node
-              add_offense(
-                node,
-                message: "Each method is required to have a signature.",
-              ) do |corrector|
-                autocorrect_with_signature_type(corrector, node, :sig)
+              add_offense(node, message: "Each method is required to have a signature.") do |corrector|
+                autocorrect_with_signature_type(corrector, node, "sig")
               end
             end
           else # "sig" (default)
             # Sig style - only sig signatures allowed
             unless sig_node
-              add_offense(
-                node,
-                message: "Each method is required to have a sig block signature.",
-              ) do |corrector|
-                autocorrect_with_signature_type(corrector, node, :sig)
+              add_offense(node, message: "Each method is required to have a sig block signature.") do |corrector|
+                autocorrect_with_signature_type(corrector, node, "sig")
               end
             end
           end
@@ -129,9 +117,9 @@ module RuboCop
 
         def create_signature_suggestion(node, type)
           case type
-          when :rbs
+          when "rbs"
             RBSSuggestion.new(node.loc.column)
-          else # :sig
+          else # "sig"
             SigSuggestion.new(node.loc.column, param_type_placeholder, return_type_placeholder)
           end
         end
