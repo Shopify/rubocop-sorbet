@@ -80,7 +80,6 @@ module RuboCop
               add_offense(node, message: "Each method is required to have an RBS signature.") do |corrector|
                 autocorrect_with_signature_type(corrector, node, "rbs")
               end
-              nil
             end
           when "both"
             # Both styles allowed - require at least one
@@ -134,7 +133,11 @@ module RuboCop
 
         def populate_method_definition_suggestion(suggest, node)
           node.arguments.each do |arg|
-            suggest.params << arg.children.first
+            if arg.blockarg_type? && suggest.respond_to?(:has_block=)
+              suggest.has_block = true
+            else
+              suggest.params << arg.children.first
+            end
           end
         end
 
@@ -272,11 +275,12 @@ module RuboCop
         end
 
         class RBSSuggestion
-          attr_accessor :params, :returns
+          attr_accessor :params, :returns, :has_block
 
           def initialize(indent)
             @params = []
             @returns = nil
+            @has_block = false
             @indent = indent
           end
 
@@ -290,11 +294,16 @@ module RuboCop
             param_types = @params.map { "untyped" }.join(", ")
             return_type = @returns || "untyped"
 
-            if @params.empty?
-              "() -> #{return_type}"
+            signature = if @params.empty?
+              "()"
             else
-              "(#{param_types}) -> #{return_type}"
+              "(#{param_types})"
             end
+
+            signature += " { (?) -> untyped }" if @has_block
+            signature += " -> #{return_type}"
+
+            signature
           end
         end
       end
