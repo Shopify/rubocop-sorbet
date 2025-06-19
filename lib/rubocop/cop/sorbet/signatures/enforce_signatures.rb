@@ -27,6 +27,8 @@ module RuboCop
         extend AutoCorrector
         include SignatureHelp
 
+        VALID_STYLES = ["sig", "rbs", "both"].freeze
+
         # @!method accessor?(node)
         def_node_matcher(:accessor?, <<-PATTERN)
           (send nil? {:attr_reader :attr_writer :attr_accessor} ...)
@@ -177,7 +179,13 @@ module RuboCop
 
         def signature_style
           config_value = cop_config["Style"]
-          return config_value if config_value
+          if config_value
+            unless VALID_STYLES.include?(config_value)
+              raise ArgumentError, "Invalid Style option: '#{config_value}'. Valid options are: #{VALID_STYLES.join(", ")}"
+            end
+
+            return config_value
+          end
 
           return "both" if allow_rbs?
 
