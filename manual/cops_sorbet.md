@@ -637,7 +637,7 @@ Exclude | `db/migrate/*.rb` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.10.4 | -
 
 Disallows using `T.absurd` anywhere.
 
@@ -655,7 +655,7 @@ x #: absurd
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.10.4 | -
 
 Disallows using `T.bind` anywhere.
 
@@ -673,7 +673,7 @@ T.bind(self, Integer)
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.10.4 | -
 
 Disallows using `T.cast` anywhere.
 
@@ -718,7 +718,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.10.4 | -
 
 Disallows using `T.let` anywhere.
 
@@ -736,7 +736,7 @@ foo #: Integer
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.10.4 | -
 
 Disallows using `T.must` anywhere.
 
@@ -793,7 +793,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.10.4 | -
 
 Disallows using `T.type_alias` anywhere.
 
