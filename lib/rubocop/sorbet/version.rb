@@ -2,6 +2,6 @@
 
 module RuboCop
   module Sorbet
-    VERSION = "0.10.5"
+    VERSION = File.read(File.expand_path("../../../../VERSION", __FILE__)).strip
   end
 end

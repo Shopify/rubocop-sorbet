@@ -47,10 +47,6 @@ module Releaser
     version = File.read("VERSION").strip
     puts "Preparing release for version #{version}"
 
-    update_file("lib/rubocop/sorbet/version.rb") do |version_file|
-      version_file.sub(/VERSION = ".*"/, "VERSION = \"#{version}\"")
-    end
-
     update_file("config/default.yml") do |default|
       default.gsub(/['"]?<<\s*next\s*>>['"]?/i, "'#{version}'")
     end
@@ -58,7 +54,7 @@ module Releaser
     sh "bundle install"
     sh "bundle exec rake generate_cops_documentation"
 
-    sh "git add lib/rubocop/sorbet/version.rb config/default.yml Gemfile.lock VERSION manual"
+    sh "git add config/default.yml Gemfile.lock VERSION manual"
 
     sh "git commit -m 'Release v#{version}'"
     sh "git push origin main"
