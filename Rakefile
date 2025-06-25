@@ -73,3 +73,25 @@ module Releaser
     File.write(path, yield(content))
   end
 end
+
+desc "Check for stale <<next>> placeholders when VERSION is updated"
+task :check_version_placeholders do
+  # Check if VERSION file was modified in the last commit
+  version_changed = %x(git diff HEAD~1 HEAD --name-only).split("\n").include?("VERSION")
+
+  if version_changed
+    puts "VERSION file was updated, checking for stale placeholders..."
+
+    # Check for <<next>> placeholders in config/default.yml
+    config_content = File.read("config/default.yml")
+    if config_content.match?(/['\"]?<<\s*next\s*>>['\"]?/i)
+      puts "\e[31mError: Found stale <<next>> placeholders in config/default.yml after VERSION update!\e[0m"
+      puts "\e[31mPlease run 'bundle exec rake prepare_release' to replace placeholders and commit the changes.\e[0m"
+      exit 1
+    else
+      puts "\e[32mNo stale placeholders found - all good!\e[0m"
+    end
+  else
+    puts "VERSION file was not updated in the last commit."
+  end
+end
