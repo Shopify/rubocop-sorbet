@@ -24,7 +24,7 @@ class ProjectTest < Minitest::Test
   end
 
   def test_has_configuration_for_all_cops
-    assert_equal(code_cop_names.sort, cops_on(config).sort)
+    assert_equal(code_cop_names.sort, sorbet_cops(config).sort)
   end
 
   def test_requires_a_nicely_formatted_version_added_metadata_for_all_cops
@@ -50,7 +50,7 @@ class ProjectTest < Minitest::Test
     @config ||= RuboCop::ConfigLoader.load_file("config/default.yml")
   end
 
-  def cops_on(config)
-    config.keys.reject { |key| key == "inherit_mode" }
+  def sorbet_cops(config)
+    config.keys.select { |key| key.start_with?("Sorbet/") }
   end
 end
