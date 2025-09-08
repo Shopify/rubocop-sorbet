@@ -7,6 +7,25 @@ Sorbet/AllowIncompatibleOverride:
   Enabled: true
   VersionAdded: 0.2.0
 
+Sorbet/RBSAnnotatedModuleNew:
+  Description: >-
+                Checks for uses of Sorbet RBS annotations (e.g., `@abstract`, `@interface`, `@sealed`)
+                with dynamic module/class creation using `Module.new` or `Class.new`.
+                These annotations don't work with dynamic instantiation because the RBS
+                rewriter runs before the instantiation rewriter.
+  Enabled: true
+  VersionAdded: '<<next>>'
+  Safe: true
+  SafeAutoCorrect: true
+  References:
+    - https://github.com/sorbet/sorbet/issues/9153
+  Annotations:
+    - abstract
+    - interface
+    - sealed
+    - final
+    - requires_ancestor
+
 Sorbet/BindingConstantWithoutTypeAlias:
   Description: >-
                   Disallows binding the return value of `T.any`, `T.all`, `T.enum`

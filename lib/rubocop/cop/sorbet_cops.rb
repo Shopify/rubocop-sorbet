@@ -30,6 +30,7 @@ require_relative "sorbet/select_by_is_a"
 require_relative "sorbet/type_alias_name"
 require_relative "sorbet/obsolete_strict_memoization"
 require_relative "sorbet/buggy_obsolete_strict_memoization"
+require_relative "sorbet/rbs_annotated_module_new"
 
 require_relative "sorbet/rbi/forbid_extend_t_sig_helpers_in_shims"
 require_relative "sorbet/rbi/forbid_rbi_outside_of_allowed_paths"
