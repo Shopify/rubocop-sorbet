@@ -2,6 +2,10 @@ inherit_mode:
   merge:
   - Exclude
 
+Sorbet:
+  DocumentationBaseURL: https://github.com/Shopify/rubocop-sorbet/blob/main/manual
+  DocumentationExtension: .md
+
 Sorbet/AllowIncompatibleOverride:
   Description: 'Disallows using `.override(allow_incompatible: true)`.'
   Enabled: true
