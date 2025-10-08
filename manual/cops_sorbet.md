@@ -714,6 +714,35 @@ class MyEnum
 end
 ```
 
+## Sorbet/ForbidTHelpers
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Forbids `extend T::Helpers` and `include T::Helpers` in classes and modules.
+
+This is useful when using RBS or RBS-inline syntax for type signatures,
+where `T::Helpers` is not needed and including it is redundant.
+
+### Examples
+
+```ruby
+# bad
+class Example
+  extend T::Helpers
+end
+
+# bad
+module Example
+  include T::Helpers
+end
+
+# good
+class Example
+end
+```
+
 ## Sorbet/ForbidTLet
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
@@ -748,6 +777,35 @@ T.must(foo)
 
 # good
 foo #: as !nil
+```
+
+## Sorbet/ForbidTSig
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Forbids `extend T::Sig` and `include T::Sig` in classes and modules.
+
+This is useful when using RBS or RBS-inline syntax for type signatures,
+where `T::Sig` is not needed and including it is redundant.
+
+### Examples
+
+```ruby
+# bad
+class Example
+  extend T::Sig
+end
+
+# bad
+module Example
+  include T::Sig
+end
+
+# good
+class Example
+end
 ```
 
 ## Sorbet/ForbidTStruct
