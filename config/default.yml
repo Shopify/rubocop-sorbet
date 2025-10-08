@@ -210,6 +210,13 @@ Sorbet/ForbidTMust:
   Enabled: false
   VersionAdded: 0.10.4
 
+Sorbet/ForbidTAnyWithNil:
+  Description: 'Forbid usage of T.any(NilClass).'
+  Enabled: pending
+  VersionAdded: '<<next>>'
+  Safe: true
+  SafeAutoCorrect: true
+
 Sorbet/ForbidTTypeAlias:
   Description: 'Forbid usage of T.type_alias.'
   Enabled: false
