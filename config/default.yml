@@ -1,12 +1,12 @@
 Sorbet/ForbidTHelpers:
   Description: 'Forbid usage of T::Helpers via `extend` or `include`.'
   Enabled: false
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.11.0'
 
 Sorbet/ForbidTSig:
   Description: 'Forbid usage of T::Sig via `extend` or `include`.'
   Enabled: false
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.11.0'
 
 inherit_mode:
   merge:
@@ -213,7 +213,7 @@ Sorbet/ForbidTMust:
 Sorbet/ForbidTAnyWithNil:
   Description: 'Forbid usage of T.any(NilClass).'
   Enabled: pending
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.11.0'
   Safe: true
   SafeAutoCorrect: true
 

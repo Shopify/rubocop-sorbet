@@ -655,7 +655,7 @@ x #: absurd
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | <<next>> | -
+Enabled | Yes | Yes  | 0.11.0 | -
 
 Detect and autocorrect `T.any(..., NilClass, ...)` to `T.nilable(...)`
 
@@ -740,7 +740,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.11.0 | -
 
 Forbids `extend T::Helpers` and `include T::Helpers` in classes and modules.
 
@@ -805,7 +805,7 @@ foo #: as !nil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.11.0 | -
 
 Forbids `extend T::Sig` and `include T::Sig` in classes and modules.
 
