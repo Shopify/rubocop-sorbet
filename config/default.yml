@@ -1,3 +1,13 @@
+Sorbet/ForbidTHelpers:
+  Description: 'Forbid usage of T::Helpers via `extend` or `include`.'
+  Enabled: false
+  VersionAdded: '<<next>>'
+
+Sorbet/ForbidTSig:
+  Description: 'Forbid usage of T::Sig via `extend` or `include`.'
+  Enabled: false
+  VersionAdded: '<<next>>'
+
 inherit_mode:
   merge:
   - Exclude
