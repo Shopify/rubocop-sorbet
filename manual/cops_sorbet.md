@@ -1197,6 +1197,30 @@ module Foo
 end
 ```
 
+## Sorbet/RuntimeOnFailureDependsOnChecked
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | <<next>> | -
+
+Checks that `on_failure` is not used without `checked(:tests)` or `checked(:always)`.
+
+### Examples
+
+```ruby
+# bad
+sig { params(x: Integer).returns(Integer).on_failure(:raise) }
+def plus_one(x)
+  x + 1
+end
+
+# good
+sig { params(x: Integer).returns(Integer).checked(:always).on_failure(:raise) }
+def plus_one(x)
+  x + 1
+end
+```
+
 ## Sorbet/SelectByIsA
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

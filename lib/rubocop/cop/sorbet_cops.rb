@@ -50,6 +50,7 @@ require_relative "sorbet/signatures/forbid_sig"
 require_relative "sorbet/signatures/forbid_sig_with_runtime"
 require_relative "sorbet/signatures/forbid_sig_without_runtime"
 require_relative "sorbet/signatures/keyword_argument_ordering"
+require_relative "sorbet/signatures/runtime_on_failure_depends_on_checked"
 require_relative "sorbet/signatures/signature_build_order"
 require_relative "sorbet/signatures/void_checked_tests"
 
