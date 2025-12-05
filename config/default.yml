@@ -324,6 +324,14 @@ Sorbet/Refinement:
   Enabled: pending
   VersionAdded: 0.8.6
 
+Sorbet/RuntimeOnFailureDependsOnChecked:
+  Description: >-
+                  Ensures that `on_failure` is called after `checked` in signatures.
+                  The `on_failure` method has no effect unless `checked(:tests)` or
+                  `checked(:always)` is also called.
+  Enabled: true
+  VersionAdded: '<<next>>'
+
 Sorbet/SelectByIsA:
   Description: >-
     Suggests using `grep` over `select` when using it only for type narrowing.
