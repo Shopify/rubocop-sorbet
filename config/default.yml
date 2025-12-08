@@ -330,7 +330,7 @@ Sorbet/RuntimeOnFailureDependsOnChecked:
                   The `on_failure` method has no effect unless `checked(:tests)` or
                   `checked(:always)` is also called.
   Enabled: true
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.11.1'
 
 Sorbet/SelectByIsA:
   Description: >-

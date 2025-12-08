@@ -1201,7 +1201,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | No | <<next>> | -
+Enabled | Yes | No | 0.11.1 | -
 
 Checks that `on_failure` is not used without `checked(:tests)` or `checked(:always)`.
 
