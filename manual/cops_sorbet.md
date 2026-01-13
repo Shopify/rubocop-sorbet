@@ -1160,6 +1160,36 @@ class Example
 end
 ```
 
+## Sorbet/RedundantTLet
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | <<next>> | -
+
+Prevents unnecessary `T.let` in `initialize` methods. When a signature parameter is assigned to an instance variable, the type is inferred automatically.
+
+### Examples
+
+```ruby
+# bad
+sig { params(a: Integer) }
+def initialize(a)
+  @a = T.let(a, Integer)
+end
+
+# good
+sig { params(a: Integer) }
+def initialize(a)
+  @a = a
+end
+
+# good
+sig { params(a: Integer) }
+def initialize(a)
+  @a = T.let(a, T.any(Integer, String))
+end
+```
+
 ## Sorbet/Refinement
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged

@@ -8,6 +8,11 @@ Sorbet/ForbidTSig:
   Enabled: false
   VersionAdded: '0.11.0'
 
+Sorbet/RedundantTLet:
+  Description: 'Prevents redundant use of `T.let` in initialize methods where types can be inferred from the signature.'
+  Enabled: true
+  VersionAdded: <<next>>
+
 inherit_mode:
   merge:
   - Exclude

@@ -49,6 +49,7 @@ In the following section you find all available cops:
 * [Sorbet/MultipleTEnumValues](cops_sorbet.md#sorbetmultipletenumvalues)
 * [Sorbet/ObsoleteStrictMemoization](cops_sorbet.md#sorbetobsoletestrictmemoization)
 * [Sorbet/RedundantExtendTSig](cops_sorbet.md#sorbetredundantextendtsig)
+* [Sorbet/RedundantTLet](cops_sorbet.md#sorbetredundanttlet)
 * [Sorbet/Refinement](cops_sorbet.md#sorbetrefinement)
 * [Sorbet/RuntimeOnFailureDependsOnChecked](cops_sorbet.md#sorbetruntimeonfailuredependsonchecked)
 * [Sorbet/SelectByIsA](cops_sorbet.md#sorbetselectbyisa)
