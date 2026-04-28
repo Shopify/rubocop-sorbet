@@ -86,6 +86,12 @@ module RuboCop
               @d = T.let(d, Integer)
                    ^^^^^^^^^^^^^^^^^ #{MSG}
             end
+
+            sig { params(a: T.any(Integer, String)).void }
+            def initialize(a)
+              @a = T.let(a, T.any(Integer,String))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            end
           RUBY
 
           assert_correction(<<~RUBY)
@@ -145,6 +151,11 @@ module RuboCop
               @b = b
               @c = c
               @d = d
+            end
+
+            sig { params(a: T.any(Integer, String)).void }
+            def initialize(a)
+              @a = a
             end
           RUBY
         end

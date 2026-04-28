@@ -74,6 +74,7 @@ module RuboCop
             .gsub(/\s*\)/, ")")            # remove space before )
             .gsub(/\[\s*/, "[")            # remove space after [
             .gsub(/\s*\]/, "]")            # remove space before ]
+            .gsub(/,\s*/, ", ")            # remove space after comma
             .strip
         end
 
