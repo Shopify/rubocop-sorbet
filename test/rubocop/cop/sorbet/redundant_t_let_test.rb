@@ -269,6 +269,84 @@ module RuboCop
             end
           RUBY
         end
+
+        # Sorbet's initializer rewriter does not process ivar assignments
+        # inside a rescue body, so T.let remains required there.
+        def test_no_offense_with_rescue_in_body
+          assert_no_offenses(<<~RUBY)
+            sig { params(a: Integer).void }
+            def initialize(a)
+              @a = T.let(a, Integer)
+            rescue
+              @a = T.let(0, Integer)
+            end
+          RUBY
+        end
+
+        # Multiline type annotations in the sig contain whitespace and trailing
+        # commas that do not appear in the T.let argument; both sides are
+        # normalized before comparison.
+        def test_offense_on_multiline_type_in_sig
+          assert_offense(<<~RUBY)
+            sig do
+              params(
+                a: T.any(
+                  Integer,
+                  String,
+                ),
+              ).void
+            end
+            def initialize(a)
+              @a = T.let(a, T.any(Integer, String))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            sig do
+              params(
+                a: T.any(
+                  Integer,
+                  String,
+                ),
+              ).void
+            end
+            def initialize(a)
+              @a = a
+            end
+          RUBY
+        end
+
+        def test_offense_on_multiline_type_in_t_let
+          assert_offense(<<~RUBY)
+            sig { params(a: T.any(Integer, String)).void }
+            def initialize(a)
+              @a = T.let(a, T.any(
+                   ^^^^^^^^^^^^^^^ #{MSG}
+                Integer,
+                String
+              ))
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            sig { params(a: T.any(Integer, String)).void }
+            def initialize(a)
+              @a = a
+            end
+          RUBY
+        end
+
+        # Sorbet's initializer rewriter does not process ivar assignments when
+        # the def is wrapped by a method modifier, so T.let remains required.
+        def test_no_offense_with_method_modifier_wrapping_def
+          assert_no_offenses(<<~RUBY)
+            sig { params(a: Integer).void }
+            private def initialize(a)
+              @a = T.let(a, Integer)
+            end
+          RUBY
+        end
       end
     end
   end

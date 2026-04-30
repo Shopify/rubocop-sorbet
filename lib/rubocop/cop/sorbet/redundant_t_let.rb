@@ -42,8 +42,8 @@ module RuboCop
           method_args = node.arguments&.to_h { |arg| [arg.name, arg.type] }
           return unless method_args&.any?
 
-          sig_node = node.left_sibling
-          return unless sig_node && signature?(sig_node)
+          sig_node = find_sig_node(node)
+          return unless sig_node
 
           sig_params = sig_params(sig_node)&.to_h { |pair| [pair.key.value, pair.value] }
           return unless sig_params&.any?
@@ -56,6 +56,26 @@ module RuboCop
         end
 
         private
+
+        def find_sig_node(method_node)
+          # When the def is wrapped by a method modifier (`private def initialize`),
+          # Sorbet's initializer rewriter does not process the ivar assignments,
+          # so T.let annotations remain required. Skip by returning nil.
+          return if method_node.parent&.send_type?
+
+          method_node.left_sibling.then { |s| signature?(s) ? s : nil }
+        end
+
+        def normalize_whitespace(source)
+          source
+            .gsub(/\s+/, " ")              # collapse all whitespace to single spaces
+            .gsub(/,\s*([)\]\}])/, "\\1")  # remove trailing commas before closing delimiters
+            .gsub(/\(\s*/, "(")            # remove space after (
+            .gsub(/\s*\)/, ")")            # remove space before )
+            .gsub(/\[\s*/, "[")            # remove space after [
+            .gsub(/\s*\]/, "]")            # remove space before ]
+            .strip
+        end
 
         def ivar_assignments(node)
           return [] unless node.body
@@ -72,8 +92,8 @@ module RuboCop
           method_arg_kind = method_args[tlet_key]
           return unless method_arg_kind
 
-          arg_type = expected_type(sig_type.source, method_arg_kind)
-          return unless tlet_value.source == arg_type
+          arg_type = expected_type(normalize_whitespace(sig_type.source), method_arg_kind)
+          return unless normalize_whitespace(tlet_value.source) == arg_type
 
           add_offense(node) do |corrector|
             corrector.replace(node, tlet_key.to_s)
