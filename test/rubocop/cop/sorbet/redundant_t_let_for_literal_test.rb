@@ -131,13 +131,111 @@ module RuboCop
           RUBY
         end
 
-        # Non-simple literals
+        # Array literals
 
-        def test_no_offense_for_array_literal
-          assert_no_offenses(<<~RUBY)
+        def test_registers_offense_for_unfrozen_array_matching_annotation
+          assert_offense(<<~RUBY)
             NAMES = T.let(["alice", "bob"], T::Array[String])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            NAMES = ["alice", "bob"]
           RUBY
         end
+
+        def test_registers_offense_for_frozen_array
+          assert_offense(<<~RUBY)
+            SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            SHELLS = [:bash, :zsh].freeze
+          RUBY
+        end
+
+        def test_registers_offense_for_frozen_percent_word_array
+          assert_offense(<<~RUBY)
+            WORDS = T.let(%w[a b c].freeze, T::Array[String])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            WORDS = %w[a b c].freeze
+          RUBY
+        end
+
+        # A frozen array infers as a tuple, a subtype of the annotated
+        # T::Array, so it is redundant even when the elements are mixed and the
+        # annotation is wider.
+        def test_registers_offense_for_frozen_mixed_array
+          assert_offense(<<~RUBY)
+            VALUES = T.let([1, "a", nil].freeze, T::Array[T.nilable(T.any(Integer, String))])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            VALUES = [1, "a", nil].freeze
+          RUBY
+        end
+
+        def test_registers_offense_for_frozen_nested_array
+          assert_offense(<<~RUBY)
+            PAIRS = T.let([["a"], ["b"]].freeze, T::Array[T::Array[String]])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PAIRS = [["a"], ["b"]].freeze
+          RUBY
+        end
+
+        # An unfrozen array whose annotation is wider than the inferred element
+        # type must keep T.let, otherwise the type would be silently narrowed.
+        def test_no_offense_for_unfrozen_array_with_wider_annotation
+          assert_no_offenses(<<~RUBY)
+            NAMES = T.let(["alice", "bob"], T::Array[T.nilable(String)])
+          RUBY
+        end
+
+        # An unfrozen array with mixed element types is left alone: the inferred
+        # element type is a union whose rendering is not verified here.
+        def test_no_offense_for_unfrozen_mixed_array
+          assert_no_offenses(<<~RUBY)
+            VALUES = T.let([1, "a"], T::Array[T.any(Integer, String)])
+          RUBY
+        end
+
+        # Empty arrays infer as T::Array[T.untyped], so the annotation is kept.
+        def test_no_offense_for_empty_frozen_array
+          assert_no_offenses(<<~RUBY)
+            NAMES = T.let([].freeze, T::Array[String])
+          RUBY
+        end
+
+        # Regexp and range elements degrade the array to T.untyped.
+        def test_no_offense_for_frozen_regexp_array
+          assert_no_offenses(<<~RUBY)
+            PATTERNS = T.let([/a/, /b/].freeze, T::Array[Regexp])
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_range_array
+          assert_no_offenses(<<~RUBY)
+            RANGES = T.let([(1..2)].freeze, T::Array[T::Range[Integer]])
+          RUBY
+        end
+
+        # Arrays whose elements are not literals (constants, method calls) are
+        # not reflected into a tuple, so the annotation carries the type.
+        def test_no_offense_for_array_of_constants
+          assert_no_offenses(<<~RUBY)
+            BROKERS = T.let([SEQUOIA, BENNIE].freeze, T::Array[String])
+          RUBY
+        end
+
+        # Non-simple literals
 
         def test_no_offense_for_hash_literal
           assert_no_offenses(<<~RUBY)

@@ -105,9 +105,9 @@ module RuboCop
         private
 
         def constructor_call(node)
-          return unless node.send_type?
-
-          node = node.receiver if node.method?(:freeze)
+          node = node.receiver if node.send_type? && node.method?(:freeze)
+          # `Foo.new { ... }` is a block node wrapping the `.new` send.
+          node = node.send_node if node&.block_type?
           return unless node&.send_type? && node.method?(:new)
           return unless node.receiver&.const_type?
 

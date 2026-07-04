@@ -229,6 +229,17 @@ module RuboCop
           RUBY
         end
 
+        def test_offense_on_constant_assigned_block_constructor
+          assert_offense(<<~RUBY)
+            CONFIG = T.let(Config.new { |c| c.enabled = true }.freeze, Config)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            CONFIG = Config.new { |c| c.enabled = true }.freeze
+          RUBY
+        end
+
         def test_offense_on_multiline_constant_constructor
           assert_offense(<<~RUBY)
             GITHUB_ERROR = T.let(
