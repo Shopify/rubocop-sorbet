@@ -94,8 +94,15 @@ You can read about each cop supplied by RuboCop Sorbet in [the manual](manual/co
 
 Sorbet cops support the following versions:
 
-- Sorbet >= 0.5
+- Sorbet >= 0.6.13304
 - Ruby >= 3.1
+
+The `Sorbet/RedundantTLet` and `Sorbet/RedundantTLetForLiteral` cops autocorrect
+based on Sorbet's type inference, which has changed over time. Their newer cases
+(constructor calls, frozen literals, and literal arrays) rely on inference added
+up to Sorbet 0.6.13304 — running their autocorrect against an older Sorbet can
+remove a `T.let` that the older Sorbet still requires. See each cop's
+documentation for details.
 
 ## Contributing
 

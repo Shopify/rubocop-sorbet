@@ -436,6 +436,48 @@ module RuboCop
           RUBY
         end
 
+        # `T.let` may be called with a fully-qualified `::T`.
+        def test_registers_offense_for_cbase_t_let
+          assert_offense(<<~RUBY)
+            MAX = ::T.let(3, Integer)
+                  ^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Integer")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            MAX = 3
+          RUBY
+        end
+
+        # Both `::T.let` and a fully-qualified `::T::Array` annotation are handled.
+        def test_registers_offense_for_cbase_t_and_t_array
+          assert_offense(<<~RUBY)
+            SHELLS = ::T.let([:bash, :zsh].freeze, ::T::Array[Symbol])
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            SHELLS = [:bash, :zsh].freeze
+          RUBY
+        end
+
+        # A multi-line annotation with a trailing comma still compares equal to
+        # the inferred `T::Array[String]`.
+        def test_registers_offense_for_unfrozen_array_multiline_annotation
+          assert_offense(<<~RUBY)
+            NAMES = T.let(
+                    ^^^^^^ #{format(MSG, type: "Array")}
+              ["alice", "bob"],
+              T::Array[
+                String,
+              ],
+            )
+          RUBY
+
+          assert_correction(<<~RUBY)
+            NAMES = ["alice", "bob"]
+          RUBY
+        end
+
         private
 
         def target_cop

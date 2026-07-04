@@ -47,6 +47,7 @@ module RuboCop
       #  @path = T.let(Pathname.new("/usr/local"), Pathname)
       class RedundantTLet < RuboCop::Cop::Base
         include SignatureHelp
+        include ConstantScope
         extend AutoCorrector
 
         MSG = "Unnecessary T.let. The instance variable type is inferred from the signature."
@@ -108,12 +109,6 @@ module RuboCop
         end
 
         private
-
-        def statically_scoped?(node)
-          ancestor = node.parent
-          ancestor = ancestor.parent if ancestor&.begin_type?
-          ancestor.nil? || ancestor.class_type? || ancestor.module_type? || ancestor.sclass_type?
-        end
 
         def constructor_call(node)
           node = node.receiver if node.send_type? && node.method?(:freeze)

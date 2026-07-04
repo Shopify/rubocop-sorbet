@@ -65,6 +65,7 @@ module RuboCop
       #   # good — local variables may need T.let so Sorbet allows reassignment
       #   count = T.let(0, Integer)
       class RedundantTLetForLiteral < Base
+        include ConstantScope
         extend AutoCorrector
 
         MSG = "Redundant `T.let` for %{type} literal. Sorbet can infer this type automatically."
@@ -96,12 +97,12 @@ module RuboCop
 
         # @!method t_let_with_literal_and_class?(node)
         def_node_matcher :t_let_with_literal_and_class?, <<~PATTERN
-          (casgn _ _ (send (const nil? :T) :let ${literal? (send (regexp ...) :freeze)} (const nil? $_)))
+          (casgn _ _ (send (const {nil? cbase} :T) :let ${literal? (send (regexp ...) :freeze)} (const nil? $_)))
         PATTERN
 
         # @!method t_let_with_array?(node)
         def_node_matcher :t_let_with_array?, <<~PATTERN
-          (casgn _ _ (send (const nil? :T) :let ${array (send array :freeze)} $_))
+          (casgn _ _ (send (const {nil? cbase} :T) :let ${array (send array :freeze)} $_))
         PATTERN
 
         def on_casgn(node)
@@ -162,10 +163,10 @@ module RuboCop
           end
         end
 
-        # `T::Array[...]`
+        # `T::Array[...]` (with or without a leading `::`)
         def t_array_type?(node)
           node.send_type? && node.method?(:[]) &&
-            node.receiver&.source == "T::Array"
+            node.receiver&.source&.delete_prefix("::") == "T::Array"
         end
 
         # The type Sorbet infers for an unfrozen array literal, or nil when the
@@ -178,17 +179,11 @@ module RuboCop
           "T::Array[#{classes.first}]"
         end
 
+        # Strips whitespace and any trailing comma before a closing delimiter,
+        # so a multi-line annotation (`T::Array[\n  String,\n]`) still compares
+        # equal to the rendered inferred type.
         def normalize(source)
-          source.gsub(/\s+/, "")
-        end
-
-        # A constant is statically scoped when it is assigned directly in a
-        # class, module, or top-level body, rather than nested inside a
-        # conditional, loop, block, or method.
-        def statically_scoped?(node)
-          ancestor = node.parent
-          ancestor = ancestor.parent if ancestor&.begin_type?
-          ancestor.nil? || ancestor.class_type? || ancestor.module_type? || ancestor.sclass_type?
+          source.gsub(/\s+/, "").gsub(/,([)\]}])/, '\1')
         end
       end
     end
