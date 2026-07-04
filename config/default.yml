@@ -14,6 +14,7 @@ Sorbet/RedundantTLet:
     instance variables assigned from signature parameters in `initialize`, and
     constants assigned constructor calls.
   Enabled: true
+  SafeAutoCorrect: false
   VersionAdded: <<next>>
 
 inherit_mode:
@@ -330,7 +331,7 @@ Sorbet/RedundantTLetForLiteral:
     is a simple literal whose type Sorbet can infer automatically.
   Enabled: pending
   Safe: true
-  SafeAutoCorrect: true
+  SafeAutoCorrect: false
   VersionAdded: <<next>>
 
 Sorbet/Refinement:

@@ -1164,7 +1164,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
 
 Prevents unnecessary `T.let` where Sorbet infers the type automatically.
 
@@ -1215,7 +1215,7 @@ LICENSES = T.let(Set.new(["mit"]).freeze, T::Set[String])
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
 
 Checks for redundant `T.let` declarations where the first argument
 is a literal whose type Sorbet can infer automatically, so wrapping
