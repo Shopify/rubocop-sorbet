@@ -235,6 +235,76 @@ module RuboCop
           RUBY
         end
 
+        # Autocorrect safety illustrations
+        #
+        # These cases document why the cop is `SafeAutoCorrect: false`. The
+        # correction is always type-sound at the definition (a frozen literal
+        # array infers as a tuple, which is a subtype of the annotated
+        # `T::Array`), but it changes the constant's inferred type from
+        # `T::Array` to a tuple, and that can break typechecking at a consumer
+        # the cop cannot see. The cop still registers and corrects these — the
+        # tests capture that, so the hazard is explicit rather than silent.
+
+        # After correction `CATEGORIES` infers as `[String, String]`. In a
+        # `typed: strong` consumer, `flatten` over the tuple yields
+        # `T.untyped`, which is an error there — so a green typecheck can turn
+        # red even though the cop's edit looks innocuous.
+        def test_autocorrect_narrows_frozen_array_to_tuple_unsafe_under_typed_strong
+          assert_offense(<<~RUBY)
+            # typed: strong
+            class Report
+              CATEGORIES = T.let(["a", "b"].freeze, T::Array[String])
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+
+              def all
+                [CATEGORIES].flatten
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            # typed: strong
+            class Report
+              CATEGORIES = ["a", "b"].freeze
+
+              def all
+                [CATEGORIES].flatten
+              end
+            end
+          RUBY
+        end
+
+        # After correction `BASIC` infers as `[Symbol, Symbol]`. A local seeded
+        # from it and reassigned in a loop (`acc += ...`) then fails with
+        # "Changing the type of a variable is not permitted in loops and
+        # blocks", because the tuple type cannot widen to `T::Array[Symbol]`.
+        def test_autocorrect_narrows_frozen_array_to_tuple_unsafe_for_loop_accumulator
+          assert_offense(<<~RUBY)
+            class Builder
+              BASIC = T.let([:a, :b].freeze, T::Array[Symbol])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+
+              def build
+                acc = BASIC
+                [1, 2].each { |n| acc += [n.to_s.to_sym] }
+                acc
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Builder
+              BASIC = [:a, :b].freeze
+
+              def build
+                acc = BASIC
+                [1, 2].each { |n| acc += [n.to_s.to_sym] }
+                acc
+              end
+            end
+          RUBY
+        end
+
         # Non-simple literals
 
         def test_no_offense_for_hash_literal
