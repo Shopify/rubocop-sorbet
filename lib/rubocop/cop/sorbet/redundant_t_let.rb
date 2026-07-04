@@ -86,6 +86,11 @@ module RuboCop
         end
 
         def on_casgn(node)
+          # In `typed: strict` files Sorbet requires `T.let` on constants that
+          # are not assigned at class/module/top-level scope (e.g. inside an
+          # `if` or block), so removing it there would break typechecking.
+          return unless statically_scoped?(node)
+
           t_let_casgn(node) do |tlet_node, value_node, type_node|
             next unless type_node.const_type?
 
@@ -103,6 +108,12 @@ module RuboCop
         end
 
         private
+
+        def statically_scoped?(node)
+          ancestor = node.parent
+          ancestor = ancestor.parent if ancestor&.begin_type?
+          ancestor.nil? || ancestor.class_type? || ancestor.module_type? || ancestor.sclass_type?
+        end
 
         def constructor_call(node)
           node = node.receiver if node.send_type? && node.method?(:freeze)

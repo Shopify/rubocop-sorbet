@@ -271,6 +271,16 @@ module RuboCop
 
         # Instance variables are only inferred when assigned directly from a
         # signature parameter, never from a constructor call.
+        # In typed: strict, Sorbet requires T.let on constants assigned inside
+        # a conditional or block, so those must not be flagged.
+        def test_no_offense_on_constant_constructor_inside_conditional
+          assert_no_offenses(<<~RUBY)
+            if enabled?
+              DEFAULT_PATH = T.let(Pathname.new("/usr/local").freeze, Pathname)
+            end
+          RUBY
+        end
+
         def test_no_offense_on_ivar_assigned_constructor
           assert_no_offenses(<<~RUBY)
             sig { params(path: String).void }

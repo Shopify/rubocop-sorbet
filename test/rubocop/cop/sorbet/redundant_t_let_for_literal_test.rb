@@ -405,6 +405,17 @@ module RuboCop
           RUBY
         end
 
+        # In typed: strict, Sorbet requires T.let on constants assigned inside
+        # a conditional or block, so those must not be flagged.
+        def test_no_offense_for_constant_inside_conditional
+          assert_no_offenses(<<~RUBY)
+            if enabled?
+              PATTERN = T.let(/foo/.freeze, Regexp)
+              NAMES = T.let(["a", "b"].freeze, T::Array[String])
+            end
+          RUBY
+        end
+
         def test_no_offense_when_receiver_is_not_t
           assert_no_offenses(<<~RUBY)
             value = SomeModule.let(42, Integer)

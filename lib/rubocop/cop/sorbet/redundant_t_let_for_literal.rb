@@ -105,6 +105,11 @@ module RuboCop
         PATTERN
 
         def on_casgn(node)
+          # In `typed: strict` files Sorbet requires `T.let` on constants that
+          # are not assigned at class/module/top-level scope (e.g. inside an
+          # `if` or block), so removing it there would break typechecking.
+          return unless statically_scoped?(node)
+
           t_let_with_literal_and_class?(node) do |value_node, class_name|
             literal_node = value_node.send_type? ? value_node.receiver : value_node
             next unless LITERAL_TYPE_TO_CLASS[literal_node.type] == class_name
@@ -175,6 +180,15 @@ module RuboCop
 
         def normalize(source)
           source.gsub(/\s+/, "")
+        end
+
+        # A constant is statically scoped when it is assigned directly in a
+        # class, module, or top-level body, rather than nested inside a
+        # conditional, loop, block, or method.
+        def statically_scoped?(node)
+          ancestor = node.parent
+          ancestor = ancestor.parent if ancestor&.begin_type?
+          ancestor.nil? || ancestor.class_type? || ancestor.module_type? || ancestor.sclass_type?
         end
       end
     end
