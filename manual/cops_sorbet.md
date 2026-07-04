@@ -1166,7 +1166,16 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes  | <<next>> | -
 
-Prevents unnecessary `T.let` in `initialize` methods. When a signature parameter is assigned to an instance variable, the type is inferred automatically.
+Prevents unnecessary `T.let` where Sorbet infers the type automatically.
+
+When a signature parameter is assigned to an instance variable in
+`initialize`, the type is inferred from the signature.
+
+When a constant is assigned a constructor call (`.new`), optionally
+followed by `.freeze` (Sorbet 0.6.13304+), the type is inferred from
+the class being instantiated. Generic classes (e.g. `Set`) are
+excluded: Sorbet infers their constructor calls as applied types like
+`T::Set[T.untyped]`, so an annotation is still required.
 
 ### Examples
 
@@ -1188,6 +1197,18 @@ sig { params(a: Integer) }
 def initialize(a)
   @a = T.let(a, T.any(Integer, String))
 end
+
+# bad
+DEFAULT_PATH = T.let(Pathname.new("/usr/local").freeze, Pathname)
+
+# good
+DEFAULT_PATH = Pathname.new("/usr/local").freeze
+
+# good — generic classes are not inferred, so T.let is required
+LICENSES = T.let(Set.new(["mit"]).freeze, T::Set[String])
+
+# good — instance variables are only inferred from signature parameters
+@path = T.let(Pathname.new("/usr/local"), Pathname)
 ```
 
 ## Sorbet/RedundantTLetForLiteral
@@ -1202,6 +1223,11 @@ second argument is the matching class name. Sorbet can infer the types
 of simple literals automatically, so wrapping them in `T.let` is
 redundant.
 
+Regexp literals are the only simple literals whose inference survives
+a `.freeze` call (Sorbet 0.6.13304+), so `T.let(/foo/.freeze, Regexp)`
+is also redundant. Other frozen literals (e.g. `"hello".freeze`) are
+not inferred and still require `T.let`.
+
 ### Examples
 
 ```ruby
@@ -1210,6 +1236,7 @@ MAX_RETRIES = T.let(3, Integer)
 GREETING = T.let("hello", String)
 RATE = T.let(1.5, Float)
 PATTERN = T.let(/foo/, Regexp)
+FROZEN_PATTERN = T.let(/foo/.freeze, Regexp)
 STATUS = T.let(:active, Symbol)
 
 # good
@@ -1217,9 +1244,14 @@ MAX_RETRIES = 3
 GREETING = "hello"
 RATE = 1.5
 PATTERN = /foo/
+FROZEN_PATTERN = /foo/.freeze
 STATUS = :active
 
-# good — collections still need T.let
+# good — non-regexp frozen literals are not inferred
+GREETING = T.let("hello".freeze, String)
+
+# good — collections still need T.let (array literals would infer
+# as fixed-size tuple types rather than the annotated T::Array)
 NAMES = T.let(["alice", "bob"], T::Array[String])
 OPTIONS = T.let({ verbose: true }, T::Hash[Symbol, T::Boolean])
 

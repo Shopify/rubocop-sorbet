@@ -7,6 +7,8 @@ module RuboCop
     module Sorbet
       class RedundantTLetTest < ::Minitest::Test
         MSG = "Sorbet/RedundantTLet: Unnecessary T.let. The instance variable type is inferred from the signature."
+        CONSTRUCTOR_MSG = "Sorbet/RedundantTLet: Unnecessary T.let. " \
+          "The constant type is inferred from the constructor."
 
         def setup
           @cop = RedundantTLet.new
@@ -179,6 +181,90 @@ module RuboCop
             sig { params(kwargs: String).void }
             def initialize(**kwargs)
               @kwargs = kwargs
+            end
+          RUBY
+        end
+
+        def test_offense_on_constant_assigned_constructor
+          assert_offense(<<~RUBY)
+            PATTERN = T.let(Regexp.new("foo"), Regexp)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PATTERN = Regexp.new("foo")
+          RUBY
+        end
+
+        def test_offense_on_constant_assigned_frozen_constructor
+          assert_offense(<<~RUBY)
+            DEFAULT_PATH = T.let(Pathname.new("/usr/local").freeze, Pathname)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            DEFAULT_PATH = Pathname.new("/usr/local").freeze
+          RUBY
+        end
+
+        def test_offense_on_constant_assigned_namespaced_constructor
+          assert_offense(<<~RUBY)
+            MUTEX = T.let(Thread::Mutex.new.freeze, Thread::Mutex)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            MUTEX = Thread::Mutex.new.freeze
+          RUBY
+        end
+
+        def test_offense_on_constant_assigned_cbase_constructor
+          assert_offense(<<~RUBY)
+            ROOT = T.let(::Pathname.new("/").freeze, Pathname)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            ROOT = ::Pathname.new("/").freeze
+          RUBY
+        end
+
+        def test_offense_on_multiline_constant_constructor
+          assert_offense(<<~RUBY)
+            GITHUB_ERROR = T.let(
+                           ^^^^^^ #{CONSTRUCTOR_MSG}
+              Regexp.new("some error"),
+              Regexp,
+            )
+          RUBY
+
+          assert_correction(<<~RUBY)
+            GITHUB_ERROR = Regexp.new("some error")
+          RUBY
+        end
+
+        # Sorbet infers generic constructors as applied types (e.g.
+        # `T::Set[T.untyped]`), does not infer through `.tap` or kernel
+        # casting methods like `Pathname()`, and only matches when the
+        # annotation is exactly the instantiated class.
+        def test_no_offense_on_constant_constructors_sorbet_cannot_infer
+          assert_no_offenses(<<~RUBY)
+            SET = T.let(Set.new.freeze, Set)
+            LICENSES = T.let(Set.new(["mit"]).freeze, T::Set[String])
+            MISMATCH = T.let(Regexp.new("foo"), Pathname)
+            NILABLE = T.let(Pathname.new("/x"), T.nilable(Pathname))
+            KERNEL_METHOD = T.let(Pathname("/x").freeze, Pathname)
+            TAPPED = T.let(Version.new("NULL").tap { |v| v }.freeze, Version)
+          RUBY
+        end
+
+        # Instance variables are only inferred when assigned directly from a
+        # signature parameter, never from a constructor call.
+        def test_no_offense_on_ivar_assigned_constructor
+          assert_no_offenses(<<~RUBY)
+            sig { params(path: String).void }
+            def initialize(path)
+              @path = T.let(Pathname.new(path), Pathname)
             end
           RUBY
         end

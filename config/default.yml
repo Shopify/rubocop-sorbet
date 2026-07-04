@@ -9,7 +9,10 @@ Sorbet/ForbidTSig:
   VersionAdded: '0.11.0'
 
 Sorbet/RedundantTLet:
-  Description: 'Prevents redundant use of `T.let` in initialize methods where types can be inferred from the signature.'
+  Description: >-
+    Prevents redundant use of `T.let` where Sorbet infers types automatically:
+    instance variables assigned from signature parameters in `initialize`, and
+    constants assigned constructor calls.
   Enabled: true
   VersionAdded: <<next>>
 

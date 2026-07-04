@@ -3,7 +3,16 @@
 module RuboCop
   module Cop
     module Sorbet
-      # Prevents unnecessary `T.let` in `initialize` methods. When a signature parameter is assigned to an instance variable, the type is inferred automatically.
+      # Prevents unnecessary `T.let` where Sorbet infers the type automatically.
+      #
+      # When a signature parameter is assigned to an instance variable in
+      # `initialize`, the type is inferred from the signature.
+      #
+      # When a constant is assigned a constructor call (`.new`), optionally
+      # followed by `.freeze` (Sorbet 0.6.13304+), the type is inferred from
+      # the class being instantiated. Generic classes (e.g. `Set`) are
+      # excluded: Sorbet infers their constructor calls as applied types like
+      # `T::Set[T.untyped]`, so an annotation is still required.
       #
       # @example
       #
@@ -24,14 +33,35 @@ module RuboCop
       #  def initialize(a)
       #    @a = T.let(a, T.any(Integer, String))
       #  end
+      #
+      #  # bad
+      #  DEFAULT_PATH = T.let(Pathname.new("/usr/local").freeze, Pathname)
+      #
+      #  # good
+      #  DEFAULT_PATH = Pathname.new("/usr/local").freeze
+      #
+      #  # good — generic classes are not inferred, so T.let is required
+      #  LICENSES = T.let(Set.new(["mit"]).freeze, T::Set[String])
+      #
+      #  # good — instance variables are only inferred from signature parameters
+      #  @path = T.let(Pathname.new("/usr/local"), Pathname)
       class RedundantTLet < RuboCop::Cop::Base
         include SignatureHelp
         extend AutoCorrector
 
         MSG = "Unnecessary T.let. The instance variable type is inferred from the signature."
+        MSG_CONSTRUCTOR = "Unnecessary T.let. The constant type is inferred from the constructor."
+
+        # Classes whose constructor calls Sorbet infers as applied generic
+        # types (e.g. `T::Set[T.untyped]`) rather than the bare class, so
+        # constants assigned them still need an explicit annotation.
+        GENERIC_CLASSES = ["Array", "Class", "Enumerator", "Hash", "Module", "Range", "Set"].freeze
 
         # @!method t_let(node)
         def_node_matcher :t_let, "(ivasgn _ $(send (const {nil? cbase} :T) :let (lvar $_) $_))"
+
+        # @!method t_let_casgn(node)
+        def_node_matcher :t_let_casgn, "(casgn _ _ $(send (const {nil? cbase} :T) :let $_ $_))"
 
         # @!method sig_params(node)
         def_node_matcher :sig_params, "`(send nil? :params (hash $...))"
@@ -55,7 +85,34 @@ module RuboCop
           end
         end
 
+        def on_casgn(node)
+          t_let_casgn(node) do |tlet_node, value_node, type_node|
+            next unless type_node.const_type?
+
+            constructor = constructor_call(value_node)
+            next unless constructor
+
+            class_path = constructor.receiver.source.delete_prefix("::")
+            next if GENERIC_CLASSES.include?(class_path)
+            next unless class_path == type_node.source.delete_prefix("::")
+
+            add_offense(tlet_node, message: MSG_CONSTRUCTOR) do |corrector|
+              corrector.replace(tlet_node, value_node.source)
+            end
+          end
+        end
+
         private
+
+        def constructor_call(node)
+          return unless node.send_type?
+
+          node = node.receiver if node.method?(:freeze)
+          return unless node&.send_type? && node.method?(:new)
+          return unless node.receiver&.const_type?
+
+          node
+        end
 
         def find_sig_node(method_node)
           # When the def is wrapped by a method modifier (`private def initialize`),

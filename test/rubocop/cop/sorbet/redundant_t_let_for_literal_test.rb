@@ -201,6 +201,31 @@ module RuboCop
           RUBY
         end
 
+        def test_no_offense_for_frozen_symbol
+          assert_no_offenses(<<~RUBY)
+            STATUS = T.let(:active.freeze, Symbol)
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_heredoc
+          assert_no_offenses(<<~RUBY)
+            MSG = T.let(<<~MESSAGE.freeze, String)
+              hello world
+            MESSAGE
+          RUBY
+        end
+
+        def test_registers_offense_for_frozen_regexp_literal
+          assert_offense(<<~RUBY)
+            PATTERN = T.let(/foo/.freeze, Regexp)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Regexp")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PATTERN = /foo/.freeze
+          RUBY
+        end
+
         def test_no_offense_for_boolean_true
           assert_no_offenses(<<~RUBY)
             FLAG = T.let(true, T::Boolean)
