@@ -70,8 +70,10 @@ module RuboCop
         def on_def(node)
           return unless node.method?(:initialize)
 
-          method_args = node.arguments&.to_h { |arg| [arg.name, arg.type] }
-          return unless method_args&.any?
+          # Destructured parameters (`def initialize((a, b))`) are mlhs nodes
+          # without a name; they cannot appear in a sig, so skip them.
+          method_args = node.arguments.filter_map { |arg| [arg.name, arg.type] if arg.respond_to?(:name) }.to_h
+          return if method_args.none?
 
           sig_node = find_sig_node(node)
           return unless sig_node

@@ -366,6 +366,14 @@ module RuboCop
           RUBY
         end
 
+        def test_no_offense_with_destructured_parameter
+          assert_no_offenses(<<~RUBY)
+            def initialize((a, b))
+              @a = T.let(a, Integer)
+            end
+          RUBY
+        end
+
         def test_no_offense_inside_conditional
           assert_no_offenses(<<~RUBY)
             sig { params(a: Integer).void }
