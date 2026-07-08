@@ -12,6 +12,7 @@ module RuboCop
 
         def setup
           @cop = RedundantTLet.new
+          stub_sorbet_static_version("0.6.13304")
         end
 
         def test_offense_on_redundant_types
@@ -461,6 +462,89 @@ module RuboCop
               @a = T.let(a, Integer)
             end
           RUBY
+        end
+
+        # A constant inside `class << self` or a bare `module` body is still
+        # statically scoped, so the constructor offense applies there too.
+        def test_offense_on_constant_constructor_in_singleton_class
+          assert_offense(<<~RUBY)
+            class Foo
+              class << self
+                DEFAULT = T.let(Pathname.new("/x").freeze, Pathname)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Foo
+              class << self
+                DEFAULT = Pathname.new("/x").freeze
+              end
+            end
+          RUBY
+        end
+
+        def test_offense_on_constant_constructor_in_module
+          assert_offense(<<~RUBY)
+            module Foo
+              DEFAULT = T.let(Pathname.new("/x").freeze, Pathname)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            module Foo
+              DEFAULT = Pathname.new("/x").freeze
+            end
+          RUBY
+        end
+
+        # The generic-class exclusion covers every entry in GENERIC_CLASSES,
+        # not just Set: their constructors infer as applied types.
+        def test_no_offense_on_other_generic_class_constructors
+          assert_no_offenses(<<~RUBY)
+            HASH = T.let(Hash.new(0).freeze, Hash)
+            ARRAY = T.let(Array.new(3).freeze, Array)
+            RANGE = T.let(Range.new(1, 2).freeze, Range)
+          RUBY
+        end
+
+        # `::T.let` (fully-qualified) is handled for the constructor path too.
+        def test_offense_on_constant_constructor_with_cbase_t_let
+          assert_offense(<<~RUBY)
+            ROOT = ::T.let(Pathname.new("/").freeze, Pathname)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            ROOT = Pathname.new("/").freeze
+          RUBY
+        end
+
+        # The constructor path relies on freeze-transparent inference added in
+        # Sorbet 0.6.13304, so it disables itself on older Sorbet (and when
+        # sorbet-static is absent from the lockfile). The signature-based ivar
+        # path is unaffected.
+        def test_no_offense_on_constructor_below_minimum_sorbet_version
+          stub_sorbet_static_version("0.6.13303")
+          assert_no_offenses(<<~RUBY)
+            DEFAULT_PATH = T.let(Pathname.new("/usr/local").freeze, Pathname)
+          RUBY
+        end
+
+        def test_no_offense_on_constructor_without_sorbet_static
+          stub_sorbet_static_version(nil)
+          assert_no_offenses(<<~RUBY)
+            DEFAULT_PATH = T.let(Pathname.new("/usr/local").freeze, Pathname)
+          RUBY
+        end
+
+        private
+
+        def stub_sorbet_static_version(version)
+          specs = version ? [Gem::Specification.new("sorbet-static", version)] : []
+          ::Bundler.stubs(:locked_gems).returns(Struct.new(:specs).new(specs))
         end
       end
     end

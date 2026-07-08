@@ -11,6 +11,7 @@ module RuboCop
 
         def setup
           @cop = RedundantTLetForLiteral.new
+          stub_sorbet_static_version("0.6.13304")
         end
 
         # String literals
@@ -163,6 +164,44 @@ module RuboCop
 
           assert_correction(<<~RUBY)
             WORDS = %w[a b c].freeze
+          RUBY
+        end
+
+        # Interpolated strings (`dstr`) infer as `String`, so an array of them
+        # infers the same as an array of plain string literals: a frozen one as
+        # a `[String, ...]` tuple, an unfrozen one as `T::Array[String]`.
+        def test_registers_offense_for_frozen_interpolated_string_array
+          assert_offense(<<~RUBY)
+            PATHS = T.let(["\#{root}/a", "\#{root}/b"].freeze, T::Array[String])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PATHS = ["\#{root}/a", "\#{root}/b"].freeze
+          RUBY
+        end
+
+        def test_registers_offense_for_unfrozen_interpolated_string_array
+          assert_offense(<<~RUBY)
+            PATHS = T.let(["\#{root}/a", "\#{root}/b"], T::Array[String])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PATHS = ["\#{root}/a", "\#{root}/b"]
+          RUBY
+        end
+
+        # A mix of plain and interpolated strings still infers a uniform
+        # `String` element type.
+        def test_registers_offense_for_unfrozen_mixed_plain_and_interpolated_string_array
+          assert_offense(<<~RUBY)
+            NAMES = T.let(["alice", "\#{prefix}bob"], T::Array[String])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            NAMES = ["alice", "\#{prefix}bob"]
           RUBY
         end
 
@@ -486,6 +525,74 @@ module RuboCop
           RUBY
         end
 
+        # A constant inside `class << self` or a bare `module` body is still
+        # statically scoped, so it is flagged there too.
+        def test_registers_offense_for_array_in_singleton_class
+          assert_offense(<<~RUBY)
+            class Foo
+              class << self
+                NAMES = T.let(["a", "b"].freeze, T::Array[String])
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Foo
+              class << self
+                NAMES = ["a", "b"].freeze
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_offense_for_array_in_module
+          assert_offense(<<~RUBY)
+            module Foo
+              NAMES = T.let(["a", "b"].freeze, T::Array[String])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            module Foo
+              NAMES = ["a", "b"].freeze
+            end
+          RUBY
+        end
+
+        # The frozen-literal and array paths rely on inference added up to
+        # Sorbet 0.6.13304, so they disable themselves on older Sorbet (and when
+        # sorbet-static is absent). Bare simple literals stay flagged regardless.
+        def test_no_offense_for_frozen_and_array_below_minimum_sorbet_version
+          stub_sorbet_static_version("0.6.13303")
+          assert_no_offenses(<<~RUBY)
+            PATTERN = T.let(/foo/.freeze, Regexp)
+            SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
+            NAMES = T.let(["alice", "bob"], T::Array[String])
+          RUBY
+        end
+
+        def test_still_flags_bare_literal_below_minimum_sorbet_version
+          stub_sorbet_static_version("0.6.13303")
+          assert_offense(<<~RUBY)
+            MAX = T.let(3, Integer)
+                  ^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Integer")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            MAX = 3
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_and_array_without_sorbet_static
+          stub_sorbet_static_version(nil)
+          assert_no_offenses(<<~RUBY)
+            PATTERN = T.let(/foo/.freeze, Regexp)
+            SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
+          RUBY
+        end
+
         def test_no_offense_when_receiver_is_not_t
           assert_no_offenses(<<~RUBY)
             value = SomeModule.let(42, Integer)
@@ -549,6 +656,11 @@ module RuboCop
         end
 
         private
+
+        def stub_sorbet_static_version(version)
+          specs = version ? [Gem::Specification.new("sorbet-static", version)] : []
+          ::Bundler.stubs(:locked_gems).returns(Struct.new(:specs).new(specs))
+        end
 
         def target_cop
           RedundantTLetForLiteral

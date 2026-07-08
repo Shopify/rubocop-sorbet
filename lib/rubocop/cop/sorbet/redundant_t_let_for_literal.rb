@@ -66,7 +66,16 @@ module RuboCop
       #   count = T.let(0, Integer)
       class RedundantTLetForLiteral < Base
         include ConstantScope
+        include TargetSorbetVersion
         extend AutoCorrector
+
+        # The frozen-literal and literal-array inference the newer cases rely on
+        # was added up to Sorbet 0.6.13304 (frozen regexp via freeze-transparent
+        # inference; literal arrays via constant tuple inference). Flagging them
+        # against an older Sorbet could remove a `T.let` it still requires, so
+        # those paths disable themselves below that version. Bare simple
+        # literals (`T.let(3, Integer)`) predate this and are not gated.
+        minimum_target_sorbet_static_version "0.6.13304"
 
         MSG = "Redundant `T.let` for %{type} literal. Sorbet can infer this type automatically."
 
@@ -83,12 +92,15 @@ module RuboCop
         # Element node types allowed inside an inferable array literal. These
         # are the literals whose class Sorbet reflects into the array's element
         # type (regexps and ranges, by contrast, degrade the array to
-        # `T.untyped` and so are excluded).
-        ARRAY_ELEMENT_TYPES = [:str, :sym, :int, :float, :true, :false, :nil].freeze
+        # `T.untyped` and so are excluded). Interpolated strings (`dstr`) are
+        # included: Sorbet infers them as `String`, so an array of them infers
+        # the same as an array of plain string literals.
+        ARRAY_ELEMENT_TYPES = [:dstr, :str, :sym, :int, :float, :true, :false, :nil].freeze
 
         # Element node types whose inferred class is unambiguous, used to derive
         # the element type of an unfrozen array literal.
         ELEMENT_TYPE_TO_CLASS = {
+          dstr: "String",
           float: "Float",
           int: "Integer",
           str: "String",
@@ -112,11 +124,21 @@ module RuboCop
           return unless statically_scoped?(node)
 
           t_let_with_literal_and_class?(node) do |value_node, class_name|
-            literal_node = value_node.send_type? ? value_node.receiver : value_node
+            # A frozen regexp (`/foo/.freeze`) is a `send`; its inference
+            # requires Sorbet 0.6.13304+. A bare literal is inferable on any
+            # version, so only the frozen case is gated.
+            frozen = value_node.send_type?
+            next if frozen && !enabled_for_sorbet_static_version?
+
+            literal_node = frozen ? value_node.receiver : value_node
             next unless LITERAL_TYPE_TO_CLASS[literal_node.type] == class_name
 
             register_offense(node, value_node, class_name)
           end
+
+          # Literal-array inference requires Sorbet 0.6.13304+ (see
+          # `minimum_target_sorbet_static_version` above).
+          return unless enabled_for_sorbet_static_version?
 
           t_let_with_array?(node) do |value_node, type_node|
             frozen = value_node.send_type?

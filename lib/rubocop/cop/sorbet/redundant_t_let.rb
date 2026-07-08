@@ -48,7 +48,16 @@ module RuboCop
       class RedundantTLet < RuboCop::Cop::Base
         include SignatureHelp
         include ConstantScope
+        include TargetSorbetVersion
         extend AutoCorrector
+
+        # The constructor-constant inference these cops rely on (`X = A.new`,
+        # `X = A.new.freeze`) was finalized by Sorbet's freeze-transparent
+        # inference in 0.6.13304. Flagging it against an older Sorbet could
+        # remove a `T.let` that Sorbet still requires, so the constant path
+        # (`on_casgn`) disables itself below that version. The signature-based
+        # instance-variable path (`on_def`) predates this and is not gated.
+        minimum_target_sorbet_static_version "0.6.13304"
 
         MSG = "Unnecessary T.let. The instance variable type is inferred from the signature."
         MSG_CONSTRUCTOR = "Unnecessary T.let. The constant type is inferred from the constructor."
@@ -89,6 +98,10 @@ module RuboCop
         end
 
         def on_casgn(node)
+          # The constructor inference this path relies on requires Sorbet
+          # 0.6.13304+ (see `minimum_target_sorbet_static_version` above).
+          return unless enabled_for_sorbet_static_version?
+
           # In `typed: strict` files Sorbet requires `T.let` on constants that
           # are not assigned at class/module/top-level scope (e.g. inside an
           # `if` or block), so removing it there would break typechecking.
