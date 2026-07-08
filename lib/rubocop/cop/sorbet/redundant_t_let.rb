@@ -49,6 +49,7 @@ module RuboCop
         include SignatureHelp
         include ConstantScope
         include TargetSorbetVersion
+        include TLetCorrection
         extend AutoCorrector
 
         # The constructor-constant inference these cops rely on (`X = A.new`,
@@ -118,7 +119,7 @@ module RuboCop
             next unless class_path == type_node.source.delete_prefix("::")
 
             add_offense(tlet_node, message: MSG_CONSTRUCTOR) do |corrector|
-              corrector.replace(tlet_node, value_node.source)
+              replace_t_let(corrector, tlet_node, value_node)
             end
           end
         end

@@ -67,6 +67,7 @@ module RuboCop
       class RedundantTLetForLiteral < Base
         include ConstantScope
         include TargetSorbetVersion
+        include TLetCorrection
         extend AutoCorrector
 
         # The frozen-literal and literal-array inference the newer cases rely on
@@ -164,7 +165,7 @@ module RuboCop
         def register_offense(node, value_node, type)
           t_let_node = node.children[2]
           add_offense(t_let_node, message: format(MSG, type: type)) do |corrector|
-            corrector.replace(t_let_node, value_node.source)
+            replace_t_let(corrector, t_let_node, value_node)
           end
         end
 

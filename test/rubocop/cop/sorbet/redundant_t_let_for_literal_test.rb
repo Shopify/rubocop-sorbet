@@ -379,6 +379,26 @@ module RuboCop
           RUBY
         end
 
+        def test_registers_offense_for_multiline_heredoc_string
+          assert_offense(<<~RUBY)
+            MSG = T.let(
+                  ^^^^^^ #{format(MSG, type: "String")}
+              <<~MESSAGE,
+                hello world
+              MESSAGE
+              String
+            )
+          RUBY
+
+          # The heredoc body keeps its original indentation; reindenting it is
+          # Layout/HeredocIndentation's job, not this cop's.
+          assert_correction(<<~RUBY)
+            MSG = <<~MESSAGE
+                hello world
+              MESSAGE
+          RUBY
+        end
+
         def test_no_offense_for_complex_literal
           assert_no_offenses(<<~RUBY)
             VALUE = T.let(1 + 1i, Complex)
