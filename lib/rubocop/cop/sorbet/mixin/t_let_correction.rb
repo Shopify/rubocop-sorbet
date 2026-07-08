@@ -23,15 +23,29 @@ module RuboCop
             return
           end
 
-          # The closing `)` may come before (single-line) or after (multi-line)
-          # the heredoc bodies, so extend to whichever ends last.
-          end_pos = heredocs.map { |node| node.loc.heredoc_end.end_pos }.push(t_let_node.source_range.end_pos).max
-          range = t_let_node.source_range.with(end_pos: end_pos)
+          # A heredoc body sits on the lines below its marker, so the closing
+          # `)` can fall either after the bodies (multi-line, with the type on
+          # its own line) or before them (single-line, `T.let(<<~SQL, String)`).
+          # Extend the replaced range to whichever ends last so no body is left
+          # dangling.
+          last_heredoc_end = heredocs.map { |node| node.loc.heredoc_end.end_pos }.max
+          paren_end = t_let_node.source_range.end_pos
+          range = t_let_node.source_range.with(end_pos: [last_heredoc_end, paren_end].max)
+
+          # When the `)` closes before the bodies, the extended range would also
+          # swallow anything trailing it on that line (e.g. a comment), so carry
+          # that text back onto the reconstructed marker line.
+          inline_tail = ""
+          if paren_end < last_heredoc_end
+            source = t_let_node.source_range.source_buffer.source
+            line_end = source.index("\n", paren_end) || source.length
+            inline_tail = source[paren_end...line_end]
+          end
 
           bodies = heredocs
             .sort_by { |node| node.loc.heredoc_body.begin_pos }
             .map { |node| node.loc.heredoc_body.source + node.loc.heredoc_end.source }
-          corrector.replace(range, "#{value_node.source}\n#{bodies.join("\n")}")
+          corrector.replace(range, "#{value_node.source}#{inline_tail}\n#{bodies.join("\n")}")
         end
       end
     end

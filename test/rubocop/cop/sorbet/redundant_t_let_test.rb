@@ -275,6 +275,24 @@ module RuboCop
           RUBY
         end
 
+        # The closing `)` sits before the heredoc body, so extending the
+        # replaced range past the terminator must not swallow the trailing
+        # comment on the marker line.
+        def test_offense_on_constant_constructor_with_heredoc_and_trailing_comment
+          assert_offense(<<~RUBY)
+            PATH = T.let(Pathname.new(<<~DIR), Pathname) # keep me
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+              /usr/local
+            DIR
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PATH = Pathname.new(<<~DIR) # keep me
+              /usr/local
+            DIR
+          RUBY
+        end
+
         # Sorbet infers generic constructors as applied types (e.g.
         # `T::Set[T.untyped]`), does not infer through `.tap` or kernel
         # casting methods like `Pathname()`, and only matches when the

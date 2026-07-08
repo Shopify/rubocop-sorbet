@@ -379,6 +379,24 @@ module RuboCop
           RUBY
         end
 
+        # The closing `)` sits before the heredoc body, so extending the
+        # replaced range past the terminator must not swallow the trailing
+        # comment on the marker line.
+        def test_registers_offense_for_heredoc_string_with_trailing_comment
+          assert_offense(<<~RUBY)
+            MSG = T.let(<<~MESSAGE, String) # keep me
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "String")}
+              hello world
+            MESSAGE
+          RUBY
+
+          assert_correction(<<~RUBY)
+            MSG = <<~MESSAGE # keep me
+              hello world
+            MESSAGE
+          RUBY
+        end
+
         def test_registers_offense_for_multiline_heredoc_string
           assert_offense(<<~RUBY)
             MSG = T.let(
