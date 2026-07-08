@@ -4,15 +4,10 @@ module RuboCop
   module Cop
     module Sorbet
       # Shared autocorrection helper for cops that unwrap a redundant
-      # `T.let(value, Type)` down to `value`.
-      #
-      # A naive `corrector.replace(t_let_node, value_node.source)` drops heredoc
-      # bodies: `value_node.source` stops at the heredoc marker line (`<<~SQL`),
-      # and when the `T.let` spans multiple lines its `, Type)` and closing paren
-      # sit *after* the heredoc body — so replacing the whole `T.let(...)` range
-      # with just the marker deletes the body and terminator, producing an
-      # unterminated heredoc. This reattaches every heredoc body nested in
-      # `value_node` and extends the replaced range past their terminators.
+      # `T.let(value, Type)` down to `value`, preserving heredoc bodies that a
+      # naive `corrector.replace(t_let_node, value_node.source)` would drop
+      # (`value_node.source` stops at the marker line, so the body and its
+      # terminator sit outside it).
       module TLetCorrection
         private
 
@@ -23,29 +18,30 @@ module RuboCop
             return
           end
 
-          # A heredoc body sits on the lines below its marker, so the closing
-          # `)` can fall either after the bodies (multi-line, with the type on
-          # its own line) or before them (single-line, `T.let(<<~SQL, String)`).
-          # Extend the replaced range to whichever ends last so no body is left
-          # dangling.
+          # The `T.let(...)` closing paren can fall after the heredoc bodies
+          # (multi-line, type on its own line) or before them (single-line,
+          # `T.let(<<~SQL, String)`). Extend the replaced range to whichever
+          # ends last so no body is left dangling.
           last_heredoc_end = heredocs.map { |node| node.loc.heredoc_end.end_pos }.max
           paren_end = t_let_node.source_range.end_pos
           range = t_let_node.source_range.with(end_pos: [last_heredoc_end, paren_end].max)
 
-          # When the `)` closes before the bodies, the extended range would also
-          # swallow anything trailing it on that line (e.g. a comment), so carry
-          # that text back onto the reconstructed marker line.
-          inline_tail = ""
-          if paren_end < last_heredoc_end
-            source = t_let_node.source_range.source_buffer.source
-            line_end = source.index("\n", paren_end) || source.length
-            inline_tail = source[paren_end...line_end]
-          end
-
+          # A comment can trail the value on the marker line (before the body);
+          # the extended range would delete it, so recover it and re-emit it on
+          # the reconstructed marker line. Only a comment can appear there once
+          # the value's source ends — the `, Type)` tokens carry no `#`.
           bodies = heredocs
             .sort_by { |node| node.loc.heredoc_body.begin_pos }
             .map { |node| node.loc.heredoc_body.source + node.loc.heredoc_end.source }
-          corrector.replace(range, "#{value_node.source}#{inline_tail}\n#{bodies.join("\n")}")
+          corrector.replace(range, "#{value_node.source}#{marker_line_comment(value_node)}\n#{bodies.join("\n")}")
+        end
+
+        def marker_line_comment(value_node)
+          buffer = value_node.source_range.source_buffer.source
+          value_end = value_node.source_range.end_pos
+          line_end = buffer.index("\n", value_end) || buffer.length
+          comment = buffer[value_end...line_end][/#.*/]
+          comment ? " #{comment}" : ""
         end
       end
     end

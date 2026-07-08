@@ -99,13 +99,7 @@ module RuboCop
         end
 
         def on_casgn(node)
-          # The constructor inference this path relies on requires Sorbet
-          # 0.6.13304+ (see `minimum_target_sorbet_static_version` above).
           return unless enabled_for_sorbet_static_version?
-
-          # In `typed: strict` files Sorbet requires `T.let` on constants that
-          # are not assigned at class/module/top-level scope (e.g. inside an
-          # `if` or block), so removing it there would break typechecking.
           return unless statically_scoped?(node)
 
           t_let_casgn(node) do |tlet_node, value_node, type_node|
@@ -128,8 +122,9 @@ module RuboCop
 
         def constructor_call(node)
           node = node.receiver if node.send_type? && node.method?(:freeze)
-          # `Foo.new { ... }` is a block node wrapping the `.new` send.
-          node = node.send_node if node&.block_type?
+          # `Foo.new { ... }` wraps the `.new` send in a block node; this
+          # includes numbered-parameter (`{ _1 }`) and `it` block forms.
+          node = node.send_node if node&.any_block_type?
           return unless node&.send_type? && node.method?(:new)
           return unless node.receiver&.const_type?
 
@@ -149,6 +144,7 @@ module RuboCop
           source
             .gsub(/\s+/, " ")              # collapse all whitespace to single spaces
             .gsub(/,\s*([)\]\}])/, "\\1")  # remove trailing commas before closing delimiters
+            .gsub(/,\s*/, ", ")            # normalize to a single space after commas
             .gsub(/\(\s*/, "(")            # remove space after (
             .gsub(/\s*\)/, ")")            # remove space before )
             .gsub(/\[\s*/, "[")            # remove space after [

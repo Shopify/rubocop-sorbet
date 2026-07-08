@@ -81,8 +81,10 @@ module RuboCop
         MSG = "Redundant `T.let` for %{type} literal. Sorbet can infer this type automatically."
 
         # Simple literal node types Sorbet infers, mapped to the class name.
+        # Interpolated strings/symbols (`dstr`/`dsym`) infer as `String`/`Symbol`.
         LITERAL_TYPE_TO_CLASS = {
           dstr: :String,
+          dsym: :Symbol,
           float: :Float,
           int: :Integer,
           regexp: :Regexp,
@@ -90,18 +92,18 @@ module RuboCop
           sym: :Symbol,
         }.freeze
 
-        # Element node types allowed inside an inferable array literal. These
-        # are the literals whose class Sorbet reflects into the array's element
-        # type (regexps and ranges, by contrast, degrade the array to
-        # `T.untyped` and so are excluded). Interpolated strings (`dstr`) are
-        # included: Sorbet infers them as `String`, so an array of them infers
-        # the same as an array of plain string literals.
-        ARRAY_ELEMENT_TYPES = [:dstr, :str, :sym, :int, :float, :true, :false, :nil].freeze
+        # Element node types allowed inside an inferable array literal: the
+        # literals whose class Sorbet reflects into the array's element type.
+        # Regexps and ranges, by contrast, degrade the array to `T.untyped`, so
+        # they are excluded. Interpolated strings/symbols (`dstr`/`dsym`) infer
+        # as `String`/`Symbol`, the same as their plain literal forms.
+        ARRAY_ELEMENT_TYPES = [:dstr, :dsym, :str, :sym, :int, :float, :true, :false, :nil].freeze
 
         # Element node types whose inferred class is unambiguous, used to derive
         # the element type of an unfrozen array literal.
         ELEMENT_TYPE_TO_CLASS = {
           dstr: "String",
+          dsym: "Symbol",
           float: "Float",
           int: "Integer",
           str: "String",
@@ -119,15 +121,11 @@ module RuboCop
         PATTERN
 
         def on_casgn(node)
-          # In `typed: strict` files Sorbet requires `T.let` on constants that
-          # are not assigned at class/module/top-level scope (e.g. inside an
-          # `if` or block), so removing it there would break typechecking.
           return unless statically_scoped?(node)
 
           t_let_with_literal_and_class?(node) do |value_node, class_name|
-            # A frozen regexp (`/foo/.freeze`) is a `send`; its inference
-            # requires Sorbet 0.6.13304+. A bare literal is inferable on any
-            # version, so only the frozen case is gated.
+            # A frozen literal (`/foo/.freeze`) is a `send` whose inference is
+            # version-gated; a bare literal is inferable on any Sorbet.
             frozen = value_node.send_type?
             next if frozen && !enabled_for_sorbet_static_version?
 
@@ -137,8 +135,6 @@ module RuboCop
             register_offense(node, value_node, class_name)
           end
 
-          # Literal-array inference requires Sorbet 0.6.13304+ (see
-          # `minimum_target_sorbet_static_version` above).
           return unless enabled_for_sorbet_static_version?
 
           t_let_with_array?(node) do |value_node, type_node|
@@ -147,13 +143,13 @@ module RuboCop
             next unless inferable_array?(array_node)
 
             if frozen
-              # A frozen literal array infers as a tuple, a subtype of the
-              # annotated T::Array, so the annotation is redundant.
+              # A frozen array infers as a tuple, a subtype of the annotated
+              # T::Array, so the annotation is redundant.
               next unless t_array_type?(type_node)
             else
-              # An unfrozen literal array infers as T::Array[<element type>];
-              # only redundant when the annotation is exactly that type.
-              next unless inferred_array_type(array_node) == normalize(type_node.source)
+              # An unfrozen array infers as T::Array[<element type>]; only
+              # redundant when the annotation is exactly that type.
+              next unless inferred_array_type(array_node) == normalize(type_node.source).delete_prefix("::")
             end
 
             register_offense(node, value_node, :Array)

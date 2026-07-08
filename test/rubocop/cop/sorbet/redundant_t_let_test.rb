@@ -241,6 +241,19 @@ module RuboCop
           RUBY
         end
 
+        # A numbered-parameter block is a `numblock` node, which Sorbet infers
+        # as the instantiated class just like a `{ |x| }` block.
+        def test_offense_on_constant_assigned_numbered_block_constructor
+          assert_offense(<<~RUBY)
+            CONFIG = T.let(Config.new { _1.enabled = true }.freeze, Config)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            CONFIG = Config.new { _1.enabled = true }.freeze
+          RUBY
+        end
+
         def test_offense_on_multiline_constant_constructor
           assert_offense(<<~RUBY)
             GITHUB_ERROR = T.let(
@@ -293,6 +306,26 @@ module RuboCop
           RUBY
         end
 
+        # When the `T.let` spans multiple lines a comment can trail the value on
+        # the heredoc marker line; extending the replaced range past the body
+        # must not swallow it.
+        def test_offense_on_constant_constructor_with_heredoc_and_marker_comment
+          assert_offense(<<~RUBY)
+            PATH = T.let(Pathname.new(<<~DIR), # keep me
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{CONSTRUCTOR_MSG}
+              /usr/local
+            DIR
+              Pathname,
+            )
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PATH = Pathname.new(<<~DIR) # keep me
+              /usr/local
+            DIR
+          RUBY
+        end
+
         # Sorbet infers generic constructors as applied types (e.g.
         # `T::Set[T.untyped]`), does not infer through `.tap` or kernel
         # casting methods like `Pathname()`, and only matches when the
@@ -308,8 +341,6 @@ module RuboCop
           RUBY
         end
 
-        # Instance variables are only inferred when assigned directly from a
-        # signature parameter, never from a constructor call.
         # In typed: strict, Sorbet requires T.let on constants assigned inside
         # a conditional or block, so those must not be flagged.
         def test_no_offense_on_constant_constructor_inside_conditional
@@ -320,6 +351,8 @@ module RuboCop
           RUBY
         end
 
+        # Instance variables are only inferred when assigned directly from a
+        # signature parameter, never from a constructor call.
         def test_no_offense_on_ivar_assigned_constructor
           assert_no_offenses(<<~RUBY)
             sig { params(path: String).void }
@@ -491,6 +524,25 @@ module RuboCop
           RUBY
         end
 
+        # Type comparison normalizes spacing after commas, so a `T.let` type
+        # matches the sig type even when their comma spacing differs.
+        def test_offense_when_type_comma_spacing_differs_from_sig
+          assert_offense(<<~RUBY)
+            sig { params(a: T.any(Integer, String)).void }
+            def initialize(a)
+              @a = T.let(a, T.any(Integer,String))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            sig { params(a: T.any(Integer, String)).void }
+            def initialize(a)
+              @a = a
+            end
+          RUBY
+        end
+
         # Sorbet's initializer rewriter does not process ivar assignments when
         # the def is wrapped by a method modifier, so T.let remains required.
         def test_no_offense_with_method_modifier_wrapping_def
@@ -545,6 +597,9 @@ module RuboCop
             HASH = T.let(Hash.new(0).freeze, Hash)
             ARRAY = T.let(Array.new(3).freeze, Array)
             RANGE = T.let(Range.new(1, 2).freeze, Range)
+            ENUM = T.let(Enumerator.new { |y| y << 1 }.freeze, Enumerator)
+            KLASS = T.let(Class.new.freeze, Class)
+            MOD = T.let(Module.new.freeze, Module)
           RUBY
         end
 

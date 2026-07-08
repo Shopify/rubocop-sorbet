@@ -88,6 +88,18 @@ module RuboCop
           RUBY
         end
 
+        # An interpolated symbol (`dsym`) infers as `Symbol`, like a plain one.
+        def test_registers_offense_for_interpolated_symbol
+          assert_offense(<<~RUBY)
+            STATUS = T.let(:"active_\#{n}", Symbol)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Symbol")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            STATUS = :"active_\#{n}"
+          RUBY
+        end
+
         # Regexp literals
 
         def test_registers_offense_for_regexp_literal
@@ -202,6 +214,19 @@ module RuboCop
 
           assert_correction(<<~RUBY)
             NAMES = ["alice", "\#{prefix}bob"]
+          RUBY
+        end
+
+        # Interpolated symbols (`dsym`) infer as `Symbol`, so an array of them
+        # (e.g. a `%I[...]` word array) infers like an array of plain symbols.
+        def test_registers_offense_for_interpolated_symbol_array
+          assert_offense(<<~RUBY)
+            KEYS = T.let(%I[key_\#{a} key_\#{b}], T::Array[Symbol])
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            KEYS = %I[key_\#{a} key_\#{b}]
           RUBY
         end
 
@@ -414,6 +439,27 @@ module RuboCop
             MSG = <<~MESSAGE
                 hello world
               MESSAGE
+          RUBY
+        end
+
+        # A frozen array can hold more than one heredoc; every body must be
+        # reattached, in source order, after the marker line.
+        def test_registers_offense_for_frozen_array_of_multiple_heredocs
+          assert_offense(<<~RUBY)
+            MESSAGES = T.let([<<~A, <<~B].freeze, T::Array[String])
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+              first
+            A
+              second
+            B
+          RUBY
+
+          assert_correction(<<~RUBY)
+            MESSAGES = [<<~A, <<~B].freeze
+              first
+            A
+              second
+            B
           RUBY
         end
 
@@ -672,6 +718,19 @@ module RuboCop
 
           assert_correction(<<~RUBY)
             SHELLS = [:bash, :zsh].freeze
+          RUBY
+        end
+
+        # An unfrozen array with a fully-qualified `::T::Array` annotation is
+        # flagged too, matching the frozen cbase case above.
+        def test_registers_offense_for_unfrozen_array_with_cbase_annotation
+          assert_offense(<<~RUBY)
+            NAMES = T.let(["alice", "bob"], ::T::Array[String])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            NAMES = ["alice", "bob"]
           RUBY
         end
 
