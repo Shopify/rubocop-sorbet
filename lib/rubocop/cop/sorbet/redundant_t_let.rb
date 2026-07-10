@@ -80,9 +80,7 @@ module RuboCop
         def on_def(node)
           return unless node.method?(:initialize)
 
-          # Destructured parameters (`def initialize((a, b))`) are mlhs nodes
-          # without a name; they cannot appear in a sig, so skip them.
-          method_args = node.arguments.filter_map { |arg| [arg.name, arg.type] if arg.respond_to?(:name) }.to_h
+          method_args = named_argument_types(node)
           return if method_args.none?
 
           sig_node = find_sig_node(node)
@@ -120,15 +118,34 @@ module RuboCop
 
         private
 
+        # Maps named parameters to their AST types, omitting destructured
+        # parameters because they have no name and cannot appear in a signature.
+        # For example, `def initialize(a, (left, right), *rest)` returns
+        # `{ a: :arg, rest: :restarg }`, omitting `(left, right)`.
+        def named_argument_types(method_node)
+          method_node.arguments.filter_map do |argument|
+            [argument.name, argument.type] if argument.respond_to?(:name)
+          end.to_h
+        end
+
+        # Returns the `.new` call for a constant constructor, looking through
+        # an optional block and trailing `.freeze`. For example,
+        # `Foo.new { _1.enabled = true }.freeze` returns the `Foo.new` call,
+        # while `foo.new` and `Foo.build` return `nil`.
         def constructor_call(node)
           node = node.receiver if node.send_type? && node.method?(:freeze)
-          # `Foo.new { ... }` wraps the `.new` send in a block node; this
-          # includes numbered-parameter (`{ _1 }`) and `it` block forms.
-          node = node.send_node if node&.any_block_type?
+          node = unwrap_block(node)
           return unless node&.send_type? && node.method?(:new)
           return unless node.receiver&.const_type?
 
           node
+        end
+
+        # Returns the method send wrapped by a block, or the original node when
+        # no block is present. For example, `Foo.new { _1.enabled = true }`
+        # returns the `Foo.new` send node.
+        def unwrap_block(node)
+          node&.any_block_type? ? node.send_node : node
         end
 
         def find_sig_node(method_node)

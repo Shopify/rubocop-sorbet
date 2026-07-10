@@ -124,12 +124,8 @@ module RuboCop
           return unless statically_scoped?(node)
 
           t_let_with_literal_and_class?(node) do |value_node, class_name|
-            # A frozen literal (`/foo/.freeze`) is a `send` whose inference is
-            # version-gated; a bare literal is inferable on any Sorbet.
-            frozen = value_node.send_type?
-            next if frozen && !enabled_for_sorbet_static_version?
-
-            literal_node = frozen ? value_node.receiver : value_node
+            literal_node = inferable_literal_node(value_node)
+            next unless literal_node
             next unless LITERAL_TYPE_TO_CLASS[literal_node.type] == class_name
 
             register_offense(node, value_node, class_name)
@@ -141,22 +137,24 @@ module RuboCop
             frozen = value_node.send_type?
             array_node = frozen ? value_node.receiver : value_node
             next unless inferable_array?(array_node)
-
-            if frozen
-              # A frozen array infers as a tuple, a subtype of the annotated
-              # T::Array, so the annotation is redundant.
-              next unless t_array_type?(type_node)
-            else
-              # An unfrozen array infers as T::Array[<element type>]; only
-              # redundant when the annotation is exactly that type.
-              next unless inferred_array_type(array_node) == normalize(type_node.source).delete_prefix("::")
-            end
+            next unless redundant_array_annotation?(array_node, type_node, frozen: frozen)
 
             register_offense(node, value_node, :Array)
           end
         end
 
         private
+
+        # Returns the underlying literal when its inference is supported by the
+        # target Sorbet version. Bare literals are always supported; for example,
+        # `3` returns its integer node. Frozen literals are version-gated, so
+        # `/foo/.freeze` returns its regexp node only for supported targets.
+        def inferable_literal_node(value_node)
+          return value_node unless value_node.send_type?
+          return unless enabled_for_sorbet_static_version?
+
+          value_node.receiver
+        end
 
         def register_offense(node, value_node, type)
           t_let_node = node.children[2]
@@ -180,6 +178,16 @@ module RuboCop
               ARRAY_ELEMENT_TYPES.include?(child.type)
             end
           end
+        end
+
+        # Returns whether Sorbet's inferred array type makes the annotation
+        # redundant. A frozen `[:a].freeze` infers as a tuple compatible with
+        # any `T::Array[...]`; an unfrozen `[:a]` must infer exactly the
+        # annotated type, such as `T::Array[Symbol]`.
+        def redundant_array_annotation?(array_node, type_node, frozen:)
+          return t_array_type?(type_node) if frozen
+
+          inferred_array_type(array_node) == normalize(type_node.source).delete_prefix("::")
         end
 
         # `T::Array[...]` (with or without a leading `::`)
