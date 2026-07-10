@@ -177,6 +177,63 @@ module RuboCop
           RUBY
         end
 
+        def test_does_not_register_offense_when_using_type_member
+          @cop = target_cop.new(cop_config({
+            "EnforcedStyle" => "strict",
+          }))
+
+          assert_no_offenses(<<~RUBY)
+            Elem = type_member
+          RUBY
+
+          assert_no_offenses(<<~RUBY)
+            Elem = type_member(:out)
+          RUBY
+
+          assert_no_offenses(<<~RUBY)
+            Elem = type_member { { fixed: T::Hash[String, T.untyped] } }
+          RUBY
+        end
+
+        def test_does_not_register_offense_when_using_type_template
+          @cop = target_cop.new(cop_config({
+            "EnforcedStyle" => "strict",
+          }))
+
+          assert_no_offenses(<<~RUBY)
+            Cache = type_template
+          RUBY
+
+          assert_no_offenses(<<~RUBY)
+            Cache = type_template { { fixed: T::Hash[String, T.untyped] } }
+          RUBY
+        end
+
+        def test_does_not_register_offense_when_using_t_type_alias
+          @cop = target_cop.new(cop_config({
+            "EnforcedStyle" => "strict",
+          }))
+
+          assert_no_offenses(<<~RUBY)
+            StringOrSymbol = T.type_alias { T.any(String, Symbol) }
+          RUBY
+        end
+
+        def test_registers_offense_when_using_other_method_call_in_strict_mode
+          @cop = target_cop.new(cop_config({
+            "EnforcedStyle" => "strict",
+          }))
+
+          assert_offense(<<~RUBY)
+            CONST = some_method
+                    ^^^^^^^^^^^ Freeze mutable objects assigned to constants.
+          RUBY
+
+          assert_correction(<<~RUBY)
+            CONST = (some_method).freeze
+          RUBY
+        end
+
         def test_does_not_register_offense_when_using_fixed_size_methods
           assert_no_offenses(<<~RUBY)
             CONST = 'foo'.count
