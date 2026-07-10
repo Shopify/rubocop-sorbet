@@ -15,7 +15,7 @@ Sorbet/RedundantTLet:
     constants assigned constructor calls.
   Enabled: true
   SafeAutoCorrect: false
-  VersionAdded: <<next>>
+  VersionAdded: '0.13.0'
 
 inherit_mode:
   merge:
@@ -108,6 +108,7 @@ Sorbet/EnforceSignatures:
   Style: sig
   AutocorrectStyle: sig
   VersionAdded: 0.3.4
+  VersionChanged: '0.13.0'
 
 Sorbet/EnforceSingleSigil:
   Description: 'Ensures that there is only one Sorbet sigil in a file.'
@@ -333,7 +334,7 @@ Sorbet/RedundantTLetForLiteral:
   Enabled: pending
   Safe: true
   SafeAutoCorrect: false
-  VersionAdded: <<next>>
+  VersionAdded: '0.13.0'
 
 Sorbet/Refinement:
   Description: >-

@@ -310,7 +310,7 @@ other comments or magic comments are left in the same place.
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes  | 0.3.4 | -
+Disabled | Yes | Yes  | 0.3.4 | 0.13.0
 
 Checks that every method definition and attribute accessor has a Sorbet signature.
 
@@ -1166,7 +1166,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | 0.13.0 | -
 
 Prevents unnecessary `T.let` where Sorbet infers the type automatically.
 
@@ -1217,7 +1217,7 @@ LICENSES = T.let(Set.new(["mit"]).freeze, T::Set[String])
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | 0.13.0 | -
 
 Checks for redundant `T.let` declarations where the first argument
 is a literal whose type Sorbet can infer automatically, so wrapping
