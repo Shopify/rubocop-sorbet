@@ -97,14 +97,6 @@ Sorbet cops support the following versions:
 - Sorbet >= 0.5
 - Ruby >= 3.1
 
-The `Sorbet/RedundantTLet` and `Sorbet/RedundantTLetForLiteral` cops flag some
-constructs (constructor calls, frozen literals, and literal arrays) whose
-redundancy relies on Sorbet type inference added up to Sorbet 0.6.13304. Those
-newer cases would remove a `T.let` that an older Sorbet still requires, so they
-detect the `sorbet-static` version in your `Gemfile.lock` and disable themselves
-below 0.6.13304; their older cases (instance variables, bare simple literals)
-remain active. See each cop's documentation for details.
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
