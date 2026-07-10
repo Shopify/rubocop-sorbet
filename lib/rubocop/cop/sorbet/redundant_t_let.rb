@@ -3,7 +3,16 @@
 module RuboCop
   module Cop
     module Sorbet
-      # Prevents unnecessary `T.let` in `initialize` methods. When a signature parameter is assigned to an instance variable, the type is inferred automatically.
+      # Prevents unnecessary `T.let` where Sorbet infers the type automatically.
+      #
+      # When a signature parameter is assigned to an instance variable in
+      # `initialize`, the type is inferred from the signature.
+      #
+      # When a constant is assigned a constructor call (`.new`), optionally
+      # followed by `.freeze` (Sorbet 0.6.13304+), the type is inferred from
+      # the class being instantiated. Generic classes (e.g. `Set`) are
+      # excluded: Sorbet infers their constructor calls as applied types like
+      # `T::Set[T.untyped]`, so an annotation is still required.
       #
       # @example
       #
@@ -24,14 +33,46 @@ module RuboCop
       #  def initialize(a)
       #    @a = T.let(a, T.any(Integer, String))
       #  end
+      #
+      #  # bad
+      #  DEFAULT_PATH = T.let(Pathname.new("/usr/local").freeze, Pathname)
+      #
+      #  # good
+      #  DEFAULT_PATH = Pathname.new("/usr/local").freeze
+      #
+      #  # good — generic classes are not inferred, so T.let is required
+      #  LICENSES = T.let(Set.new(["mit"]).freeze, T::Set[String])
+      #
+      #  # good — instance variables are only inferred from signature parameters
+      #  @path = T.let(Pathname.new("/usr/local"), Pathname)
       class RedundantTLet < RuboCop::Cop::Base
         include SignatureHelp
+        include ConstantScope
+        include TargetSorbetVersion
+        include TLetCorrection
         extend AutoCorrector
 
+        # The constructor-constant inference these cops rely on (`X = A.new`,
+        # `X = A.new.freeze`) was finalized by Sorbet's freeze-transparent
+        # inference in 0.6.13304. Flagging it against an older Sorbet could
+        # remove a `T.let` that Sorbet still requires, so the constant path
+        # (`on_casgn`) disables itself below that version. The signature-based
+        # instance-variable path (`on_def`) predates this and is not gated.
+        minimum_target_sorbet_static_version "0.6.13304"
+
         MSG = "Unnecessary T.let. The instance variable type is inferred from the signature."
+        MSG_CONSTRUCTOR = "Unnecessary T.let. The constant type is inferred from the constructor."
+
+        # Classes whose constructor calls Sorbet infers as applied generic
+        # types (e.g. `T::Set[T.untyped]`) rather than the bare class, so
+        # constants assigned them still need an explicit annotation.
+        GENERIC_CLASSES = ["Array", "Class", "Enumerator", "Hash", "Module", "Range", "Set"].freeze
 
         # @!method t_let(node)
         def_node_matcher :t_let, "(ivasgn _ $(send (const {nil? cbase} :T) :let (lvar $_) $_))"
+
+        # @!method t_let_casgn(node)
+        def_node_matcher :t_let_casgn, "(casgn _ _ $(send (const {nil? cbase} :T) :let $_ $_))"
 
         # @!method sig_params(node)
         def_node_matcher :sig_params, "`(send nil? :params (hash $...))"
@@ -39,8 +80,8 @@ module RuboCop
         def on_def(node)
           return unless node.method?(:initialize)
 
-          method_args = node.arguments&.to_h { |arg| [arg.name, arg.type] }
-          return unless method_args&.any?
+          method_args = named_argument_types(node)
+          return if method_args.none?
 
           sig_node = find_sig_node(node)
           return unless sig_node
@@ -55,7 +96,57 @@ module RuboCop
           end
         end
 
+        def on_casgn(node)
+          return unless enabled_for_sorbet_static_version?
+          return unless statically_scoped?(node)
+
+          t_let_casgn(node) do |tlet_node, value_node, type_node|
+            next unless type_node.const_type?
+
+            constructor = constructor_call(value_node)
+            next unless constructor
+
+            class_path = constructor.receiver.source.delete_prefix("::")
+            next if GENERIC_CLASSES.include?(class_path)
+            next unless class_path == type_node.source.delete_prefix("::")
+
+            add_offense(tlet_node, message: MSG_CONSTRUCTOR) do |corrector|
+              replace_t_let(corrector, tlet_node, value_node)
+            end
+          end
+        end
+
         private
+
+        # Maps named parameters to their AST types, omitting destructured
+        # parameters because they have no name and cannot appear in a signature.
+        # For example, `def initialize(a, (left, right), *rest)` returns
+        # `{ a: :arg, rest: :restarg }`, omitting `(left, right)`.
+        def named_argument_types(method_node)
+          method_node.arguments.filter_map do |argument|
+            [argument.name, argument.type] if argument.respond_to?(:name)
+          end.to_h
+        end
+
+        # Returns the `.new` call for a constant constructor, looking through
+        # an optional block and trailing `.freeze`. For example,
+        # `Foo.new { _1.enabled = true }.freeze` returns the `Foo.new` call,
+        # while `foo.new` and `Foo.build` return `nil`.
+        def constructor_call(node)
+          node = node.receiver if node.send_type? && node.method?(:freeze)
+          node = unwrap_block(node)
+          return unless node&.send_type? && node.method?(:new)
+          return unless node.receiver&.const_type?
+
+          node
+        end
+
+        # Returns the method send wrapped by a block, or the original node when
+        # no block is present. For example, `Foo.new { _1.enabled = true }`
+        # returns the `Foo.new` send node.
+        def unwrap_block(node)
+          node&.any_block_type? ? node.send_node : node
+        end
 
         def find_sig_node(method_node)
           # When the def is wrapped by a method modifier (`private def initialize`),
@@ -70,6 +161,7 @@ module RuboCop
           source
             .gsub(/\s+/, " ")              # collapse all whitespace to single spaces
             .gsub(/,\s*([)\]\}])/, "\\1")  # remove trailing commas before closing delimiters
+            .gsub(/,\s*/, ", ")            # normalize to a single space after commas
             .gsub(/\(\s*/, "(")            # remove space after (
             .gsub(/\s*\)/, ")")            # remove space before )
             .gsub(/\[\s*/, "[")            # remove space after [

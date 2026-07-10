@@ -1164,9 +1164,18 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
 
-Prevents unnecessary `T.let` in `initialize` methods. When a signature parameter is assigned to an instance variable, the type is inferred automatically.
+Prevents unnecessary `T.let` where Sorbet infers the type automatically.
+
+When a signature parameter is assigned to an instance variable in
+`initialize`, the type is inferred from the signature.
+
+When a constant is assigned a constructor call (`.new`), optionally
+followed by `.freeze` (Sorbet 0.6.13304+), the type is inferred from
+the class being instantiated. Generic classes (e.g. `Set`) are
+excluded: Sorbet infers their constructor calls as applied types like
+`T::Set[T.untyped]`, so an annotation is still required.
 
 ### Examples
 
@@ -1188,19 +1197,46 @@ sig { params(a: Integer) }
 def initialize(a)
   @a = T.let(a, T.any(Integer, String))
 end
+
+# bad
+DEFAULT_PATH = T.let(Pathname.new("/usr/local").freeze, Pathname)
+
+# good
+DEFAULT_PATH = Pathname.new("/usr/local").freeze
+
+# good — generic classes are not inferred, so T.let is required
+LICENSES = T.let(Set.new(["mit"]).freeze, T::Set[String])
+
+# good — instance variables are only inferred from signature parameters
+@path = T.let(Pathname.new("/usr/local"), Pathname)
 ```
 
 ## Sorbet/RedundantTLetForLiteral
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
 
 Checks for redundant `T.let` declarations where the first argument
-is a simple literal (not a collection like Array or Hash) and the
-second argument is the matching class name. Sorbet can infer the types
-of simple literals automatically, so wrapping them in `T.let` is
-redundant.
+is a literal whose type Sorbet can infer automatically, so wrapping
+it in `T.let` is redundant.
+
+Simple literals (strings, symbols, integers, floats, regexps) infer as
+their own class. Regexp literals are the only simple literals whose
+inference survives a `.freeze` call (Sorbet 0.6.13304+), so
+`T.let(/foo/.freeze, Regexp)` is also redundant; other frozen simple
+literals (e.g. `"hello".freeze`) are not inferred and still need `T.let`.
+
+Array literals of simple literals are also inferred:
+
+* A frozen array (`[...].freeze`) infers as a fixed-size tuple, which is
+  a subtype of the annotated `T::Array`, so the annotation is redundant.
+* An unfrozen array infers as `T::Array[<element type>]`. It is only
+  flagged when that inferred type matches the annotation exactly, to
+  avoid silently widening (e.g. `["a", nil]` infers a nilable element).
+
+Hashes are excluded: Sorbet infers hash literals as `T.untyped`, so the
+annotation is required.
 
 ### Examples
 
@@ -1210,18 +1246,29 @@ MAX_RETRIES = T.let(3, Integer)
 GREETING = T.let("hello", String)
 RATE = T.let(1.5, Float)
 PATTERN = T.let(/foo/, Regexp)
+FROZEN_PATTERN = T.let(/foo/.freeze, Regexp)
 STATUS = T.let(:active, Symbol)
+SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
+NAMES = T.let(["alice", "bob"], T::Array[String])
 
 # good
 MAX_RETRIES = 3
 GREETING = "hello"
 RATE = 1.5
 PATTERN = /foo/
+FROZEN_PATTERN = /foo/.freeze
 STATUS = :active
+SHELLS = [:bash, :zsh].freeze
+NAMES = ["alice", "bob"]
 
-# good — collections still need T.let
-NAMES = T.let(["alice", "bob"], T::Array[String])
+# good — non-regexp frozen simple literals are not inferred
+GREETING = T.let("hello".freeze, String)
+
+# good — hash literals are inferred as T.untyped
 OPTIONS = T.let({ verbose: true }, T::Hash[Symbol, T::Boolean])
+
+# good — unfrozen array whose annotation is wider than the inferred type
+NAMES = T.let(["alice", "bob"], T::Array[T.nilable(String)])
 
 # good — type is not the literal's own class
 value = T.let("hello", T.nilable(String))
