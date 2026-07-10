@@ -31,6 +31,11 @@ module RuboCop
         VALID_STYLES = ["sig", "rbs", "both"].freeze
         VALID_AUTOCORRECT_STYLES = ["sig", "rbs"].freeze
 
+        # Represents a method parameter with its name and AST node kind.
+        # @kind is the RuboCop AST node type (:arg, :optarg, :restarg, :kwarg,
+        # :kwoptarg, :kwrestarg, :forward_arg, :blockarg).
+        Param = Struct.new(:name, :kind)
+
         # @!method accessor?(node)
         def_node_matcher(:accessor?, <<-PATTERN)
           (send nil? {:attr_reader :attr_writer :attr_accessor} ...)
@@ -140,7 +145,7 @@ module RuboCop
             if arg.blockarg_type? && suggest.respond_to?(:has_block=)
               suggest.has_block = true
             else
-              suggest.params << arg.children.first
+              suggest.params << Param.new(arg.children.first, arg.type)
             end
           end
         end
@@ -156,7 +161,7 @@ module RuboCop
         def add_accessor_parameter_if_needed(suggest, symbol, method)
           return unless symbol && writer_or_accessor?(method)
 
-          suggest.params << symbol.value
+          suggest.params << Param.new(symbol.value, :arg)
         end
 
         def set_void_return_for_writer(suggest, method)
@@ -278,7 +283,7 @@ module RuboCop
           def generate_params
             return "" if @params.empty?
 
-            param_list = @params.map { |param| "#{param}: #{@param_placeholder}" }.join(", ")
+            param_list = @params.map { |param| "#{param.name}: #{@param_placeholder}" }.join(", ")
             "params(#{param_list})."
           end
 
@@ -310,7 +315,7 @@ module RuboCop
           private
 
           def generate_signature
-            param_types = @params.map { "untyped" }.join(", ")
+            param_types = @params.map { |param| rbs_param(param) }.join(", ")
             return_type = @returns || "untyped"
 
             signature = if @params.empty?
@@ -323,6 +328,23 @@ module RuboCop
             signature += " -> #{return_type}"
 
             signature
+          end
+
+          def rbs_param(param)
+            case param.kind
+            when :kwarg
+              "#{param.name}: untyped"
+            when :kwoptarg
+              "?#{param.name}: untyped"
+            when :optarg
+              "?untyped"
+            when :restarg
+              "*untyped"
+            when :kwrestarg
+              "**untyped"
+            else
+              "untyped"
+            end
           end
         end
       end
