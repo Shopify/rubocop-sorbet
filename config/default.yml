@@ -106,6 +106,7 @@ Sorbet/EnforceSignatures:
   Description: 'Ensures all methods have a valid signature.'
   Enabled: false
   Style: sig
+  AutocorrectStyle: sig
   VersionAdded: 0.3.4
 
 Sorbet/EnforceSingleSigil:
