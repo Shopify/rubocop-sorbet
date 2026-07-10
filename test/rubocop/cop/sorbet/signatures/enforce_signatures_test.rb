@@ -428,26 +428,26 @@ module RuboCop
 
           def test_autocorrects_with_custom_values
             @cop = target_cop.new(cop_config({
-              "Style" => "both",
+              "Style" => "sig",
               "ParameterTypePlaceholder" => "PARAM",
               "ReturnTypePlaceholder" => "RET",
             }))
 
             assert_offense(<<~RUBY)
               def foo; end
-              ^^^^^^^^^^^^ #{MSG}
+              ^^^^^^^^^^^^ #{MSG_SIG}
               def bar(a, b = 2, c: Foo.new); end
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG_SIG}
               def baz(&blk); end
-              ^^^^^^^^^^^^^^^^^^ #{MSG}
+              ^^^^^^^^^^^^^^^^^^ #{MSG_SIG}
 
               class Foo
                 def foo
-                ^^^^^^^ #{MSG}
+                ^^^^^^^ #{MSG_SIG}
                 end
 
                 def bar(a, b, c)
-                ^^^^^^^^^^^^^^^^ #{MSG}
+                ^^^^^^^^^^^^^^^^ #{MSG_SIG}
                 end
               end
             RUBY
@@ -473,18 +473,18 @@ module RuboCop
 
           def test_autocorrects_accessors_with_custom_values
             @cop = target_cop.new(cop_config({
-              "Style" => "both",
+              "Style" => "sig",
               "ParameterTypePlaceholder" => "PARAM",
               "ReturnTypePlaceholder" => "RET",
             }))
             assert_offense(<<~RUBY)
               class Foo
                 attr_reader :foo
-                ^^^^^^^^^^^^^^^^ #{MSG}
+                ^^^^^^^^^^^^^^^^ #{MSG_SIG}
                 attr_writer :bar
-                ^^^^^^^^^^^^^^^^ #{MSG}
+                ^^^^^^^^^^^^^^^^ #{MSG_SIG}
                 attr_accessor :baz
-                ^^^^^^^^^^^^^^^^^^ #{MSG}
+                ^^^^^^^^^^^^^^^^^^ #{MSG_SIG}
               end
             RUBY
             assert_correction(<<~RUBY)
@@ -740,6 +740,75 @@ module RuboCop
               def foo; end
               ^^^^^^^^^^^^ #{MSG_SIG}
             RUBY
+          end
+
+          def test_both_style_autocorrects_to_sig_when_autocorrect_style_is_sig
+            @cop = target_cop.new(cop_config({
+              "Style" => "both",
+              "AutocorrectStyle" => "sig",
+            }))
+
+            assert_offense(<<~RUBY)
+              def foo; end
+              ^^^^^^^^^^^^ #{MSG}
+              def bar(a, b, c); end
+              ^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { returns(T.untyped) }
+              def foo; end
+              sig { params(a: T.untyped, b: T.untyped, c: T.untyped).returns(T.untyped) }
+              def bar(a, b, c); end
+            RUBY
+          end
+
+          def test_both_style_autocorrects_to_rbs_when_autocorrect_style_is_rbs
+            @cop = target_cop.new(cop_config({
+              "Style" => "both",
+              "AutocorrectStyle" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              def foo; end
+              ^^^^^^^^^^^^ #{MSG}
+              def bar(a, b, c); end
+              ^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: () -> untyped
+              def foo; end
+              #: (untyped, untyped, untyped) -> untyped
+              def bar(a, b, c); end
+            RUBY
+          end
+
+          def test_both_style_autocorrects_to_sig_by_default
+            @cop = target_cop.new(cop_config({
+              "Style" => "both",
+            }))
+
+            assert_offense(<<~RUBY)
+              def foo; end
+              ^^^^^^^^^^^^ #{MSG}
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { returns(T.untyped) }
+              def foo; end
+            RUBY
+          end
+
+          def test_invalid_autocorrect_style_raises_error
+            @cop = target_cop.new(cop_config({
+              "Style" => "both",
+              "AutocorrectStyle" => "invalid",
+            }))
+
+            assert_raises(ArgumentError, /Invalid AutocorrectStyle option/) do
+              @cop.send(:autocorrect_style)
+            end
           end
 
           private

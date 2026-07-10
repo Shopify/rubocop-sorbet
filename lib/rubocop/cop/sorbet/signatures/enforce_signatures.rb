@@ -23,11 +23,13 @@ module RuboCop
       # * `ParameterTypePlaceholder`: placeholders used for parameter types (default: 'T.untyped')
       # * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
       # * `Style`: signature style to enforce - 'sig' for sig blocks, 'rbs' for RBS comments, 'both' to allow either (default: 'sig')
+      # * `AutocorrectStyle`: signature style to use when autocorrecting - 'sig' for sig blocks, 'rbs' for RBS comments (default: 'sig'). Only used when `Style` is 'both'.
       class EnforceSignatures < ::RuboCop::Cop::Base
         extend AutoCorrector
         include SignatureHelp
 
         VALID_STYLES = ["sig", "rbs", "both"].freeze
+        VALID_AUTOCORRECT_STYLES = ["sig", "rbs"].freeze
 
         # @!method accessor?(node)
         def_node_matcher(:accessor?, <<-PATTERN)
@@ -87,7 +89,7 @@ module RuboCop
             # Both styles allowed - require at least one
             unless sig_node || rbs_node
               add_offense(node, message: "Each method is required to have a signature.") do |corrector|
-                autocorrect_with_signature_type(corrector, node, "sig")
+                autocorrect_with_signature_type(corrector, node, autocorrect_style)
               end
             end
           else # "sig" (default)
@@ -190,6 +192,15 @@ module RuboCop
           return "both" if allow_rbs?
 
           "sig"
+        end
+
+        def autocorrect_style
+          config_value = cop_config["AutocorrectStyle"] || "sig"
+          unless VALID_AUTOCORRECT_STYLES.include?(config_value)
+            raise ArgumentError, "Invalid AutocorrectStyle option: '#{config_value}'. Valid options are: #{VALID_AUTOCORRECT_STYLES.join(", ")}"
+          end
+
+          config_value
         end
 
         class SignatureChecker
