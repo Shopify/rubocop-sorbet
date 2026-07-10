@@ -11,31 +11,47 @@ module RuboCop
       module TLetCorrection
         private
 
+        # Replaces `T.let(value, Type)` with `value`.
         def replace_t_let(corrector, t_let_node, value_node)
           heredocs = value_node.each_node(:any_str).select(&:heredoc?)
-          if heredocs.empty?
-            corrector.replace(t_let_node, value_node.source)
-            return
-          end
+          return corrector.replace(t_let_node, value_node.source) if heredocs.empty?
 
-          # The `T.let(...)` closing paren can fall after the heredoc bodies
-          # (multi-line, type on its own line) or before them (single-line,
-          # `T.let(<<~SQL, String)`). Extend the replaced range to whichever
-          # ends last so no body is left dangling.
-          last_heredoc_end = heredocs.map { |node| node.loc.heredoc_end.end_pos }.max
-          paren_end = t_let_node.source_range.end_pos
-          range = t_let_node.source_range.with(end_pos: [last_heredoc_end, paren_end].max)
-
-          # A comment can trail the value on the marker line (before the body);
-          # the extended range would delete it, so recover it and re-emit it on
-          # the reconstructed marker line. Only a comment can appear there once
-          # the value's source ends — the `, Type)` tokens carry no `#`.
-          bodies = heredocs
-            .sort_by { |node| node.loc.heredoc_body.begin_pos }
-            .map { |node| node.loc.heredoc_body.source + node.loc.heredoc_end.source }
-          corrector.replace(range, "#{value_node.source}#{marker_line_comment(value_node)}\n#{bodies.join("\n")}")
+          replace_t_let_preserving_heredocs(corrector, t_let_node, value_node, heredocs)
         end
 
+        # Replaces `T.let(value, Type)` with `value` without losing any heredocs
+        # contained in the value. For example, `T.let(<<~SQL, String)` becomes
+        # `<<~SQL` followed by its original body and terminator.
+        def replace_t_let_preserving_heredocs(corrector, t_let_node, value_node, heredocs)
+          corrector.replace(
+            range_including_heredocs(t_let_node, heredocs),
+            source_including_heredocs(value_node, heredocs),
+          )
+        end
+
+        # Expands the correction range to include every heredoc body and terminator.
+        # For example, the range for `T.let(<<~SQL, String)` extends through the
+        # final `SQL` terminator rather than ending at the closing parenthesis.
+        def range_including_heredocs(t_let_node, heredocs)
+          end_positions = [t_let_node.source_range.end_pos]
+          end_positions.concat(heredocs.map { |node| node.loc.heredoc_end.end_pos })
+          t_let_node.source_range.with(end_pos: end_positions.max)
+        end
+
+        # Reconstructs the value with its marker-line comment and heredoc bodies.
+        # For example, `T.let(<<~SQL, String) # query` becomes a source string
+        # containing `<<~SQL # query`, followed by its body and `SQL` terminator.
+        def source_including_heredocs(value_node, heredocs)
+          marker_line = "#{value_node.source}#{marker_line_comment(value_node)}"
+          heredoc_bodies = heredocs
+            .sort_by { |node| node.loc.heredoc_body.begin_pos }
+            .map { |node| "#{node.loc.heredoc_body.source}#{node.loc.heredoc_end.source}" }
+
+          ([marker_line] + heredoc_bodies).join("\n")
+        end
+
+        # Returns the comment trailing the heredoc marker, including its leading space.
+        # For example, the marker line `<<~SQL, String) # query` returns ` # query`.
         def marker_line_comment(value_node)
           buffer = value_node.source_range.source_buffer.source
           value_end = value_node.source_range.end_pos
