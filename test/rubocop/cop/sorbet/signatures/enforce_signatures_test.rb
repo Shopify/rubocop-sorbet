@@ -312,7 +312,7 @@ module RuboCop
           def test_does_not_check_signature_for_accessors
             assert_no_offenses(<<~RUBY)
               class Foo
-                sig { void }
+                sig { returns(String) }
                 attr_reader :foo, :bar
               end
             RUBY
@@ -321,7 +321,7 @@ module RuboCop
           def test_does_not_check_rbs_signature_for_accessors
             assert_no_offenses(<<~RUBY)
               class Foo
-                #: void
+                #: String
                 attr_reader :foo, :bar
               end
             RUBY
