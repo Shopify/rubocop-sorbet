@@ -154,6 +154,11 @@ module RuboCop
           method = node.children[1]
           symbol = node.children[2]
 
+          if suggest.is_a?(RBSSuggestion)
+            suggest.attribute = true
+            return
+          end
+
           add_accessor_parameter_if_needed(suggest, symbol, method)
           set_void_return_for_writer(suggest, method)
         end
@@ -299,12 +304,13 @@ module RuboCop
         end
 
         class RBSSuggestion
-          attr_accessor :params, :returns, :has_block
+          attr_accessor :params, :returns, :has_block, :attribute
 
           def initialize(indent)
             @params = []
             @returns = nil
             @has_block = false
+            @attribute = false
             @indent = indent
           end
 
@@ -315,6 +321,8 @@ module RuboCop
           private
 
           def generate_signature
+            return @returns || "untyped" if @attribute
+
             param_types = @params.map { |param| rbs_param(param) }.join(", ")
             return_type = @returns || "untyped"
 

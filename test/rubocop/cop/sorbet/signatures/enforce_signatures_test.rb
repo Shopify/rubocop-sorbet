@@ -232,11 +232,11 @@ module RuboCop
           def test_makes_no_offense_if_accessor_has_rbs_signature
             assert_no_offenses(<<~RUBY)
               class Foo
-                #: -> String
+                #: String
                 attr_reader :foo
-                #: (String) -> void
+                #: String
                 attr_writer :bar
-                #: (String) -> String
+                #: String
                 attr_accessor :baz
               end
             RUBY
@@ -321,7 +321,7 @@ module RuboCop
           def test_does_not_check_rbs_signature_for_accessors
             assert_no_offenses(<<~RUBY)
               class Foo
-                #: -> void
+                #: void
                 attr_reader :foo, :bar
               end
             RUBY
@@ -569,7 +569,7 @@ module RuboCop
                 ^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
                 attr_reader :foo
 
-                #: -> String
+                #: String
                 attr_reader :bar
 
                 attr_writer :baz
@@ -644,11 +644,11 @@ module RuboCop
 
             assert_correction(<<~RUBY)
               class Foo
-                #: () -> untyped
+                #: untyped
                 attr_reader :foo
-                #: (untyped) -> void
+                #: untyped
                 attr_writer :bar
-                #: (untyped) -> untyped
+                #: untyped
                 attr_accessor :baz
               end
             RUBY
