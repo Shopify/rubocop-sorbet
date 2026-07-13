@@ -654,6 +654,206 @@ module RuboCop
             RUBY
           end
 
+          def test_autocorrects_initialize_with_void_return
+            assert_offense(<<~RUBY)
+              def initialize(a, b)
+              ^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { params(a: T.untyped, b: T.untyped).void }
+              def initialize(a, b)
+              end
+            RUBY
+          end
+
+          def test_autocorrects_singleton_initialize_keeps_placeholder
+            assert_offense(<<~RUBY)
+              def self.initialize(a, b)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { params(a: T.untyped, b: T.untyped).returns(T.untyped) }
+              def self.initialize(a, b)
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_initialize_with_void_return
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              def initialize(a, b)
+              ^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: (untyped, untyped) -> void
+              def initialize(a, b)
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_singleton_initialize_keeps_placeholder
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              def self.initialize(a, b)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: (untyped, untyped) -> untyped
+              def self.initialize(a, b)
+              end
+            RUBY
+          end
+
+          def test_autocorrects_sclass_initialize_keeps_placeholder
+            assert_offense(<<~RUBY)
+              class Foo
+                class << self
+                  def initialize(a, b)
+                  ^^^^^^^^^^^^^^^^^^^^ #{MSG}
+                  end
+                end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                class << self
+                  sig { params(a: T.untyped, b: T.untyped).returns(T.untyped) }
+                  def initialize(a, b)
+                  end
+                end
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_sclass_initialize_keeps_placeholder
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                class << self
+                  def initialize(a, b)
+                  ^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+                  end
+                end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                class << self
+                  #: (untyped, untyped) -> untyped
+                  def initialize(a, b)
+                  end
+                end
+              end
+            RUBY
+          end
+
+          def test_autocorrects_nested_class_initialize_inside_sclass_gets_void
+            assert_offense(<<~RUBY)
+              class Foo
+                class << self
+                  class Bar
+                    def initialize(a, b)
+                    ^^^^^^^^^^^^^^^^^^^^ #{MSG}
+                    end
+                  end
+                end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                class << self
+                  class Bar
+                    sig { params(a: T.untyped, b: T.untyped).void }
+                    def initialize(a, b)
+                    end
+                  end
+                end
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_nested_class_initialize_inside_sclass_gets_void
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                class << self
+                  class Bar
+                    def initialize(a, b)
+                    ^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+                    end
+                  end
+                end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                class << self
+                  class Bar
+                    #: (untyped, untyped) -> void
+                    def initialize(a, b)
+                    end
+                  end
+                end
+              end
+            RUBY
+          end
+
+          def test_autocorrects_private_def_initialize
+            assert_offense(<<~RUBY)
+              private def initialize(a, b)
+                      ^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { params(a: T.untyped, b: T.untyped).void }
+              private def initialize(a, b)
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_private_def_initialize
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              private def initialize(a, b)
+                      ^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: (untyped, untyped) -> void
+              private def initialize(a, b)
+              end
+            RUBY
+          end
+
           def test_enforce_rbs_autocorrects_with_proper_indentation
             @cop = target_cop.new(cop_config({
               "Style" => "rbs",

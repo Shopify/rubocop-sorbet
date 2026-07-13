@@ -118,9 +118,16 @@ module RuboCop
         end
 
         def autocorrect_with_signature_type(corrector, node, type)
-          suggest = create_signature_suggestion(node, type)
+          target = leftmost_send_ancestor(node)
+          suggest = create_signature_suggestion(target, type)
           populate_signature_suggestion(suggest, node)
-          corrector.insert_before(node, suggest.to_autocorrect)
+          corrector.insert_before(target, suggest.to_autocorrect)
+        end
+
+        def leftmost_send_ancestor(node)
+          ancestor = node
+          ancestor = ancestor.parent while ancestor.parent&.send_type?
+          ancestor
         end
 
         def create_signature_suggestion(node, type)
@@ -141,6 +148,8 @@ module RuboCop
         end
 
         def populate_method_definition_suggestion(suggest, node)
+          suggest.returns = "void" if instance_initialize?(node)
+
           node.arguments.each do |arg|
             if arg.blockarg_type? && suggest.respond_to?(:has_block=)
               suggest.has_block = true
@@ -148,6 +157,21 @@ module RuboCop
               suggest.params << Param.new(arg.children.first, arg.type)
             end
           end
+        end
+
+        def instance_initialize?(node)
+          node.def_type? && node.method?(:initialize) && !in_sclass_context?(node)
+        end
+
+        def in_sclass_context?(node)
+          parent = node.parent
+          while parent
+            return true if parent.sclass_type?
+            return false if parent.type?(:class, :module)
+
+            parent = parent.parent
+          end
+          false
         end
 
         def populate_accessor_suggestion(suggest, node)
