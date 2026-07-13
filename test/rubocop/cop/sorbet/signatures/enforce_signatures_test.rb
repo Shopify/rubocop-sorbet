@@ -613,15 +613,15 @@ module RuboCop
             assert_correction(<<~RUBY)
               #: () -> untyped
               def foo; end
-              #: (untyped, untyped, untyped) -> untyped
+              #: (untyped, ?untyped, ?c: untyped) -> untyped
               def bar(a, b = 2, c: Foo.new); end
               #: () { (?) -> untyped } -> untyped
               def baz(&blk); end
               #: (untyped, untyped) { (?) -> untyped } -> untyped
               def self.foo(a, b, &c); end
-              #: (untyped, untyped, untyped) -> untyped
+              #: (untyped, *untyped, **untyped) -> untyped
               def self.bar(a, *b, **c); end
-              #: (untyped) -> untyped
+              #: (a: untyped) -> untyped
               def self.baz(a:); end
             RUBY
           end
