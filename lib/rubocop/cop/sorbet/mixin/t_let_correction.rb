@@ -13,10 +13,22 @@ module RuboCop
 
         # Replaces `T.let(value, Type)` with `value`.
         def replace_t_let(corrector, t_let_node, value_node)
-          heredocs = value_node.each_node(:any_str).select(&:heredoc?)
+          heredocs = tail_heredocs(value_node)
           return corrector.replace(t_let_node, value_node.source) if heredocs.empty?
 
           replace_t_let_preserving_heredocs(corrector, t_let_node, value_node, heredocs)
+        end
+
+        # The heredocs whose body sits past the value node's own source range,
+        # so `value_node.source` stops at the marker and drops them. Only these
+        # need reattaching. An "interior" heredoc, followed by more of the value
+        # (e.g. `Foo.new(a: <<~X, b: 2)`), already lives inside `value_node.source`;
+        # re-appending it would duplicate the body and corrupt the file.
+        def tail_heredocs(value_node)
+          value_end = value_node.source_range.end_pos
+          value_node.each_node(:any_str).select do |node|
+            node.heredoc? && node.loc.heredoc_end.end_pos > value_end
+          end
         end
 
         # Replaces `T.let(value, Type)` with `value` without losing any heredocs
