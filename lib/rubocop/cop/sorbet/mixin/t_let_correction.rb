@@ -19,11 +19,9 @@ module RuboCop
           replace_t_let_preserving_heredocs(corrector, t_let_node, value_node, heredocs)
         end
 
-        # The heredocs whose body sits past the value node's own source range,
-        # so `value_node.source` stops at the marker and drops them. Only these
-        # need reattaching. An "interior" heredoc, followed by more of the value
-        # (e.g. `Foo.new(a: <<~X, b: 2)`), already lives inside `value_node.source`;
-        # re-appending it would duplicate the body and corrupt the file.
+        # Heredocs at the tail of the value, whose body sits past `value_node`'s
+        # source range. An interior heredoc, e.g. `Foo.new(a: <<~X, b: 2)`, already
+        # lives inside `value_node.source` and must not be reattached.
         def tail_heredocs(value_node)
           value_end = value_node.source_range.end_pos
           value_node.each_node(:any_str).select do |node|

@@ -327,9 +327,7 @@ module RuboCop
         end
 
         # An "interior" heredoc is followed by more of the value's own source
-        # (here `b: 2` and the closing `)`), so `value_node.source` already
-        # contains the heredoc body inline. The correction must not re-append
-        # it, which would duplicate the body and corrupt the file.
+        # (`b: 2` here), so it must not be re-appended like a tail heredoc.
         def test_offense_on_constant_constructor_with_interior_heredoc
           assert_offense(<<~RUBY)
             PATH = T.let(
