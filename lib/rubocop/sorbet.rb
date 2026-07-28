@@ -3,6 +3,7 @@
 require "rubocop"
 require "rubocop/sorbet/version"
 require "rubocop/sorbet/plugin"
+require "rubocop/sorbet/rbs_parser"
 require "pathname"
 require "yaml"
 
