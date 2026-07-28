@@ -13,10 +13,10 @@ module RuboCop
 
         # Replaces `T.let(value, Type)` with `value`.
         def replace_t_let(corrector, t_let_node, value_node)
-          heredocs = tail_heredocs(value_node)
-          return corrector.replace(t_let_node, value_node.source) if heredocs.empty?
+          heredocs_to_reattach = tail_heredocs(value_node)
+          return corrector.replace(t_let_node, value_node.source) if heredocs_to_reattach.empty?
 
-          replace_t_let_preserving_heredocs(corrector, t_let_node, value_node, heredocs)
+          replace_t_let_preserving_heredocs(corrector, t_let_node, value_node, heredocs_to_reattach)
         end
 
         # Heredocs at the tail of the value, whose body sits past `value_node`'s
