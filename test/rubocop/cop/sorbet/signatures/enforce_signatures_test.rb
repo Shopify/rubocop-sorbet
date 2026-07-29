@@ -309,6 +309,20 @@ module RuboCop
             RUBY
           end
 
+          # An RBS signature separated from the method by a blank line is not
+          # attached to it, even when an ordinary comment sits immediately
+          # above the method. The contiguous-comment lookup must not reach back
+          # past the blank line and pick up the stale `#:` signature.
+          def test_makes_offense_if_rbs_signature_separated_by_blank_line_from_adjacent_comment
+            assert_offense(<<~RUBY)
+              #: -> void
+
+              # note
+              def foo; end
+              ^^^^^^^^^^^^ #{MSG}
+            RUBY
+          end
+
           def test_does_not_check_signature_for_accessors
             assert_no_offenses(<<~RUBY)
               class Foo

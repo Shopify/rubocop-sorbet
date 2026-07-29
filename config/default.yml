@@ -361,6 +361,13 @@ Sorbet/SelectByIsA:
   Safe: true
   SafeAutoCorrect: true
 
+Sorbet/SetterReturnType:
+  Description: 'Checks that setter methods declare a `void` return type in their signature.'
+  Enabled: pending
+  Safe: true
+  SafeAutoCorrect: false
+  VersionAdded: '<<next>>'
+
 Sorbet/SignatureBuildOrder:
   Description: >-
                   Enforces the order of parts in a signature.

@@ -54,6 +54,7 @@ In the following section you find all available cops:
 * [Sorbet/Refinement](cops_sorbet.md#sorbetrefinement)
 * [Sorbet/RuntimeOnFailureDependsOnChecked](cops_sorbet.md#sorbetruntimeonfailuredependsonchecked)
 * [Sorbet/SelectByIsA](cops_sorbet.md#sorbetselectbyisa)
+* [Sorbet/SetterReturnType](cops_sorbet.md#sorbetsetterreturntype)
 * [Sorbet/SignatureBuildOrder](cops_sorbet.md#sorbetsignaturebuildorder)
 * [Sorbet/SingleLineRbiClassModuleDefinitions](cops_sorbet.md#sorbetsinglelinerbiclassmoduledefinitions)
 * [Sorbet/StrictSigil](cops_sorbet.md#sorbetstrictsigil)

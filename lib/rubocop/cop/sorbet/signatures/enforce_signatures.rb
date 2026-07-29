@@ -245,31 +245,11 @@ module RuboCop
           protected
 
           attr_reader :processed_source
-
-          def preceding_comments(node)
-            processed_source.ast_with_comments[node].select { |comment| comment.loc.line < node.loc.line }
-          end
         end
 
         class RBSSignatureChecker < SignatureChecker
-          RBS_COMMENT_REGEX = /^#\s*:.*$/
-
           def signature_node(node)
-            node = find_non_send_ancestor(node)
-            comments = preceding_comments(node)
-            return if comments.empty?
-
-            last_comment = comments.last
-            return if last_comment.loc.line + 1 < node.loc.line
-
-            comments.find { |comment| RBS_COMMENT_REGEX.match?(comment.text) }
-          end
-
-          private
-
-          def find_non_send_ancestor(node)
-            node = node.parent while node.parent&.send_type?
-            node
+            ::RuboCop::Sorbet::RBSParser.rbs_signatures_before(processed_source, node).first&.comments&.first
           end
         end
 
