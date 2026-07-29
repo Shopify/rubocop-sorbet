@@ -37,7 +37,7 @@ module RuboCop
           add_offense(node) if t_enum?(node) && node.body.nil?
         end
 
-        def on_block(node) # rubocop:disable InternalAffairs/NumblockHandler
+        def on_block(node) # rubocop:disable InternalAffairs/NumblockHandler, InternalAffairs/ItblockHandler
           return unless in_t_enum_class?
           return unless enums_block?(node)
 

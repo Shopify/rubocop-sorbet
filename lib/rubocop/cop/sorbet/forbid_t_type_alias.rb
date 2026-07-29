@@ -24,6 +24,7 @@ module RuboCop
           add_offense(node) if t_type_alias?(node)
         end
         alias_method :on_numblock, :on_block
+        alias_method :on_itblock, :on_block
       end
     end
   end
