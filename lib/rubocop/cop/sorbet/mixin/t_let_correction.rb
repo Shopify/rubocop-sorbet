@@ -13,10 +13,20 @@ module RuboCop
 
         # Replaces `T.let(value, Type)` with `value`.
         def replace_t_let(corrector, t_let_node, value_node)
-          heredocs = value_node.each_node(:any_str).select(&:heredoc?)
-          return corrector.replace(t_let_node, value_node.source) if heredocs.empty?
+          heredocs_to_reattach = tail_heredocs(value_node)
+          return corrector.replace(t_let_node, value_node.source) if heredocs_to_reattach.empty?
 
-          replace_t_let_preserving_heredocs(corrector, t_let_node, value_node, heredocs)
+          replace_t_let_preserving_heredocs(corrector, t_let_node, value_node, heredocs_to_reattach)
+        end
+
+        # Heredocs at the tail of the value, whose body sits past `value_node`'s
+        # source range. An interior heredoc, e.g. `Foo.new(a: <<~X, b: 2)`, already
+        # lives inside `value_node.source` and must not be reattached.
+        def tail_heredocs(value_node)
+          value_end = value_node.source_range.end_pos
+          value_node.each_node(:any_str).select do |node|
+            node.heredoc? && node.loc.heredoc_end.end_pos > value_end
+          end
         end
 
         # Replaces `T.let(value, Type)` with `value` without losing any heredocs

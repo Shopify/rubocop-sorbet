@@ -326,6 +326,32 @@ module RuboCop
           RUBY
         end
 
+        # An "interior" heredoc is followed by more of the value's own source
+        # (`b: 2` here), so it must not be re-appended like a tail heredoc.
+        def test_offense_on_constant_constructor_with_interior_heredoc
+          assert_offense(<<~RUBY)
+            PATH = T.let(
+                   ^^^^^^ #{CONSTRUCTOR_MSG}
+              Foo.new(
+                a: <<~DIR,
+                  /usr/local
+                DIR
+                b: 2,
+              ),
+              Foo,
+            )
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PATH = Foo.new(
+                a: <<~DIR,
+                  /usr/local
+                DIR
+                b: 2,
+              )
+          RUBY
+        end
+
         # Sorbet infers generic constructors as applied types (e.g.
         # `T::Set[T.untyped]`), does not infer through `.tap` or kernel
         # casting methods like `Pathname()`, and only matches when the
