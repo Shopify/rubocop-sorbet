@@ -73,3 +73,4 @@ require_relative "sorbet/t_enum/forbid_comparable_t_enum"
 require_relative "sorbet/t_enum/multiple_t_enum_values"
 
 require_relative "sorbet/mutable_constant_sorbet_aware_behaviour"
+require_relative "sorbet/void_sorbet_aware_behaviour"

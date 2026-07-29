@@ -44,6 +44,7 @@ module RuboCop
         end
 
         alias_method :on_numblock, :on_block
+        alias_method :on_itblock, :on_block
 
         def on_signature(_node)
           # To be defined by cop class as needed

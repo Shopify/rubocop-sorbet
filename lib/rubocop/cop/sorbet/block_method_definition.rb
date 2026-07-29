@@ -92,6 +92,7 @@ module RuboCop
           end
         end
         alias_method :on_numblock, :on_block
+        alias_method :on_itblock, :on_block
 
         private
 

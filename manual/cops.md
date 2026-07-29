@@ -71,3 +71,4 @@ In addition to the cops defined in this gem, it also modifies the behaviour of s
 defined in other RuboCop gems:
 
 * [Style/MutableConstant](https://docs.rubocop.org/rubocop/cops_style.html#stylemutableconstant): In addition to the default behaviour, RuboCop Sorbet makes this cop `T.let` aware, so that `CONST = T.let([1, 2, 3], T::Array[Integer])` is also treated as a mutable literal constant value.
+* [Lint/Void](https://docs.rubocop.org/rubocop/cops_lint.html#lintvoid): In addition to the default behaviour, RuboCop Sorbet makes this cop aware of RBS inline `#: absurd` type assertions, so that expressions annotated with `#: absurd` (used to mark unreachable branches in exhaustive `case`/`when` matching) are not flagged as used in void context.
