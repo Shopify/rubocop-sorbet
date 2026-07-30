@@ -1589,6 +1589,66 @@ AllowedPatterns | `[]` | Array
 ForbiddenIdentifiers | `[]` | Array
 ForbiddenPatterns | `[]` | Array
 
+## Sorbet/TestsDefinedWithEach
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
+
+Checks for tests generated inside `each`. Sorbet only looks for test methods at the top level of a
+class body or `describe` block, so it cannot see through `each`: `self` stays bound to the example
+group rather than an instance, and calls inside the loop fail to resolve. `test_each` and
+`test_each_hash` exist for Sorbet to see through.
+
+A loop whose body holds anything Sorbet rejects there -- `it_behaves_like`, a guard clause, an
+assignment, another loop -- is left alone rather than corrected into an error 3507.
+
+### Examples
+
+```ruby
+# bad
+[[1, "one"], [2, "two"]].each do |number, name|
+  it "spells #{number}" do
+  end
+end
+
+# good
+test_each([[1, "one"], [2, "two"]]) do |(number, name)|
+  it "spells #{number}" do
+  end
+end
+
+# bad
+{ "one" => 1 }.each do |name, number|
+  it "spells #{number}" do
+  end
+end
+
+# good
+test_each_hash({ "one" => 1 }) do |name, number|
+  it "spells #{number}" do
+  end
+end
+
+# bad
+ROWS.each_with_index do |row, index|
+  it "spells #{row}" do
+  end
+end
+
+# good
+test_each(ROWS.each_with_index.to_a) do |(row, index)|
+  it "spells #{row}" do
+  end
+end
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+Include | `**/test/**/*`, `**/*_test.rb`, `**/spec/**/*`, `**/*_spec.rb` | Array
+
 ## Sorbet/TrueSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
