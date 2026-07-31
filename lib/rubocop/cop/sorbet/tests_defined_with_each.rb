@@ -103,7 +103,7 @@ module RuboCop
           return false if node.arguments.empty? || !node.arguments.all?(&:arg_type?)
           return false if lone_indexed_parameter?(send_node, node) || discards_row?(node)
           return false if comment_before_selector?(send_node)
-          return false if chained_onto_loop?(send_node.receiver)
+          return false if unparenthesizable?(send_node.receiver) || chained_onto_loop?(send_node.receiver)
           return false if class_receiver?(send_node.receiver) || inside_loop_body?(node)
 
           defines_tests?(node)
@@ -150,6 +150,24 @@ module RuboCop
         def comment_before_selector?(send_node)
           range = send_node.receiver.source_range.end.join(send_node.loc.selector.begin)
           processed_source.comments.any? { |comment| range.overlaps?(comment.source_range) }
+        end
+
+        # A parenthesis-less command taking a block cannot be wrapped in parentheses before Ruby 3.4.
+        def unparenthesizable?(node)
+          return false if target_ruby_version >= 3.4
+
+          while node&.type?(:any_block, :call)
+            unless node.type?(:any_block)
+              node = node.receiver
+              next
+            end
+
+            send_node = node.send_node
+            return true if !send_node.arguments.empty? && !send_node.parenthesized?
+
+            node = send_node.receiver
+          end
+          false
         end
 
         # Correcting a loop chained onto another correctable loop would clobber that loop's correction.

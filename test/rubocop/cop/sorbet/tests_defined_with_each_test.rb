@@ -338,7 +338,28 @@ module RuboCop
           RUBY
         end
 
-        def test_registers_offense_for_command_call_receiver_taking_a_block
+        def test_no_offense_for_command_call_receiver_taking_a_block
+          assert_no_offenses(<<~RUBY)
+            rows_for ENV do |x|
+              x
+            end.each do |number, name|
+              it { assert(number) }
+            end
+          RUBY
+        end
+
+        def test_registers_offense_for_command_call_receiver_taking_a_block_on_ruby_3_4
+          # `unparenthesizable?` reads the cop's own `target_ruby_version`, not the test
+          # framework's `ruby_version` (which only controls how the example source is parsed) --
+          # so the cop needs a config that actually declares TargetRubyVersion. Extend the real
+          # default configuration rather than a bare hash, so unrelated defaults (e.g. whether
+          # offense messages are prefixed with the cop name) still match every other test here.
+          default_config = RuboCop::ConfigLoader.default_configuration
+          hash = default_config.to_h.merge(
+            "AllCops" => default_config.for_all_cops.merge("TargetRubyVersion" => 3.4),
+          )
+          @cop = TestsDefinedWithEach.new(RuboCop::Config.new(hash, default_config.loaded_path))
+
           assert_offense(<<~RUBY)
             rows_for ENV do |x|
               x
