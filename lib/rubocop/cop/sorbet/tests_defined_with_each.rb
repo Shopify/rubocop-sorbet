@@ -19,6 +19,12 @@ module RuboCop
       #   has to accept a `Hash`, since `test_each_hash` is only picked for a hash literal or an
       #   `each_pair` call, not for a hash reached through a variable, constant or method.
       #
+      #   Rewriting `|a, b|` to `|(a, b)|` assumes the receiver's `each` yields one value per
+      #   iteration (as `Array#each`, `Hash#each` and the rest of the standard library do), which
+      #   multiple block parameters were already destructuring. A receiver whose `each` instead
+      #   yields multiple values (`yield a, b`, not `yield [a, b]`) is not detected: correcting it
+      #   silently drops every value past the first.
+      #
       # @example
       #
       #   # bad
