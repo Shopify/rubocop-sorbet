@@ -338,11 +338,20 @@ module RuboCop
           RUBY
         end
 
-        def test_no_offense_for_command_call_receiver_taking_a_block
-          assert_no_offenses(<<~RUBY)
+        def test_registers_offense_for_command_call_receiver_taking_a_block
+          assert_offense(<<~RUBY)
             rows_for ENV do |x|
               x
             end.each do |number, name|
+                ^^^^ #{format(MSG, replacement: "test_each")}
+              it { assert(number) }
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            test_each(rows_for ENV do |x|
+              x
+            end) do |(number, name)|
               it { assert(number) }
             end
           RUBY
