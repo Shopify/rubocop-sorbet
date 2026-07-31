@@ -1020,9 +1020,10 @@ module RuboCop
               "AutocorrectStyle" => "invalid",
             }))
 
-            assert_raises(ArgumentError, /Invalid AutocorrectStyle option/) do
+            error = assert_raises(ArgumentError) do
               @cop.send(:autocorrect_style)
             end
+            assert_match(/Invalid AutocorrectStyle option/, error.message)
           end
 
           private
