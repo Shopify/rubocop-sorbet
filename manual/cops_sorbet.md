@@ -1514,6 +1514,81 @@ SuggestedStrictness | `strong` | String
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
+## Sorbet/StructPropName
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | No | <<next>> | -
+
+Checks that `T::Struct` property names use the configured style.
+The supported styles and name filters match `Naming/MethodName`.
+
+### Examples
+
+#### EnforcedStyle: snake_case (default)
+
+```ruby
+# bad
+class User < T::Struct
+  const :firstName, String
+  prop :lastName, String
+end
+
+# good
+class User < T::Struct
+  const :first_name, String
+  prop :last_name, String
+end
+```
+#### EnforcedStyle: camelCase
+
+```ruby
+# bad
+class User < T::Struct
+  const :first_name, String
+  prop :last_name, String
+end
+
+# good
+class User < T::Struct
+  const :firstName, String
+  prop :lastName, String
+end
+```
+#### AllowedPatterns: ['\Alegacy[A-Z]']
+
+```ruby
+# good
+class User < T::Struct
+  const :legacyName, String
+end
+```
+#### ForbiddenIdentifiers: ['legacy_name']
+
+```ruby
+# bad
+class User < T::Struct
+  const :legacy_name, String
+end
+```
+#### ForbiddenPatterns: ['_v1\z']
+
+```ruby
+# bad
+class User < T::Struct
+  const :name_v1, String
+end
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+EnforcedStyle | `snake_case` | `snake_case`, `camelCase`
+AllowedPatterns | `[]` | Array
+ForbiddenIdentifiers | `[]` | Array
+ForbiddenPatterns | `[]` | Array
+
 ## Sorbet/TrueSigil
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
