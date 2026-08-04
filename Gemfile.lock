@@ -3,6 +3,7 @@ PATH
   specs:
     rubocop-sorbet (0.13.2)
       lint_roller
+      rbi (>= 0.3.0)
       rubocop (>= 1.75.2)
 
 GEM
@@ -25,6 +26,7 @@ GEM
     json (2.21.1)
     language_server-protocol (3.17.0.6)
     lint_roller (1.1.0)
+    logger (1.7.0)
     minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
@@ -44,6 +46,13 @@ GEM
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.3.0)
+    rbi (0.4.2)
+      prism (~> 1.0)
+      rbs (>= 4.0.1)
+    rbs (4.1.2)
+      logger
+      prism (>= 1.6.0)
+      tsort
     rdoc (6.14.1)
       erb
       psych (>= 4.0.0)
@@ -73,6 +82,7 @@ GEM
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     stringio (3.1.7)
+    tsort (0.2.0)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.2.0)
