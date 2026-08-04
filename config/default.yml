@@ -366,7 +366,7 @@ Sorbet/SetterReturnType:
   Enabled: pending
   Safe: true
   SafeAutoCorrect: false
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.14.0'
 
 Sorbet/SignatureBuildOrder:
   Description: >-

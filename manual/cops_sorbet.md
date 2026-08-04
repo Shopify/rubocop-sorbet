@@ -1367,7 +1367,7 @@ strings_or_integers.grep(String)
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | 0.14.0 | -
 
 Checks that setter methods (methods whose name ends with `=`)
 declare a `void` return type, in either a Sorbet `sig` block or an
