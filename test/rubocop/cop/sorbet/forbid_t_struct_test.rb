@@ -283,6 +283,257 @@ module RuboCop
             end
           RUBY
         end
+
+        def test_autocorrects_generates_rbs_class_body
+          @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
+
+          assert_offense(<<~RUBY)
+            class Foo < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+              const :foo, Integer
+              prop :bar, String, default: "foo"
+              const :baz, T.nilable(Symbol), factory: ->{ nil }
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Foo
+              #: Integer
+              attr_reader :foo
+
+              #: String
+              attr_accessor :bar
+
+              #: Symbol?
+              attr_reader :baz
+
+              #: (foo: Integer, ?bar: String, ?baz: Symbol?) -> void
+              def initialize(foo:, bar: "foo", baz: ->{ nil })
+                @foo = foo
+                @bar = bar
+                @baz = baz.call
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_rbs_translates_sorbet_types
+          @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
+
+          assert_offense(<<~RUBY)
+            class Foo < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+              const :a, T.any(Integer, String)
+              const :b, T::Array[String]
+              const :c, T::Hash[Symbol, Integer]
+              const :d, T.all(Comparable, Numeric)
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Foo
+              #: Integer | String
+              attr_reader :a
+
+              #: Array[String]
+              attr_reader :b
+
+              #: Hash[Symbol, Integer]
+              attr_reader :c
+
+              #: Comparable & Numeric
+              attr_reader :d
+
+              #: (a: Integer | String, b: Array[String], c: Hash[Symbol, Integer], d: Comparable & Numeric) -> void
+              def initialize(a:, b:, c:, d:)
+                @a = a
+                @b = b
+                @c = c
+                @d = d
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_rbs_maps_sorbet_constants
+          @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
+
+          assert_offense(<<~RUBY)
+            class Foo < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+              const :a, T::Boolean
+              const :b, T::Range[Integer]
+              const :c, T::Hash[Symbol, T::Boolean]
+              const :d, T::Enumerable[Integer]
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Foo
+              #: bool
+              attr_reader :a
+
+              #: Range[Integer]
+              attr_reader :b
+
+              #: Hash[Symbol, bool]
+              attr_reader :c
+
+              #: untyped
+              attr_reader :d
+
+              #: (a: bool, b: Range[Integer], c: Hash[Symbol, bool], d: untyped) -> void
+              def initialize(a:, b:, c:, d:)
+                @a = a
+                @b = b
+                @c = c
+                @d = d
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_rbs_maps_unsupported_types_to_untyped
+          @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
+
+          assert_offense(<<~RUBY)
+            class Foo < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+              const :a, T.untyped
+              const :b, T.class_of(Foo)
+              const :c, T.proc.params(x: Integer).returns(String)
+              const :d, T.noreturn
+              const :e, T.something_weird(Integer)
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Foo
+              #: untyped
+              attr_reader :a
+
+              #: singleton(Foo)
+              attr_reader :b
+
+              #: untyped
+              attr_reader :c
+
+              #: bot
+              attr_reader :d
+
+              #: untyped
+              attr_reader :e
+
+              #: (a: untyped, b: singleton(Foo), c: untyped, d: bot, e: untyped) -> void
+              def initialize(a:, b:, c:, d:, e:)
+                @a = a
+                @b = b
+                @c = c
+                @d = d
+                @e = e
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_rbs_translates_nested_nilable_union
+          @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
+
+          assert_offense(<<~RUBY)
+            class Foo < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+              const :a, T.nilable(T.any(Integer, String))
+              const :b, Integer
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Foo
+              #: (Integer | String)?
+              attr_reader :a
+
+              #: Integer
+              attr_reader :b
+
+              #: (b: Integer, ?a: (Integer | String)?) -> void
+              def initialize(b:, a: nil)
+                @a = a
+                @b = b
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_rbs_removes_existing_extend_t_sig
+          @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
+
+          assert_offense(<<~RUBY)
+            class Foo < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+              extend T::Sig
+              const :foo, Integer
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Foo
+              #: Integer
+              attr_reader :foo
+
+              #: (foo: Integer) -> void
+              def initialize(foo:)
+                @foo = foo
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_rbs_keeps_other_nodes_in_body
+          @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
+
+          assert_offense(<<~RUBY)
+            class Foo < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+              const :foo, Integer
+
+              def some_method; end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Foo
+              #: Integer
+              attr_reader :foo
+
+              #: (foo: Integer) -> void
+              def initialize(foo:)
+                @foo = foo
+              end
+
+              def some_method; end
+            end
+          RUBY
+        end
+
+        def test_invalid_autocorrect_style_raises_error
+          @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "invalid"))
+
+          error = assert_raises(ArgumentError) do
+            assert_offense(<<~RUBY)
+              class Foo < T::Struct
+              ^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+                const :foo, Integer
+              end
+            RUBY
+          end
+          assert_match(/Invalid AutocorrectStyle option/, error.message)
+        end
+
+        private
+
+        def target_cop
+          ForbidTStruct
+        end
       end
     end
   end
