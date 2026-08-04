@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "rbi"
+require "stringio"
+
 module RuboCop
   module Cop
     module Sorbet
@@ -153,6 +156,12 @@ module RuboCop
           node.arguments.each do |arg|
             if arg.blockarg_type? && suggest.respond_to?(:has_block=)
               suggest.has_block = true
+            elsif arg.forward_arg_type? && suggest.is_a?(RBSSuggestion)
+              # `...` forwards positional, keyword, and block arguments. RBS has
+              # no forwarding token, so model it as rest positional + rest
+              # keyword plus an optional block.
+              suggest.has_block = true
+              suggest.params << Param.new(nil, :forward_arg)
             else
               suggest.params << Param.new(arg.children.first, arg.type)
             end
@@ -249,7 +258,7 @@ module RuboCop
 
         class RBSSignatureChecker < SignatureChecker
           def signature_node(node)
-            ::RuboCop::Sorbet::RBSParser.rbs_signatures_before(processed_source, node).first&.comments&.first
+            ::RuboCop::Sorbet::RBSParser.rbs_signatures_before(processed_source, node).first&.first
           end
         end
 
@@ -324,39 +333,71 @@ module RuboCop
 
           private
 
+          # Build the RBS method-type annotation through the `rbi` gem's
+          # `RBSPrinter`, which maps each Ruby parameter kind to its RBS form
+          # and emits the optional `?{ ... }` block syntax for `&blk`. All
+          # parameter types use `untyped` placeholders, matching the `sig`
+          # suggestion's placeholder behavior.
           def generate_signature
             return @returns || "untyped" if @attribute
 
-            param_types = @params.map { |param| rbs_param(param) }.join(", ")
-            return_type = @returns || "untyped"
+            method = RBI::Method.new("f")
+            sig = RBI::Sig.new(return_type: @returns == "void" ? RBI::Type.void : RBI::Type.untyped)
 
-            signature = if @params.empty?
-              "()"
-            else
-              "(#{param_types})"
-            end
+            @params.each { |param| add_rbi_param(method, sig, param) }
+            add_rbi_block(method, sig) if @has_block
 
-            signature += " { (?) -> untyped }" if @has_block
-            signature += " -> #{return_type}"
-
-            signature
+            out = StringIO.new
+            RBI::RBSPrinter.new(out: out, positional_names: false).print_method_sig_inline(method, sig)
+            out.string
           end
 
-          def rbs_param(param)
+          def add_rbi_param(method, sig, param)
+            type = RBI::Type.untyped
             case param.kind
-            when :kwarg
-              "#{param.name}: untyped"
-            when :kwoptarg
-              "?#{param.name}: untyped"
+            when :arg
+              method << RBI::ReqParam.new(param.name)
+              sig << RBI::SigParam.new(param.name, type)
             when :optarg
-              "?untyped"
+              method << RBI::OptParam.new(param.name, "nil")
+              sig << RBI::SigParam.new(param.name, type)
             when :restarg
-              "*untyped"
+              method << RBI::RestParam.new(nil)
+              sig << RBI::SigParam.new("*", type)
+            when :kwarg
+              method << RBI::KwParam.new(param.name)
+              sig << RBI::SigParam.new(param.name, type)
+            when :kwoptarg
+              method << RBI::KwOptParam.new(param.name, "nil")
+              sig << RBI::SigParam.new(param.name, type)
             when :kwrestarg
-              "**untyped"
+              method << RBI::KwRestParam.new(nil)
+              sig << RBI::SigParam.new("**", type)
+            when :forward_arg
+              # `...` forwards positional, keyword, and block arguments. RBS has
+              # no forwarding token, so model it as rest positional + rest keyword
+              # plus an optional block (the block is added separately via
+              # `has_block`, which `populate_method_definition_suggestion` sets).
+              method << RBI::RestParam.new(nil)
+              sig << RBI::SigParam.new("*", type)
+              method << RBI::KwRestParam.new(nil)
+              sig << RBI::SigParam.new("**", type)
             else
-              "untyped"
+              # Destructured parameters (`def foo((a, b))` -> `:mlhs`) and any
+              # other exotic kind still occupy one positional slot, so model
+              # them as a required positional `untyped`. The name is synthetic
+              # because `positional_names` is disabled; only the arity matters.
+              method << RBI::ReqParam.new("_")
+              sig << RBI::SigParam.new("_", type)
             end
+          end
+
+          def add_rbi_block(method, sig)
+            # A block parameter (`&blk`) is always optional in Ruby. The `rbi`
+            # printer emits `?{ (?) -> untyped }` when the block type is
+            # `T.untyped`, matching Ruby's optional-block semantics.
+            method << RBI::BlockParam.new("blk")
+            sig << RBI::SigParam.new("blk", RBI::Type.untyped)
           end
         end
       end

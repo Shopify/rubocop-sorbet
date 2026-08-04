@@ -3,7 +3,7 @@ PATH
   specs:
     rubocop-sorbet (0.13.2)
       lint_roller
-      rbi (>= 0.3.0)
+      rbi (>= 0.4.1)
       rubocop (>= 1.75.2)
 
 GEM

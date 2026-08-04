@@ -297,14 +297,23 @@ module RuboCop
           def test_offense_for_rbs_multiline_union_return
             assert_offense(<<~RUBY)
               #: (String) ->
-              #| Integer |
-                 ^^^^^^^ #{MSG}
-              #| String
+              #| (Integer | String)
+                  ^^^^^^^ #{MSG}
               def name=(name); end
             RUBY
             assert_correction(<<~RUBY)
               #: (String) ->
-              #| void
+              #| (void)
+              def name=(name); end
+            RUBY
+          end
+
+          # An unparenthesized union return is malformed RBS (top-level `|` is
+          # the method-overload boundary). `require_eof: true` makes it a parse
+          # error, so the cop offers no destructive partial correction.
+          def test_no_offense_for_rbs_malformed_unparenthesized_union_return
+            assert_no_offenses(<<~RUBY)
+              #: (String) -> Integer | String
               def name=(name); end
             RUBY
           end
