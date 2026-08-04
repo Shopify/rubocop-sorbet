@@ -622,21 +622,29 @@ module RuboCop
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
               def self.baz(a:); end
               ^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def forward(...); end
+              ^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def foo((a, b)); end
+              ^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
             RUBY
 
             assert_correction(<<~RUBY)
-              #: () -> untyped
+              #: -> untyped
               def foo; end
               #: (untyped, ?untyped, ?c: untyped) -> untyped
               def bar(a, b = 2, c: Foo.new); end
-              #: () { (?) -> untyped } -> untyped
+              #: ?{ (?) -> untyped } -> untyped
               def baz(&blk); end
-              #: (untyped, untyped) { (?) -> untyped } -> untyped
+              #: (untyped, untyped) ?{ (?) -> untyped } -> untyped
               def self.foo(a, b, &c); end
               #: (untyped, *untyped, **untyped) -> untyped
               def self.bar(a, *b, **c); end
               #: (a: untyped) -> untyped
               def self.baz(a:); end
+              #: (*untyped, **untyped) ?{ (?) -> untyped } -> untyped
+              def forward(...); end
+              #: (untyped) -> untyped
+              def foo((a, b)); end
             RUBY
           end
 
@@ -887,7 +895,7 @@ module RuboCop
 
             assert_correction(<<~RUBY)
               class Foo
-                #: () -> untyped
+                #: -> untyped
                 def foo
                 end
 
@@ -991,7 +999,7 @@ module RuboCop
             RUBY
 
             assert_correction(<<~RUBY)
-              #: () -> untyped
+              #: -> untyped
               def foo; end
               #: (untyped, untyped, untyped) -> untyped
               def bar(a, b, c); end

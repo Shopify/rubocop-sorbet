@@ -138,10 +138,9 @@ module RuboCop
         end
 
         def check_rbs(node)
-          ::RuboCop::Sorbet::RBSParser.rbs_signatures_before(processed_source, node).each do |sig|
-            range = sig.return_type_range
+          ::RuboCop::Sorbet::RBSParser.rbs_signatures_before(processed_source, node).each do |comments|
+            range = ::RuboCop::Sorbet::RBSParser.return_type_range(processed_source, comments)
             next unless range
-            next if sig.void?
 
             offense_range, replace_range = range
             add_offense(offense_range) do |corrector|
