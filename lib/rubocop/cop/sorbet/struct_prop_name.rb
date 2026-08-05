@@ -79,7 +79,6 @@ module RuboCop
             check_name(node, name, name_node)
           end
         end
-        alias_method :on_csend, :on_send
 
         private
 

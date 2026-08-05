@@ -38,4 +38,5 @@ InternalAffairs/OnSendWithoutOnCSend:
     - lib/rubocop/cop/sorbet/refinement.rb
     - lib/rubocop/cop/sorbet/signatures/allow_incompatible_override.rb
     - lib/rubocop/cop/sorbet/signatures/enforce_signatures.rb
+    - lib/rubocop/cop/sorbet/struct_prop_name.rb
     - lib/rubocop/cop/sorbet/t_enum/forbid_comparable_t_enum.rb
