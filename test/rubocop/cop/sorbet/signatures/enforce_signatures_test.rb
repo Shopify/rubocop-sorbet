@@ -429,14 +429,70 @@ module RuboCop
             RUBY
           end
 
-          def test_makes_offense_if_allow_rbs_false
+          def test_enforce_sig_autocorrects_rbs_signature
             @cop = target_cop.new(cop_config({
               "Style" => "sig",
             }))
             assert_offense(<<~RUBY)
               #: -> void
+              ^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
               def foo; end
-              ^^^^^^^^^^^^ #{MSG_SIG}
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { void }
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_autocorrects_abstract_rbs_signature_without_changing_method
+            @cop = target_cop.new(cop_config({
+              "Style" => "sig",
+            }))
+            assert_offense(<<~RUBY)
+              # @abstract
+              #: -> Integer
+              ^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+              def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+              sig { abstract.returns(Integer) }
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_autocorrects_rbs_overloads_continuations_and_accessors
+            @cop = target_cop.new(cop_config({
+              "Style" => "sig",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                #: (String, ?Symbol) -> String
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+                #: (
+                #| Integer,
+                #| ?Symbol
+                #| ) -> Integer
+                def foo(x, y = nil); end
+
+                #: String
+                ^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+                attr_reader :name
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                sig { params(x: String, y: Symbol).returns(String) }
+                sig { params(x: Integer, y: Symbol).returns(Integer) }
+                def foo(x, y = nil); end
+
+                sig { returns(String) }
+                attr_reader :name
+              end
             RUBY
           end
 
@@ -928,6 +984,24 @@ module RuboCop
             RUBY
           end
 
+          def test_enforce_rbs_autocorrects_abstract_sig_without_changing_method
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              sig { abstract.returns(Integer) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+              #: -> Integer
+              def foo; end
+            RUBY
+          end
+
           def test_enforce_rbs_autocorrects_sig_overloads
             @cop = target_cop.new(cop_config({
               "Style" => "rbs",
@@ -990,8 +1064,8 @@ module RuboCop
 
             assert_offense(<<~RUBY)
               #: -> void
+              ^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
               def foo; end
-              ^^^^^^^^^^^^ #{MSG_SIG}
             RUBY
           end
 
