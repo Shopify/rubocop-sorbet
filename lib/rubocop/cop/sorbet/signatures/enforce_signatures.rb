@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spoom"
+
 module RuboCop
   module Cop
     module Sorbet
@@ -74,14 +76,16 @@ module RuboCop
 
         def check_node(node)
           scope = self.scope(node)
-          sig_node = sig_checker.signature_node(scope)
+          sig_nodes = sig_checker.signature_nodes(scope)
           rbs_node = rbs_checker.signature_node(node)
 
           case signature_style
           when "rbs"
             # RBS style - only RBS signatures allowed
-            if sig_node
-              add_offense(sig_node, message: "Use RBS signature comments rather than sig blocks.")
+            unless sig_nodes.empty?
+              add_offense(sig_nodes.first, message: "Use RBS signature comments rather than sig blocks.") do |corrector|
+                autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
+              end
               return
             end
 
@@ -92,14 +96,14 @@ module RuboCop
             end
           when "both"
             # Both styles allowed - require at least one
-            unless sig_node || rbs_node
+            if sig_nodes.empty? && !rbs_node
               add_offense(node, message: "Each method is required to have a signature.") do |corrector|
                 autocorrect_with_signature_type(corrector, node, autocorrect_style)
               end
             end
           else # "sig" (default)
             # Sig style - only sig signatures allowed
-            unless sig_node
+            if sig_nodes.empty?
               add_offense(node, message: "Each method is required to have a sig block signature.") do |corrector|
                 autocorrect_with_signature_type(corrector, node, "sig")
               end
@@ -119,24 +123,37 @@ module RuboCop
 
         def autocorrect_with_signature_type(corrector, node, type)
           target = leftmost_send_ancestor(node)
-          suggest = create_signature_suggestion(target, type)
+          suggest = SigSuggestion.new(target.loc.column, param_type_placeholder, return_type_placeholder)
           populate_signature_suggestion(suggest, node)
-          corrector.insert_before(target, suggest.to_autocorrect)
+
+          correction = suggest.to_autocorrect
+          correction = translate_signature_to_rbs(correction, node) if type == "rbs"
+          corrector.insert_before(target, correction)
+        end
+
+        def autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
+          range = sig_nodes.first.source_range.with(end_pos: sig_nodes.last.source_range.end_pos)
+          translated = translate_sigs_to_rbs("#{range.source}\n#{node.source}")
+          corrector.replace(range, translated.delete_suffix(node.source).rstrip)
+        end
+
+        def translate_signature_to_rbs(signature, node)
+          source = node.source
+          translate_sigs_to_rbs("#{signature}#{source}").delete_suffix(source)
+        end
+
+        def translate_sigs_to_rbs(input)
+          ::Spoom::Sorbet::Translate.sorbet_sigs_to_rbs_comments(
+            input,
+            file: processed_source.file_path,
+            positional_names: false,
+          )
         end
 
         def leftmost_send_ancestor(node)
           ancestor = node
           ancestor = ancestor.parent while ancestor.parent&.send_type?
           ancestor
-        end
-
-        def create_signature_suggestion(node, type)
-          case type
-          when "rbs"
-            RBSSuggestion.new(node.loc.column)
-          else # "sig"
-            SigSuggestion.new(node.loc.column, param_type_placeholder, return_type_placeholder)
-          end
         end
 
         def populate_signature_suggestion(suggest, node)
@@ -151,11 +168,7 @@ module RuboCop
           suggest.returns = "void" if instance_initialize?(node)
 
           node.arguments.each do |arg|
-            if arg.blockarg_type? && suggest.respond_to?(:has_block=)
-              suggest.has_block = true
-            else
-              suggest.params << Param.new(arg.children.first, arg.type)
-            end
+            suggest.params << Param.new(arg.children.first, arg.type)
           end
         end
 
@@ -177,11 +190,6 @@ module RuboCop
         def populate_accessor_suggestion(suggest, node)
           method = node.children[1]
           symbol = node.children[2]
-
-          if suggest.is_a?(RBSSuggestion)
-            suggest.attribute = true
-            return
-          end
 
           add_accessor_parameter_if_needed(suggest, symbol, method)
           set_void_return_for_writer(suggest, method)
@@ -254,21 +262,23 @@ module RuboCop
         end
 
         class SigSignatureChecker < SignatureChecker
+          EMPTY_SIGNATURES = [].freeze
+
           def initialize(processed_source)
             super(processed_source)
-            @last_sig_for_scope = {}
+            @signatures_for_scope = {}
           end
 
-          def signature_node(scope)
-            @last_sig_for_scope[scope]
+          def signature_nodes(scope)
+            @signatures_for_scope.fetch(scope, EMPTY_SIGNATURES)
           end
 
           def on_signature(node, scope)
-            @last_sig_for_scope[scope] = node
+            (@signatures_for_scope[scope] ||= []) << node
           end
 
           def clear_signature(scope)
-            @last_sig_for_scope[scope] = nil
+            @signatures_for_scope.delete(scope)
           end
         end
 
@@ -303,59 +313,6 @@ module RuboCop
               "void"
             else
               "returns(#{@returns})"
-            end
-          end
-        end
-
-        class RBSSuggestion
-          attr_accessor :params, :returns, :has_block, :attribute
-
-          def initialize(indent)
-            @params = []
-            @returns = nil
-            @has_block = false
-            @attribute = false
-            @indent = indent
-          end
-
-          def to_autocorrect
-            "#: #{generate_signature}\n#{" " * @indent}"
-          end
-
-          private
-
-          def generate_signature
-            return @returns || "untyped" if @attribute
-
-            param_types = @params.map { |param| rbs_param(param) }.join(", ")
-            return_type = @returns || "untyped"
-
-            signature = if @params.empty?
-              "()"
-            else
-              "(#{param_types})"
-            end
-
-            signature += " { (?) -> untyped }" if @has_block
-            signature += " -> #{return_type}"
-
-            signature
-          end
-
-          def rbs_param(param)
-            case param.kind
-            when :kwarg
-              "#{param.name}: untyped"
-            when :kwoptarg
-              "?#{param.name}: untyped"
-            when :optarg
-              "?untyped"
-            when :restarg
-              "*untyped"
-            when :kwrestarg
-              "**untyped"
-            else
-              "untyped"
             end
           end
         end

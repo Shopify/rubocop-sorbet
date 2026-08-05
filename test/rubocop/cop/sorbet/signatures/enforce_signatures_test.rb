@@ -590,6 +590,19 @@ module RuboCop
                 ^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
               end
             RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                #: String
+                attr_reader :foo
+
+                #: String
+                attr_reader :bar
+
+                #: untyped
+                attr_writer :baz
+              end
+            RUBY
           end
 
           def test_enforce_rbs_takes_precedence_over_allow_rbs
@@ -625,15 +638,15 @@ module RuboCop
             RUBY
 
             assert_correction(<<~RUBY)
-              #: () -> untyped
+              #: -> untyped
               def foo; end
               #: (untyped, ?untyped, ?c: untyped) -> untyped
               def bar(a, b = 2, c: Foo.new); end
-              #: () { (?) -> untyped } -> untyped
+              #: ?{ (?) -> untyped } -> untyped
               def baz(&blk); end
-              #: (untyped, untyped) { (?) -> untyped } -> untyped
+              #: (untyped, untyped) ?{ (?) -> untyped } -> untyped
               def self.foo(a, b, &c); end
-              #: (untyped, *untyped, **untyped) -> untyped
+              #: (untyped, *untyped, **untyped c) -> untyped
               def self.bar(a, *b, **c); end
               #: (a: untyped) -> untyped
               def self.baz(a:); end
@@ -887,7 +900,7 @@ module RuboCop
 
             assert_correction(<<~RUBY)
               class Foo
-                #: () -> untyped
+                #: -> untyped
                 def foo
                 end
 
@@ -898,7 +911,7 @@ module RuboCop
             RUBY
           end
 
-          def test_enforce_rbs_does_not_autocorrect_sig_signatures
+          def test_enforce_rbs_autocorrects_sig_signatures
             @cop = target_cop.new(cop_config({
               "Style" => "rbs",
             }))
@@ -909,7 +922,33 @@ module RuboCop
               def foo; end
             RUBY
 
-            assert_no_corrections
+            assert_correction(<<~RUBY)
+              #: -> void
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_sig_overloads
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                sig { params(x: String).returns(String) }
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+                sig { params(x: Integer).returns(Integer) }
+                def foo(x); end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                #: (String) -> String
+                #: (Integer) -> Integer
+                def foo(x); end
+              end
+            RUBY
           end
 
           def test_enforce_rbs_rejects_sig_signatures
@@ -991,7 +1030,7 @@ module RuboCop
             RUBY
 
             assert_correction(<<~RUBY)
-              #: () -> untyped
+              #: -> untyped
               def foo; end
               #: (untyped, untyped, untyped) -> untyped
               def bar(a, b, c); end
