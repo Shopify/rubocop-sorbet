@@ -107,6 +107,7 @@ Sorbet/EnforceSignatures:
   Enabled: false
   Style: sig
   AutocorrectStyle: sig
+  SafeAutoCorrect: false
   VersionAdded: 0.3.4
   VersionChanged: '0.13.0'
 

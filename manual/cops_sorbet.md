@@ -310,7 +310,7 @@ other comments or magic comments are left in the same place.
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes  | 0.3.4 | 0.13.0
+Disabled | Yes | Yes (Unsafe) | 0.3.4 | 0.13.0
 
 Checks that every method definition and attribute accessor has a Sorbet signature.
 
