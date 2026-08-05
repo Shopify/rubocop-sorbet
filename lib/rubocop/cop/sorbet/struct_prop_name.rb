@@ -67,7 +67,8 @@ module RuboCop
 
         def on_send(node)
           name_node = node.first_argument
-          return unless node.receiver.nil? && name_node&.sym_type? && within_t_struct?(node)
+          receiver = node.receiver
+          return unless (receiver.nil? || receiver.self_type?) && name_node&.sym_type? && within_t_struct?(node)
 
           name = name_node.value
           return if matches_allowed_pattern?(name)

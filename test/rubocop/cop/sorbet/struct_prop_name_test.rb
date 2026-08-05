@@ -19,6 +19,10 @@ module RuboCop
                     ^^^^^^^^^^ #{MSG}
               prop :lastName, String
                    ^^^^^^^^^ #{MSG}
+              self.const :middleName, String
+                         ^^^^^^^^^^^ #{MSG}
+              self.prop :displayName, String
+                        ^^^^^^^^^^^^ #{MSG}
               const :first_name, String
               prop :last_name, String
             end
@@ -118,11 +122,6 @@ module RuboCop
             class User
               const :firstName, String
               prop :lastName, String
-            end
-
-            class Account < T::Struct
-              self.const :accountId, Integer
-              self.prop :displayName, String
             end
           RUBY
         end
