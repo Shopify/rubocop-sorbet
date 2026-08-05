@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency("lint_roller")
   spec.add_runtime_dependency("rubocop", ">= 1.75.2")
+  spec.add_runtime_dependency("spoom", "~> 1.8")
 end
