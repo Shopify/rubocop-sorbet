@@ -17,6 +17,18 @@ Sorbet/RedundantTLet:
   SafeAutoCorrect: false
   VersionAdded: '0.13.0'
 
+Sorbet/StructPropName:
+  Description: 'Checks that T::Struct property names use the configured naming style.'
+  Enabled: pending
+  VersionAdded: '<<next>>'
+  EnforcedStyle: snake_case
+  SupportedStyles:
+  - snake_case
+  - camelCase
+  AllowedPatterns: []
+  ForbiddenIdentifiers: []
+  ForbiddenPatterns: []
+
 inherit_mode:
   merge:
   - Exclude
