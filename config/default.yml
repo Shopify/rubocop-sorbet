@@ -440,7 +440,7 @@ Sorbet/TestsDefinedWithEach:
   Description: >-
     Checks for tests generated inside `each`, which Sorbet cannot see through.
     Use `test_each` or `test_each_hash` instead.
-  Enabled: pending
+  Enabled: false
   Safe: true
   SafeAutoCorrect: false
   VersionAdded: '<<next>>'

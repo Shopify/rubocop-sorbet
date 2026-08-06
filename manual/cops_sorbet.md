@@ -1593,7 +1593,7 @@ ForbiddenPatterns | `[]` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | <<next>> | -
+Disabled | Yes | Yes (Unsafe) | <<next>> | -
 
 Checks for tests generated inside `each`. Sorbet only looks for test methods at the top level of a
 class body or `describe` block, so it cannot see through `each`: `self` stays bound to the example
