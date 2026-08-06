@@ -250,6 +250,82 @@ module RuboCop
           end
         end
 
+        # `Minitest::Spec` defines `describe`, `it`, `before` and `after` itself, so a spec-style minitest
+        # suite corrects the same way. Modelled on `Arel::Spec` in Rails.
+        def test_registers_offense_in_a_minitest_spec_class
+          assert_offense(<<~RUBY)
+            class MathTest < Arel::Spec
+              %i[* /].each do |operator|
+                      ^^^^ #{format(MSG, replacement: "test_each")}
+                it "average is compatible with \#{operator}" do
+                  assert(table[:id].average.public_send(operator, 2))
+                end
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class MathTest < Arel::Spec
+              test_each(%i[* /]) do |operator|
+                it "average is compatible with \#{operator}" do
+                  assert(table[:id].average.public_send(operator, 2))
+                end
+              end
+            end
+          RUBY
+        end
+
+        # Sorbet rewrites the `test` macro only for the direct statements of a class body, and its
+        # `test_each` rewriter has no arm for it, so correcting this loop would raise 3507.
+        def test_no_offense_for_the_active_support_test_macro
+          assert_no_offenses(<<~RUBY)
+            class I18nValidationTest < ActiveSupport::TestCase
+              COMMON_CASES.each do |name, options|
+                test "validates_confirmation_of on generated message \#{name}" do
+                  assert(@person.valid?)
+                end
+              end
+            end
+          RUBY
+        end
+
+        # `setup` and `teardown` are rewritten alongside the `test` macro, not by the `test_each` rewriter.
+        def test_no_offense_for_setup_and_teardown
+          assert_no_offenses(<<~RUBY)
+            ROWS.each do |row|
+              setup do
+                @row = row
+              end
+
+              teardown do
+                @row = nil
+              end
+            end
+          RUBY
+        end
+
+        # `test_each` has no `define_method` arm either, so a classic minitest loop is left alone.
+        def test_no_offense_for_define_method
+          assert_no_offenses(<<~RUBY)
+            SINGULAR_TO_PLURAL.each do |singular|
+              define_method "test_pluralize_singular_\#{singular}" do
+                assert_equal(plural, ActiveSupport::Inflector.pluralize(singular))
+              end
+            end
+          RUBY
+        end
+
+        # A `def` is not a send, so there is no `test_each` shape to correct a classic minitest test into.
+        def test_no_offense_for_a_test_defined_with_def
+          assert_no_offenses(<<~RUBY)
+            ROWS.each do |row|
+              def test_titleize
+                assert_equal(row, ActiveSupport::Inflector.titleize(row))
+              end
+            end
+          RUBY
+        end
+
         # Sorbet rejects `test_each` inside `test_each`, a bare `each` block inside `test_each`, and a
         # `describe` wrapping the inner `test_each`, so there is no correction to make at either level.
         def test_no_offense_for_nested_loops
