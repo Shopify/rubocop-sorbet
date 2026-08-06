@@ -693,6 +693,28 @@ T.bind(self, Integer)
 #: self as Integer
 ```
 
+## Sorbet/ForbidTBindInAssignment
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
+
+Disallows assigning the result of `T.bind`.
+
+`T.bind` changes the type of its first argument and returns that argument.
+Assigning its result can therefore unintentionally change the inferred type
+of both the assignment target and the first argument.
+
+### Examples
+
+```ruby
+# bad
+foo = T.bind(self, Integer)
+
+# good
+foo = T.cast(self, Integer)
+```
+
 ## Sorbet/ForbidTCast
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
