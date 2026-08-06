@@ -27,6 +27,7 @@ module RuboCop
       # * `Style`: signature style to enforce - 'sig' for sig blocks, 'rbs' for RBS comments, 'both' to allow either (default: 'sig')
       # * `AutocorrectStyle`: signature style to use when autocorrecting - 'sig' for sig blocks, 'rbs' for RBS comments (default: 'sig'). Only used when `Style` is 'both'.
       class EnforceSignatures < ::RuboCop::Cop::Base
+        include RangeHelp
         extend AutoCorrector
         include SignatureHelp
 
@@ -78,13 +79,18 @@ module RuboCop
           scope = self.scope(node)
           sig_nodes = sig_checker.signature_nodes(scope)
           rbs_signatures = rbs_checker.signatures(node)
+          rbs_signatures = rbs_checker.signatures(sig_nodes.first) if rbs_signatures.empty? && !sig_nodes.empty?
 
           case signature_style
           when "rbs"
             # RBS style - only RBS signatures allowed
             unless sig_nodes.empty?
               add_offense(sig_nodes.first, message: "Use RBS signature comments rather than sig blocks.") do |corrector|
-                autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
+                if rbs_signatures.empty?
+                  autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
+                else
+                  remove_sigs(corrector, sig_nodes)
+                end
               end
               return
             end
@@ -147,9 +153,18 @@ module RuboCop
         end
 
         def autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
-          range = sig_nodes.first.source_range.with(end_pos: sig_nodes.last.source_range.end_pos)
+          range = sig_correction_range(sig_nodes)
           translated = translate_sigs_to_rbs("#{range.source}\n#{node.source}")
           corrector.replace(range, translated_signature_prefix(translated).rstrip)
+        end
+
+        def remove_sigs(corrector, sig_nodes)
+          range = range_by_whole_lines(sig_correction_range(sig_nodes), include_final_newline: true)
+          corrector.remove(range)
+        end
+
+        def sig_correction_range(sig_nodes)
+          sig_nodes.first.source_range.with(end_pos: sig_nodes.last.source_range.end_pos)
         end
 
         def rbs_correction_range(comments)

@@ -984,6 +984,24 @@ module RuboCop
             RUBY
           end
 
+          def test_enforce_rbs_removes_sig_when_rbs_signature_already_exists
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              #: -> void
+              sig { void }
+              ^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: -> void
+              def foo; end
+            RUBY
+          end
+
           def test_enforce_rbs_autocorrects_abstract_sig_without_changing_method
             @cop = target_cop.new(cop_config({
               "Style" => "rbs",
