@@ -109,10 +109,14 @@ module RuboCop
             end
           else # "sig" (default)
             # Sig style - only sig signatures allowed
-            if sig_nodes.empty? && !rbs_signatures.empty?
+            if rbs_signatures.any?
               first_comment = rbs_signatures.first.comments.first
               add_offense(first_comment, message: "Use sig block signatures rather than RBS signature comments.") do |corrector|
-                autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
+                if sig_nodes.empty?
+                  autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
+                else
+                  remove_rbs(corrector, rbs_signatures)
+                end
               end
             elsif sig_nodes.empty?
               add_offense(node, message: "Each method is required to have a sig block signature.") do |corrector|
@@ -150,6 +154,12 @@ module RuboCop
           replacement = translated_signature_prefix(translated).rstrip
           indent = " " * range.column
           corrector.replace(range, replacement.gsub("\n", "\n#{indent}"))
+        end
+
+        def remove_rbs(corrector, rbs_signatures)
+          comments = rbs_signatures.flat_map(&:comments)
+          range = range_by_whole_lines(rbs_correction_range(comments), include_final_newline: true)
+          corrector.remove(range)
         end
 
         def autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
