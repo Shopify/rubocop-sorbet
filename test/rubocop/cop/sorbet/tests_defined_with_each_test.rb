@@ -154,17 +154,22 @@ module RuboCop
           RUBY
         end
 
-        def test_registers_offense_for_numbered_test_block
-          assert_offense(<<~RUBY)
+        # `test_each` requires the example's block to take no parameters, and `_1` is one -- as is `it`
+        # from Ruby 3.4, which reaches the same check as another block type carrying an implicit one.
+        def test_no_offense_for_numbered_test_block
+          assert_no_offenses(<<~RUBY)
             ROWS.each do |row|
-                 ^^^^ #{format(MSG, replacement: "test_each")}
               it { assert(_1) }
             end
           RUBY
+        end
 
-          assert_correction(<<~RUBY)
-            test_each(ROWS) do |row|
-              it { assert(_1) }
+        def test_no_offense_for_test_block_taking_a_parameter
+          assert_no_offenses(<<~RUBY)
+            ROWS.each do |row|
+              it "spells \#{row}" do |example|
+                assert(example)
+              end
             end
           RUBY
         end
@@ -220,18 +225,27 @@ module RuboCop
           RUBY
         end
 
-        def test_registers_offense_for_each_of_the_test_methods
+        def test_registers_offense_for_each_test_method_taking_an_argument
           [
-            "after",
-            "before",
             "context",
             "describe",
-            "include_examples",
+            "example",
+            "example_group",
+            "fcontext",
+            "fdescribe",
+            "fexample",
+            "fit",
+            "focus",
+            "fspecify",
             "it",
-            "let",
-            "shared_examples",
+            "pending",
+            "skip",
             "specify",
-            "subject",
+            "xcontext",
+            "xdescribe",
+            "xexample",
+            "xit",
+            "xspecify",
           ].each do |method|
             assert_offense(<<~RUBY, method: method)
               ROWS.each do |row|
@@ -248,6 +262,193 @@ module RuboCop
               end
             RUBY
           end
+        end
+
+        # The hooks are the only accepted statements that take no argument at all.
+        def test_registers_offense_for_the_hooks
+          ["after", "before"].each do |method|
+            assert_offense(<<~RUBY, method: method)
+              ROWS.each do |row|
+                   ^^^^ #{format(MSG, replacement: "test_each")}
+                %{method} do
+                  @row = row
+                end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              test_each(ROWS) do |row|
+                #{method} do
+                  @row = row
+                end
+              end
+            RUBY
+          end
+        end
+
+        # `test_each` takes an example group with exactly one argument, so metadata raises 3507.
+        def test_no_offense_for_a_group_with_metadata
+          assert_no_offenses(<<~RUBY)
+            ROWS.each do |row|
+              describe row, :focus do
+                it "spells \#{row}" do
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_no_offense_for_an_example_with_metadata
+          assert_no_offenses(<<~RUBY)
+            ROWS.each do |row|
+              it "spells \#{row}", :slow do
+              end
+            end
+          RUBY
+        end
+
+        # The hooks take no argument there, so the `:each` scope RSpec allows raises 3507.
+        def test_no_offense_for_a_hook_with_an_argument
+          assert_no_offenses(<<~RUBY)
+            ROWS.each do |row|
+              before(:each) do
+                @row = row
+              end
+            end
+          RUBY
+        end
+
+        # `test_each` takes `let` and `subject` only where it is already inside an example group, so a
+        # loop at class-body or file scope raises 3507 on them.
+        def test_no_offense_for_let_outside_an_example_group
+          assert_no_offenses(<<~RUBY)
+            ROWS.each do |row|
+              let(:thing) { row }
+
+              it "spells \#{row}" do
+              end
+            end
+          RUBY
+        end
+
+        def test_no_offense_for_subject_outside_an_example_group
+          assert_no_offenses(<<~RUBY)
+            ROWS.each do |row|
+              subject { row }
+
+              it "spells \#{row}" do
+              end
+            end
+          RUBY
+        end
+
+        # Inside an example group they are accepted, so the same loop corrects.
+        def test_registers_offense_for_let_inside_an_example_group
+          assert_offense(<<~RUBY)
+            RSpec.describe Thing do
+              ROWS.each do |row|
+                   ^^^^ #{format(MSG, replacement: "test_each")}
+                let(:thing) { row }
+
+                it "spells \#{row}" do
+                end
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            RSpec.describe Thing do
+              test_each(ROWS) do |row|
+                let(:thing) { row }
+
+                it "spells \#{row}" do
+                end
+              end
+            end
+          RUBY
+        end
+
+        def test_registers_offense_for_subject_inside_an_example_group
+          assert_offense(<<~RUBY)
+            describe Thing do
+              ROWS.each do |row|
+                   ^^^^ #{format(MSG, replacement: "test_each")}
+                subject { row }
+
+                it "spells \#{row}" do
+                end
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            describe Thing do
+              test_each(ROWS) do |row|
+                subject { row }
+
+                it "spells \#{row}" do
+                end
+              end
+            end
+          RUBY
+        end
+
+        # `let` needs a block there, so the memoized-helper-less form raises 3507.
+        def test_no_offense_for_let_without_a_block
+          assert_no_offenses(<<~RUBY)
+            describe Thing do
+              ROWS.each do |row|
+                let(:thing)
+              end
+            end
+          RUBY
+        end
+
+        # The shared-example helpers are exempt from the block and arity rules, so a bare
+        # `include_examples` corrects even though it takes no block.
+        def test_registers_offense_for_include_examples
+          assert_offense(<<~RUBY)
+            ROWS.each do |row|
+                 ^^^^ #{format(MSG, replacement: "test_each")}
+              include_examples "a thing", row
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            test_each(ROWS) do |row|
+              include_examples "a thing", row
+            end
+          RUBY
+        end
+
+        # A splat is the one argument form the shared-example helpers will not take there.
+        def test_no_offense_for_include_context_with_a_splat
+          assert_no_offenses(<<~RUBY)
+            ROWS.each do |row|
+              include_context(*row, enabled: true)
+            end
+          RUBY
+        end
+
+        def test_registers_offense_for_shared_examples
+          assert_offense(<<~RUBY)
+            ROWS.each do |row|
+                 ^^^^ #{format(MSG, replacement: "test_each")}
+              shared_examples "a thing" do
+                it "spells \#{row}" do
+                end
+              end
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            test_each(ROWS) do |row|
+              shared_examples "a thing" do
+                it "spells \#{row}" do
+                end
+              end
+            end
+          RUBY
         end
 
         # `Minitest::Spec` defines `describe`, `it`, `before` and `after` itself, so a spec-style minitest

@@ -1601,7 +1601,9 @@ group rather than an instance, and calls inside the loop fail to resolve. `test_
 `test_each_hash` exist for Sorbet to see through.
 
 A loop whose body holds anything Sorbet rejects there -- `it_behaves_like`, a guard clause, an
-assignment, another loop -- is left alone rather than corrected into an error 3507.
+assignment, another loop -- is left alone rather than corrected into an error 3507. So is one
+whose examples carry metadata or take a block parameter, including `_1` and `it`, and one
+reaching for `let` or `subject` outside an enclosing example group.
 
 ### Examples
 

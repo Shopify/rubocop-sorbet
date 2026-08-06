@@ -11,7 +11,9 @@ module RuboCop
       # `test_each_hash` exist for Sorbet to see through.
       #
       # A loop whose body holds anything Sorbet rejects there -- `it_behaves_like`, a guard clause, an
-      # assignment, another loop -- is left alone rather than corrected into an error 3507.
+      # assignment, another loop -- is left alone rather than corrected into an error 3507. So is one
+      # whose examples carry metadata or take a block parameter, including `_1` and `it`, and one
+      # reaching for `let` or `subject` outside an enclosing example group.
       #
       # @safety
       #   `test_each` and `test_each_hash` are not shipped by `sorbet-runtime`; each project defines its
@@ -69,18 +71,49 @@ module RuboCop
 
         MSG = "Use `%<replacement>s` so Sorbet can see the tests defined in this loop."
         LOOP_METHODS = [:each, :each_pair, :each_with_index].freeze
-        # Anything else at the top level of a `test_each` block raises 3507, so the whole body must be these.
-        TEST_METHODS = [
-          :after,
-          :before,
-          :context,
-          :describe,
+        # Anything else at the top level of a `test_each` block raises 3507, so the whole body must be
+        # these, each paired with the number of arguments it accepts there. The error message names only
+        # four of them, and no arities at all, so this was measured against Sorbet 0.6.13403 rather than
+        # read off the docs.
+        HOOK_METHODS = { after: 0..0, before: 0..0 }.freeze
+        GROUP_METHODS = {
+          context: 1..1,
+          describe: 1..1,
+          example_group: 1..1,
+          fcontext: 1..1,
+          fdescribe: 1..1,
+          xcontext: 1..1,
+          xdescribe: 1..1,
+        }.freeze
+        EXAMPLE_METHODS = {
+          example: 0..1,
+          fexample: 0..1,
+          fit: 0..1,
+          focus: 0..1,
+          fspecify: 0..1,
+          it: 0..1,
+          pending: 0..1,
+          skip: 0..1,
+          specify: 0..1,
+          xexample: 0..1,
+          xit: 0..1,
+          xspecify: 0..1,
+        }.freeze
+        TEST_METHODS = HOOK_METHODS.merge(GROUP_METHODS, EXAMPLE_METHODS).freeze
+        # Sorbet takes these only where it is already inside an example group, which is what it tracks
+        # while descending. A loop at class-body or file scope raises 3507 on them like anything else.
+        GROUPED_TEST_METHODS = { let: 1..1, let!: 1..1, subject: 0..1 }.freeze
+        # These arrive with `--enable-experimental-rspec`, which also frees them from the block and arity
+        # rules the rest are held to: any number of arguments, and a block only if they want one. Sorbet
+        # rejects them without the flag, but only in a `describe` reached bare, since it does not treat
+        # an `RSpec.describe` as an example group at all unless the flag is on -- so a project reaching
+        # for these is a project where they are accepted.
+        SHARED_EXAMPLE_METHODS = [
+          :include_context,
           :include_examples,
-          :it,
-          :let,
+          :shared_context,
           :shared_examples,
-          :specify,
-          :subject,
+          :shared_examples_for,
         ].freeze
 
         def on_block(node)
@@ -202,10 +235,33 @@ module RuboCop
           body = node.body
           return false unless body
 
+          grouped = inside_example_group?(node)
           statements = body.begin_type? ? body.children : [body]
-          statements.all? do |statement|
-            send_node = statement.type?(:any_block) ? statement.send_node : statement
-            send_node.send_type? && send_node.receiver.nil? && TEST_METHODS.include?(send_node.method_name)
+          statements.all? { |statement| test_statement?(statement, grouped) }
+        end
+
+        # Each accepted statement is a receiverless call taking a block of its own, and that block has to
+        # be free of parameters -- which rules out `_1` and `it` as much as an explicit one.
+        def test_statement?(statement, grouped)
+          send_node = statement.type?(:any_block) ? statement.send_node : statement
+          return false unless send_node.send_type? && send_node.receiver.nil?
+          if SHARED_EXAMPLE_METHODS.include?(send_node.method_name)
+            # A splat or a passed block is the one thing they will not take.
+            return send_node.arguments.none? { |argument| argument.type?(:splat, :block_pass) }
+          end
+          return false unless statement.block_type? && statement.arguments.empty?
+
+          arity = TEST_METHODS[send_node.method_name]
+          arity ||= GROUPED_TEST_METHODS[send_node.method_name] if grouped
+          !arity.nil? && arity.cover?(send_node.arguments.size)
+        end
+
+        # An enclosing `describe` is what makes `let` and `subject` acceptable, and it counts whether it
+        # is reached bare or as `RSpec.describe`.
+        def inside_example_group?(node)
+          node.each_ancestor(:any_block).any? do |ancestor|
+            send_node = ancestor.send_node
+            send_node.send_type? && GROUP_METHODS.key?(send_node.method_name)
           end
         end
       end
