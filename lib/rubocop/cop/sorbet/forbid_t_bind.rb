@@ -17,12 +17,11 @@ module RuboCop
       #   # good
       #   #: self as Integer
       class ForbidTBind < RuboCop::Cop::Base
+        include RangeHelp
         extend AutoCorrector
 
         MSG = "Do not use `T.bind`."
-        COMMENT_START = "#"
-        HORIZONTAL_WHITESPACE = ["\t", " "].freeze
-        NEWLINES = ["\n", "\r"].freeze
+        LINE_ENDINGS = ["", "\n", "\r", "#"].freeze
         RESTRICT_ON_SEND = [:bind].freeze
 
         # @!method t_bind?(node)
@@ -50,29 +49,18 @@ module RuboCop
         def autocorrectable_t_bind?(node)
           return false unless node.first_argument&.self_type?
           return false unless assertion_ends_line?(node)
-          return false if rbs_annotation_follows?(node)
+          return false if ::RuboCop::Sorbet::RBSParser.rbs_annotation_after(processed_source, node)
 
           node.source_range.source_line.index(/\S/) == node.source_range.column
         end
 
         def assertion_ends_line?(node)
-          source = processed_source.buffer.source
-          position = skip_horizontal_whitespace(source, node.source_range.end_pos)
-          character = source[position]
-
-          character.nil? || NEWLINES.include?(character) || character == COMMENT_START
+          LINE_ENDINGS.include?(source_after_horizontal_whitespace(node))
         end
 
-        def rbs_annotation_follows?(node)
-          source = processed_source.buffer.source
-          position = skip_horizontal_whitespace(source, node.source_range.end_pos)
-
-          source[position, 2] == "#:"
-        end
-
-        def skip_horizontal_whitespace(source, position)
-          position += 1 while HORIZONTAL_WHITESPACE.include?(source[position])
-          position
+        def source_after_horizontal_whitespace(node, length: 1)
+          range = range_with_surrounding_space(node.source_range, side: :right, newlines: false)
+          range.source_buffer.source[range.end_pos, length]
         end
       end
     end
