@@ -5,6 +5,7 @@ require_relative "sorbet/mixin/t_enum"
 require_relative "sorbet/mixin/signature_help"
 require_relative "sorbet/mixin/constant_scope"
 require_relative "sorbet/mixin/t_let_correction"
+require_relative "sorbet/mixin/rbs_assertion_correction"
 
 require_relative "sorbet/binding_constant_without_type_alias"
 require_relative "sorbet/block_method_definition"
