@@ -959,9 +959,10 @@ STRING_OR_INTEGER = T.type_alias { T.any(Integer, String) }
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | 0.7.0 | 0.7.0
+Disabled | Yes | Yes (Unsafe) | 0.7.0 | <<next>>
 
 Disallows using `T.unsafe` anywhere.
+Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
 
 ### Examples
 
@@ -970,8 +971,14 @@ Disallows using `T.unsafe` anywhere.
 T.unsafe(foo)
 
 # good
-foo
+foo #: as untyped
 ```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+AutocorrectToRBS | `false` | Boolean
 
 ## Sorbet/ForbidTUntyped
 
