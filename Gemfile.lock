@@ -3,6 +3,7 @@ PATH
   specs:
     rubocop-sorbet (0.14.0)
       lint_roller
+      rbi (~> 0.4)
       rubocop (>= 1.75.2)
       spoom (~> 1.8)
 
