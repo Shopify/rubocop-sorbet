@@ -15,9 +15,9 @@ module RuboCop
     # `void?` rather than reaching back into the parser for those facts.
     module RBSParser
       # `#:` begins an RBS signature (each repeated `#:` line is a new overload).
-      RBS_SIGNATURE_PREFIX = /\A#\s*:/
+      RBS_SIGNATURE_PREFIX = /\A#:/
       # `#|` continues the preceding `#:` signature (e.g. multiline params/returns).
-      RBS_CONTINUATION_PREFIX = /\A#\s*\|/
+      RBS_CONTINUATION_PREFIX = /\A#\|/
 
       class << self
         # The RBS signatures attached to `node`, one `Signature` per overload.
@@ -177,7 +177,7 @@ module RuboCop
         # of characters consumed from the original text, for mapping
         # joined-content positions back to source offsets.
         def strip_rbs_prefix(text)
-          match = text.match(/\A#\s*[:|]\s*/)
+          match = text.match(/\A#[:|]\s*/)
           return [text, 0] unless match
 
           [match.post_match, match[0].length]
