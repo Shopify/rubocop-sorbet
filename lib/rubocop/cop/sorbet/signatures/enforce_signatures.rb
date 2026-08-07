@@ -164,8 +164,25 @@ module RuboCop
 
         def autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
           range = sig_correction_range(sig_nodes)
-          translated = translate_sigs_to_rbs("#{range.source}\n#{node.source}")
-          corrector.replace(range, translated_signature_prefix(translated).rstrip)
+          sig_source = normalize_runtime_sig_receivers(range, sig_nodes)
+          translated = translate_sigs_to_rbs("#{sig_source}\n#{node.source}")
+          replacement = translated_signature_prefix(translated, reject_sig: true)
+          return unless replacement
+
+          corrector.replace(range, replacement.rstrip)
+        end
+
+        def normalize_runtime_sig_receivers(range, sig_nodes)
+          source = range.source.dup
+          sig_nodes.reverse_each do |sig_node|
+            next unless sig_with_runtime?(sig_node)
+
+            send_node = sig_node.send_node
+            receiver_start = send_node.receiver.source_range.begin_pos - range.begin_pos
+            selector_start = send_node.loc.selector.begin_pos - range.begin_pos
+            source[receiver_start...selector_start] = ""
+          end
+          source
         end
 
         def remove_sigs(corrector, sig_nodes)
@@ -192,15 +209,18 @@ module RuboCop
         end
 
         def translate_signature_to_rbs(signature, node)
-          translated_signature_prefix(translate_sigs_to_rbs("#{signature}#{node.source}"))
+          translated = translate_sigs_to_rbs("#{signature}#{node.source}")
+          translated_signature_prefix(translated, reject_sig: true)
         end
 
-        def translated_signature_prefix(translated)
+        def translated_signature_prefix(translated, reject_sig: false)
           translated_source = RuboCop::ProcessedSource.new(
             translated,
             [processed_source.ruby_version, 3.3].max,
             parser_engine: processed_source.parser_engine,
           )
+          return if reject_sig && translated_source.ast&.each_node&.any? { |child| signature?(child) }
+
           signable_node = translated_source.ast&.each_node&.find do |child|
             child.any_def_type? || accessor?(child)
           end
