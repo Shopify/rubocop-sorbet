@@ -6,7 +6,7 @@ module RuboCop
   module Cop
     module Sorbet
       class RedundantTLetForLiteralTest < ::Minitest::Test
-        MSG = "Sorbet/RedundantTLetForLiteral: Redundant `T.let` for %{type} literal. " \
+        MSG = "Sorbet/RedundantTLetForLiteral: Redundant %{annotation} for %{type} literal. " \
           "Sorbet can infer this type automatically."
 
         def setup
@@ -19,7 +19,7 @@ module RuboCop
         def test_registers_offense_for_double_quoted_string
           assert_offense(<<~RUBY)
             GREETING = T.let("hello", String)
-                       ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "String")}
+                       ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "String")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -30,7 +30,7 @@ module RuboCop
         def test_registers_offense_for_single_quoted_string
           assert_offense(<<~RUBY)
             GREETING = T.let('hello', String)
-                       ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "String")}
+                       ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "String")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -43,7 +43,7 @@ module RuboCop
         def test_registers_offense_for_positive_integer
           assert_offense(<<~RUBY)
             MAX_RETRIES = T.let(3, Integer)
-                          ^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Integer")}
+                          ^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Integer")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -54,7 +54,7 @@ module RuboCop
         def test_registers_offense_for_negative_integer
           assert_offense(<<~RUBY)
             ERROR_CODE = T.let(-32601, Integer)
-                         ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Integer")}
+                         ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Integer")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -67,7 +67,7 @@ module RuboCop
         def test_registers_offense_for_float
           assert_offense(<<~RUBY)
             RATE = T.let(1.5, Float)
-                   ^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Float")}
+                   ^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Float")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -80,7 +80,7 @@ module RuboCop
         def test_registers_offense_for_symbol
           assert_offense(<<~RUBY)
             STATUS = T.let(:active, Symbol)
-                     ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Symbol")}
+                     ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Symbol")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -92,7 +92,7 @@ module RuboCop
         def test_registers_offense_for_interpolated_symbol
           assert_offense(<<~RUBY)
             STATUS = T.let(:"active_\#{n}", Symbol)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Symbol")}
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Symbol")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -105,7 +105,7 @@ module RuboCop
         def test_registers_offense_for_regexp_literal
           assert_offense(<<~RUBY)
             PATTERN = T.let(/foo/, Regexp)
-                      ^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Regexp")}
+                      ^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Regexp")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -116,7 +116,7 @@ module RuboCop
         def test_registers_offense_for_percent_r_regexp
           assert_offense(<<~RUBY)
             PATTERN = T.let(%r{foo/bar}, Regexp)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Regexp")}
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Regexp")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -149,7 +149,7 @@ module RuboCop
         def test_registers_offense_for_unfrozen_array_matching_annotation
           assert_offense(<<~RUBY)
             NAMES = T.let(["alice", "bob"], T::Array[String])
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -160,7 +160,7 @@ module RuboCop
         def test_registers_offense_for_frozen_array
           assert_offense(<<~RUBY)
             SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -171,7 +171,7 @@ module RuboCop
         def test_registers_offense_for_frozen_percent_word_array
           assert_offense(<<~RUBY)
             WORDS = T.let(%w[a b c].freeze, T::Array[String])
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -185,7 +185,7 @@ module RuboCop
         def test_registers_offense_for_frozen_interpolated_string_array
           assert_offense(<<~RUBY)
             PATHS = T.let(["\#{root}/a", "\#{root}/b"].freeze, T::Array[String])
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -196,7 +196,7 @@ module RuboCop
         def test_registers_offense_for_unfrozen_interpolated_string_array
           assert_offense(<<~RUBY)
             PATHS = T.let(["\#{root}/a", "\#{root}/b"], T::Array[String])
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -209,7 +209,7 @@ module RuboCop
         def test_registers_offense_for_unfrozen_mixed_plain_and_interpolated_string_array
           assert_offense(<<~RUBY)
             NAMES = T.let(["alice", "\#{prefix}bob"], T::Array[String])
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -222,7 +222,7 @@ module RuboCop
         def test_registers_offense_for_interpolated_symbol_array
           assert_offense(<<~RUBY)
             KEYS = T.let(%I[key_\#{a} key_\#{b}], T::Array[Symbol])
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -236,7 +236,7 @@ module RuboCop
         def test_registers_offense_for_frozen_mixed_array
           assert_offense(<<~RUBY)
             VALUES = T.let([1, "a", nil].freeze, T::Array[T.nilable(T.any(Integer, String))])
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -247,7 +247,7 @@ module RuboCop
         def test_registers_offense_for_frozen_nested_array
           assert_offense(<<~RUBY)
             PAIRS = T.let([["a"], ["b"]].freeze, T::Array[T::Array[String]])
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -318,7 +318,7 @@ module RuboCop
             # typed: strong
             class Report
               CATEGORIES = T.let(["a", "b"].freeze, T::Array[String])
-                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
 
               def all
                 [CATEGORIES].flatten
@@ -346,7 +346,7 @@ module RuboCop
           assert_offense(<<~RUBY)
             class Builder
               BASIC = T.let([:a, :b].freeze, T::Array[Symbol])
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
 
               def build
                 acc = BASIC
@@ -392,7 +392,7 @@ module RuboCop
         def test_registers_offense_for_heredoc_string
           assert_offense(<<~RUBY)
             MSG = T.let(<<~MESSAGE, String)
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "String")}
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "String")}
               hello world
             MESSAGE
           RUBY
@@ -410,7 +410,7 @@ module RuboCop
         def test_registers_offense_for_heredoc_string_with_trailing_comment
           assert_offense(<<~RUBY)
             MSG = T.let(<<~MESSAGE, String) # keep me
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "String")}
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "String")}
               hello world
             MESSAGE
           RUBY
@@ -425,7 +425,7 @@ module RuboCop
         def test_registers_offense_for_multiline_heredoc_string
           assert_offense(<<~RUBY)
             MSG = T.let(
-                  ^^^^^^ #{format(MSG, type: "String")}
+                  ^^^^^^ #{format(MSG, annotation: "`T.let`", type: "String")}
               <<~MESSAGE,
                 hello world
               MESSAGE
@@ -447,7 +447,7 @@ module RuboCop
         def test_registers_offense_for_frozen_array_of_multiple_heredocs
           assert_offense(<<~RUBY)
             MESSAGES = T.let([<<~A, <<~B].freeze, T::Array[String])
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
               first
             A
               second
@@ -509,7 +509,7 @@ module RuboCop
         def test_registers_offense_for_frozen_regexp_literal
           assert_offense(<<~RUBY)
             PATTERN = T.let(/foo/.freeze, Regexp)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Regexp")}
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Regexp")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -587,7 +587,7 @@ module RuboCop
           assert_offense(<<~RUBY)
             class Foo
               MAX = T.let(100, Integer)
-                    ^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Integer")}
+                    ^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Integer")}
             end
           RUBY
 
@@ -616,7 +616,7 @@ module RuboCop
             class Foo
               class << self
                 NAMES = T.let(["a", "b"].freeze, T::Array[String])
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
               end
             end
           RUBY
@@ -634,7 +634,7 @@ module RuboCop
           assert_offense(<<~RUBY)
             module Foo
               NAMES = T.let(["a", "b"].freeze, T::Array[String])
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
             end
           RUBY
 
@@ -661,7 +661,7 @@ module RuboCop
           stub_sorbet_static_version("0.6.13303")
           assert_offense(<<~RUBY)
             MAX = T.let(3, Integer)
-                  ^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Integer")}
+                  ^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Integer")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -686,7 +686,7 @@ module RuboCop
         def test_handles_multiline_t_let_with_simple_literal
           assert_offense(<<~RUBY)
             MSG = T.let(
-                  ^^^^^^ #{format(MSG, type: "String")}
+                  ^^^^^^ #{format(MSG, annotation: "`T.let`", type: "String")}
               "out of order",
               String,
             )
@@ -701,7 +701,7 @@ module RuboCop
         def test_registers_offense_for_cbase_t_let
           assert_offense(<<~RUBY)
             MAX = ::T.let(3, Integer)
-                  ^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Integer")}
+                  ^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Integer")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -713,7 +713,7 @@ module RuboCop
         def test_registers_offense_for_cbase_t_and_t_array
           assert_offense(<<~RUBY)
             SHELLS = ::T.let([:bash, :zsh].freeze, ::T::Array[Symbol])
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -726,7 +726,7 @@ module RuboCop
         def test_registers_offense_for_unfrozen_array_with_cbase_annotation
           assert_offense(<<~RUBY)
             NAMES = T.let(["alice", "bob"], ::T::Array[String])
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, type: "Array")}
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
           RUBY
 
           assert_correction(<<~RUBY)
@@ -739,7 +739,7 @@ module RuboCop
         def test_registers_offense_for_unfrozen_array_multiline_annotation
           assert_offense(<<~RUBY)
             NAMES = T.let(
-                    ^^^^^^ #{format(MSG, type: "Array")}
+                    ^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Array")}
               ["alice", "bob"],
               T::Array[
                 String,
@@ -749,6 +749,148 @@ module RuboCop
 
           assert_correction(<<~RUBY)
             NAMES = ["alice", "bob"]
+          RUBY
+        end
+
+        # Trailing RBS annotations are equivalent to `T.let`, and are redundant
+        # under the same literal-inference rules.
+        def test_registers_offense_for_trailing_rbs_annotation
+          assert_offense(<<~RUBY)
+            GREETING = "hello" #: String
+                               ^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "String")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            GREETING = "hello"
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_string_with_trailing_rbs_annotation
+          assert_no_offenses(<<~RUBY)
+            GREETING = "hello".freeze #: String
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_symbol_with_trailing_rbs_annotation
+          assert_no_offenses(<<~RUBY)
+            STATUS = :active.freeze #: Symbol
+          RUBY
+        end
+
+        def test_registers_offense_for_frozen_regexp_with_trailing_rbs_annotation
+          assert_offense(<<~RUBY)
+            PATTERN = /foo/.freeze #: Regexp
+                                   ^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "Regexp")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PATTERN = /foo/.freeze
+          RUBY
+        end
+
+        def test_registers_offense_for_fully_qualified_trailing_rbs_annotation
+          assert_offense(<<~RUBY)
+            COUNT = 1 #: ::Integer
+                      ^^^^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "Integer")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            COUNT = 1
+          RUBY
+        end
+
+        def test_registers_offense_for_trailing_rbs_array_annotation
+          assert_offense(<<~RUBY)
+            NAMES = ["alice", "bob"] #: Array[String]
+                                     ^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            NAMES = ["alice", "bob"]
+          RUBY
+        end
+
+        def test_registers_offense_for_multiline_trailing_rbs_array_annotation
+          assert_offense(<<~RUBY)
+            NAMES = [
+              "alice",
+              "bob",
+            ] #: Array[String]
+              ^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            NAMES = [
+              "alice",
+              "bob",
+            ]
+          RUBY
+        end
+
+        def test_no_offense_for_nonredundant_or_nonconstant_rbs_annotations
+          assert_no_offenses(<<~RUBY)
+            MAYBE = "hello" #: String?
+            WIDE = "hello" #: Object
+            CAST = "hello" #: as String
+
+            NAMES = ["alice", "bob"] #: Array[String?]
+            local = "hello" #: String
+            @greeting = "hello" #: String
+          RUBY
+        end
+
+        def test_no_offense_for_receiverless_freeze_with_rbs_annotation
+          assert_no_offenses(<<~RUBY)
+            VALUE = freeze #: Array[String]
+          RUBY
+        end
+
+        def test_no_offense_for_trailing_rbs_annotation_inside_conditional
+          assert_no_offenses(<<~RUBY)
+            if enabled?
+              GREETING = "hello" #: String
+              NAMES = ["alice", "bob"] #: Array[String]
+            end
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_and_array_rbs_annotations_below_minimum_sorbet_version
+          stub_sorbet_static_version("0.6.13303")
+          assert_no_offenses(<<~RUBY)
+            PATTERN = /foo/.freeze #: Regexp
+            NAMES = ["alice", "bob"] #: Array[String]
+          RUBY
+        end
+
+        def test_still_flags_bare_rbs_literal_below_minimum_sorbet_version
+          stub_sorbet_static_version("0.6.13303")
+          assert_offense(<<~RUBY)
+            GREETING = "hello" #: String
+                               ^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "String")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            GREETING = "hello"
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_and_array_rbs_annotations_without_sorbet_static
+          stub_sorbet_static_version(nil)
+          assert_no_offenses(<<~RUBY)
+            PATTERN = /foo/.freeze #: Regexp
+            NAMES = ["alice", "bob"] #: Array[String]
+          RUBY
+        end
+
+        def test_still_flags_bare_rbs_literal_without_sorbet_static
+          stub_sorbet_static_version(nil)
+          assert_offense(<<~RUBY)
+            GREETING = "hello" #: String
+                               ^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "String")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            GREETING = "hello"
           RUBY
         end
 

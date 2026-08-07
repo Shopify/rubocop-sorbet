@@ -11,8 +11,8 @@ module RuboCop
     # No Cop::Base state is required.
     #
     # `rbs_signatures_before` returns `Signature` objects that encapsulate one
-    # RBS overload each; ask them for `return_type`, `return_type_range`, and
-    # `void?` rather than reaching back into the parser for those facts.
+    # RBS overload each. `rbs_annotation_after` returns the trailing RBS
+    # annotation attached to an expression and its comment node.
     module RBSParser
       # `#:` begins an RBS signature (each repeated `#:` line is a new overload).
       RBS_SIGNATURE_PREFIX = /\A#:/
@@ -28,6 +28,25 @@ module RuboCop
           node = node.parent while node.parent&.send_type?
           rbs_signature_groups(comments_above(processed_source, node))
             .map { |group| Signature.new(processed_source, group) }
+        end
+
+        # The trailing RBS annotation attached to `node`, as `[comment, text]`.
+        # The comment must follow the expression on its final line with only
+        # horizontal whitespace between them.
+        def rbs_annotation_after(processed_source, node)
+          last_line = node.source_range.last_line
+          comment = processed_source.each_comment_in_lines(last_line..last_line).find do |candidate|
+            next false if candidate.source_range.begin_pos < node.source_range.end_pos
+
+            gap = processed_source.buffer.source[node.source_range.end_pos...candidate.source_range.begin_pos]
+            gap.match?(/\A[ \t]*\z/)
+          end
+          return unless comment&.text&.match?(RBS_SIGNATURE_PREFIX)
+
+          annotation = comment.text.sub(RBS_SIGNATURE_PREFIX, "").strip
+          return if annotation.empty?
+
+          [comment, annotation]
         end
 
         private

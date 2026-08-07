@@ -357,8 +357,8 @@ Sorbet/RedundantExtendTSig:
 
 Sorbet/RedundantTLetForLiteral:
   Description: >-
-    Checks for redundant `T.let` declarations on constants where the value
-    is a simple literal whose type Sorbet can infer automatically.
+    Checks for redundant `T.let` declarations and trailing RBS annotations
+    on constants whose literal values have types Sorbet can infer automatically.
   Enabled: pending
   Safe: true
   SafeAutoCorrect: false

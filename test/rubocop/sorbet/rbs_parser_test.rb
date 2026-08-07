@@ -6,8 +6,7 @@ module RuboCop
   module Sorbet
     class RBSParserTest < ::Minitest::Test
       # `RBSParser` is a pure module over a `ProcessedSource` and comment
-      # nodes; these tests exercise its public API (`rbs_signatures_before`
-      # and the `Signature` objects it returns) directly, without a Cop.
+      # nodes; these tests exercise its public APIs directly without a Cop.
 
       def parse(source)
         RuboCop::ProcessedSource.new(source, 3.4)
@@ -65,6 +64,40 @@ module RuboCop
 
       def test_signatures_before_empty_when_no_comments
         assert_empty(signatures_before("def foo; end"))
+      end
+
+      # --- rbs_annotation_after ---
+
+      def test_annotation_after_returns_comment_and_text
+        comment, annotation = annotation_after('GREETING = "hello" #: String')
+
+        assert_equal("#: String", comment.text)
+        assert_equal("String", annotation)
+      end
+
+      def test_annotation_after_accepts_marker_spacing
+        _comment, annotation = annotation_after('GREETING = "hello" #  :  String')
+
+        assert_equal("String", annotation)
+      end
+
+      def test_annotation_after_handles_multiline_expression
+        _comment, annotation = annotation_after(<<~RUBY)
+          NAMES = [
+            "alice",
+            "bob",
+          ] #: Array[String]
+        RUBY
+
+        assert_equal("Array[String]", annotation)
+      end
+
+      def test_annotation_after_rejects_non_rbs_comment
+        assert_nil(annotation_after('GREETING = "hello" # String'))
+      end
+
+      def test_annotation_after_rejects_comment_separated_by_code
+        assert_nil(annotation_after('GREETING = "hello"; nil #: String'))
       end
 
       # --- Signature#return_type / return_type_range / void? ---
@@ -169,6 +202,13 @@ module RuboCop
       def signatures_before(source)
         ps = parse(source)
         RBSParser.rbs_signatures_before(ps, def_node(ps))
+      end
+
+      def annotation_after(source)
+        ps = parse(source)
+        node = ps.ast
+        node = node.each_node(:casgn).first unless node.casgn_type?
+        RBSParser.rbs_annotation_after(ps, node)
       end
 
       def signature(source)
