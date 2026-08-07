@@ -6,6 +6,7 @@ module RuboCop
   module Cop
     module Sorbet
       # Disallows using `T.must` anywhere.
+      # Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
       #
       # @example
       #
@@ -15,6 +16,9 @@ module RuboCop
       #   # good
       #   foo #: as !nil
       class ForbidTMust < RuboCop::Cop::Base
+        include RBSAssertionCorrection
+        extend AutoCorrector
+
         MSG = "Do not use `T.must`."
         RESTRICT_ON_SEND = [:must].freeze
 
@@ -22,9 +26,20 @@ module RuboCop
         def_node_matcher(:t_must?, "(send (const nil? :T) :must _)")
 
         def on_send(node)
-          add_offense(node) if t_must?(node)
+          return unless t_must?(node)
+
+          add_offense(node) { |corrector| autocorrect_t_must_to_rbs(corrector, node) }
         end
         alias_method :on_csend, :on_send
+
+        private
+
+        def autocorrect_t_must_to_rbs(corrector, node)
+          return if t_must?(node.first_argument)
+          return unless rbs_assertion_autocorrectable?(node, allow_assignment: true)
+
+          corrector.replace(node, "#{node.first_argument.source} #: as !nil")
+        end
       end
     end
   end

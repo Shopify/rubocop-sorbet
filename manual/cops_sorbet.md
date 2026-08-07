@@ -825,9 +825,10 @@ foo #: Integer
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | 0.10.4 | -
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
 
 Disallows using `T.must` anywhere.
+Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
 
 ### Examples
 
@@ -838,6 +839,12 @@ T.must(foo)
 # good
 foo #: as !nil
 ```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+AutocorrectToRBS | `false` | Boolean
 
 ## Sorbet/ForbidTSig
 
