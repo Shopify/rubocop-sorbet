@@ -219,6 +219,12 @@ Sorbet/ForbidTBind:
   Enabled: false
   VersionAdded: 0.10.4
 
+Sorbet/ForbidTBindInAssignment:
+  Description: 'Forbid assigning the result of T.bind.'
+  Enabled: pending
+  SafeAutoCorrect: false
+  VersionAdded: '<<next>>'
+
 Sorbet/ForbidTCast:
   Description: 'Forbid usage of T.cast.'
   Enabled: false
