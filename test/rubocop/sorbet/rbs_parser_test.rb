@@ -140,19 +140,16 @@ module RuboCop
         assert_nil(sig.return_type_range)
       end
 
-      # Prefix-stripping robustness exercised through the public API: the
-      # marker may carry zero or multiple spaces before/after `:`/`|`.
+      # Whitespace is allowed after the `#:`/`#|` marker, but Sorbet requires
+      # the marker itself to be contiguous.
       def test_signature_return_type_with_no_space_after_marker
         sig = signature("#:-> void\ndef foo; end")
         assert_equal("void", sig.return_type)
         assert(sig.void?)
       end
 
-      def test_signature_return_type_with_multiple_spaces_after_marker
-        sig = signature("#  : (String) -> String\ndef foo; end")
-        assert_equal("String", sig.return_type)
-        highlight, = sig.return_type_range
-        assert_equal("String", highlight.source)
+      def test_signatures_before_rejects_space_within_marker
+        assert_empty(signatures_before("#  : (String) -> String\ndef foo; end"))
       end
 
       def test_signature_return_type_with_continuation_prefix_spacing
@@ -160,6 +157,11 @@ module RuboCop
         assert_equal("String", sig.return_type)
         highlight, = sig.return_type_range
         assert_equal("String", highlight.source)
+      end
+
+      def test_signatures_before_rejects_space_within_continuation_marker
+        sig = signature("#: (String) ->\n# | String\ndef foo; end")
+        assert_nil(sig.return_type)
       end
 
       private
