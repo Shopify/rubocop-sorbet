@@ -221,7 +221,10 @@ Sorbet/ForbidTStruct:
 Sorbet/ForbidTAbsurd:
   Description: 'Forbid usage of T.absurd.'
   Enabled: false
+  AutocorrectToRBS: false
   VersionAdded: 0.10.4
+  SafeAutoCorrect: false
+  VersionChanged: '<<next>>'
 
 Sorbet/ForbidTBind:
   Description: 'Forbid usage of T.bind.'
