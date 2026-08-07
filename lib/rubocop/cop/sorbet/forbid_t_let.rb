@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require "rubocop"
+require "rbi"
 
 module RuboCop
   module Cop
     module Sorbet
       # Disallows using `T.let` anywhere.
+      # Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
       #
       # @example
       #
@@ -15,6 +17,9 @@ module RuboCop
       #   # good
       #   foo #: Integer
       class ForbidTLet < RuboCop::Cop::Base
+        include RBSAssertionCorrection
+        extend AutoCorrector
+
         MSG = "Do not use `T.let`."
         RESTRICT_ON_SEND = [:let].freeze
 
@@ -22,9 +27,23 @@ module RuboCop
         def_node_matcher(:t_let?, "(send (const nil? :T) :let _ _)")
 
         def on_send(node)
-          add_offense(node) if t_let?(node)
+          return unless t_let?(node)
+
+          add_offense(node) { |corrector| autocorrect_t_let_to_rbs(corrector, node) }
         end
         alias_method :on_csend, :on_send
+
+        private
+
+        def autocorrect_t_let_to_rbs(corrector, node)
+          return if t_let?(node.first_argument)
+          return unless rbs_assertion_autocorrectable?(node, allow_assignment: true)
+
+          type = ::RBI::Type.parse_string(node.last_argument.source).rbs_string
+          corrector.replace(node, "#{node.first_argument.source} #: #{type}")
+        rescue ::RBI::Type::Error
+          nil
+        end
       end
     end
   end
