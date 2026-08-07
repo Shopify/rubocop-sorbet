@@ -429,14 +429,87 @@ module RuboCop
             RUBY
           end
 
-          def test_makes_offense_if_allow_rbs_false
+          def test_enforce_sig_autocorrects_rbs_signature
             @cop = target_cop.new(cop_config({
               "Style" => "sig",
             }))
             assert_offense(<<~RUBY)
               #: -> void
+              ^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
               def foo; end
-              ^^^^^^^^^^^^ #{MSG_SIG}
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { void }
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_removes_rbs_signature_when_sig_already_exists
+            @cop = target_cop.new(cop_config({
+              "Style" => "sig",
+            }))
+            assert_offense(<<~RUBY)
+              #: -> void
+              ^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+              sig { void }
+              def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { void }
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_autocorrects_abstract_rbs_signature_without_changing_method
+            @cop = target_cop.new(cop_config({
+              "Style" => "sig",
+            }))
+            assert_offense(<<~RUBY)
+              # @abstract
+              #: -> Integer
+              ^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+              def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+              sig { abstract.returns(Integer) }
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_autocorrects_rbs_overloads_continuations_and_accessors
+            @cop = target_cop.new(cop_config({
+              "Style" => "sig",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                #: (String, ?Symbol) -> String
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+                #: (
+                #| Integer,
+                #| ?Symbol
+                #| ) -> Integer
+                def foo(x, y = nil); end
+
+                #: String
+                ^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+                attr_reader :name
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                sig { params(x: String, y: Symbol).returns(String) }
+                sig { params(x: Integer, y: Symbol).returns(Integer) }
+                def foo(x, y = nil); end
+
+                sig { returns(String) }
+                attr_reader :name
+              end
             RUBY
           end
 
@@ -590,6 +663,19 @@ module RuboCop
                 ^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
               end
             RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                #: String
+                attr_reader :foo
+
+                #: String
+                attr_reader :bar
+
+                #: untyped
+                attr_writer :baz
+              end
+            RUBY
           end
 
           def test_enforce_rbs_takes_precedence_over_allow_rbs
@@ -625,15 +711,15 @@ module RuboCop
             RUBY
 
             assert_correction(<<~RUBY)
-              #: () -> untyped
+              #: -> untyped
               def foo; end
               #: (untyped, ?untyped, ?c: untyped) -> untyped
               def bar(a, b = 2, c: Foo.new); end
-              #: () { (?) -> untyped } -> untyped
+              #: ?{ (?) -> untyped } -> untyped
               def baz(&blk); end
-              #: (untyped, untyped) { (?) -> untyped } -> untyped
+              #: (untyped, untyped) ?{ (?) -> untyped } -> untyped
               def self.foo(a, b, &c); end
-              #: (untyped, *untyped, **untyped) -> untyped
+              #: (untyped, *untyped, **untyped c) -> untyped
               def self.bar(a, *b, **c); end
               #: (a: untyped) -> untyped
               def self.baz(a:); end
@@ -887,7 +973,7 @@ module RuboCop
 
             assert_correction(<<~RUBY)
               class Foo
-                #: () -> untyped
+                #: -> untyped
                 def foo
                 end
 
@@ -898,7 +984,7 @@ module RuboCop
             RUBY
           end
 
-          def test_enforce_rbs_does_not_autocorrect_sig_signatures
+          def test_enforce_rbs_autocorrects_sig_signatures
             @cop = target_cop.new(cop_config({
               "Style" => "rbs",
             }))
@@ -909,7 +995,94 @@ module RuboCop
               def foo; end
             RUBY
 
-            assert_no_corrections
+            assert_correction(<<~RUBY)
+              #: -> void
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_qualified_sig_signatures
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              T::Sig.sig { void }
+              ^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def foo; end
+
+              T::Sig::WithoutRuntime.sig { void }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def bar; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: -> void
+              def foo; end
+
+              # @without_runtime
+              #: -> void
+              def bar; end
+            RUBY
+          end
+
+          def test_enforce_rbs_removes_sig_when_rbs_signature_already_exists
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              #: -> void
+              sig { void }
+              ^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: -> void
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_abstract_sig_without_changing_method
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              sig { abstract.returns(Integer) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+              #: -> Integer
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_sig_overloads
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                sig { params(x: String).returns(String) }
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+                sig { params(x: Integer).returns(Integer) }
+                def foo(x); end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                #: (String) -> String
+                #: (Integer) -> Integer
+                def foo(x); end
+              end
+            RUBY
           end
 
           def test_enforce_rbs_rejects_sig_signatures
@@ -951,8 +1124,8 @@ module RuboCop
 
             assert_offense(<<~RUBY)
               #: -> void
+              ^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
               def foo; end
-              ^^^^^^^^^^^^ #{MSG_SIG}
             RUBY
           end
 
@@ -991,7 +1164,7 @@ module RuboCop
             RUBY
 
             assert_correction(<<~RUBY)
-              #: () -> untyped
+              #: -> untyped
               def foo; end
               #: (untyped, untyped, untyped) -> untyped
               def bar(a, b, c); end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spoom"
+
 module RuboCop
   module Cop
     module Sorbet
@@ -25,6 +27,7 @@ module RuboCop
       # * `Style`: signature style to enforce - 'sig' for sig blocks, 'rbs' for RBS comments, 'both' to allow either (default: 'sig')
       # * `AutocorrectStyle`: signature style to use when autocorrecting - 'sig' for sig blocks, 'rbs' for RBS comments (default: 'sig'). Only used when `Style` is 'both'.
       class EnforceSignatures < ::RuboCop::Cop::Base
+        include RangeHelp
         extend AutoCorrector
         include SignatureHelp
 
@@ -74,32 +77,48 @@ module RuboCop
 
         def check_node(node)
           scope = self.scope(node)
-          sig_node = sig_checker.signature_node(scope)
-          rbs_node = rbs_checker.signature_node(node)
+          sig_nodes = sig_checker.signature_nodes(scope)
+          rbs_signatures = rbs_checker.signatures(node)
+          rbs_signatures = rbs_checker.signatures(sig_nodes.first) if rbs_signatures.empty? && !sig_nodes.empty?
 
           case signature_style
           when "rbs"
             # RBS style - only RBS signatures allowed
-            if sig_node
-              add_offense(sig_node, message: "Use RBS signature comments rather than sig blocks.")
+            unless sig_nodes.empty?
+              add_offense(sig_nodes.first, message: "Use RBS signature comments rather than sig blocks.") do |corrector|
+                if rbs_signatures.empty?
+                  autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
+                else
+                  remove_sigs(corrector, sig_nodes)
+                end
+              end
               return
             end
 
-            unless rbs_node
+            if rbs_signatures.empty?
               add_offense(node, message: "Each method is required to have an RBS signature.") do |corrector|
                 autocorrect_with_signature_type(corrector, node, "rbs")
               end
             end
           when "both"
             # Both styles allowed - require at least one
-            unless sig_node || rbs_node
+            if sig_nodes.empty? && rbs_signatures.empty?
               add_offense(node, message: "Each method is required to have a signature.") do |corrector|
                 autocorrect_with_signature_type(corrector, node, autocorrect_style)
               end
             end
           else # "sig" (default)
             # Sig style - only sig signatures allowed
-            unless sig_node
+            if rbs_signatures.any?
+              first_comment = rbs_signatures.first.comments.first
+              add_offense(first_comment, message: "Use sig block signatures rather than RBS signature comments.") do |corrector|
+                if sig_nodes.empty?
+                  autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
+                else
+                  remove_rbs(corrector, rbs_signatures)
+                end
+              end
+            elsif sig_nodes.empty?
               add_offense(node, message: "Each method is required to have a sig block signature.") do |corrector|
                 autocorrect_with_signature_type(corrector, node, "sig")
               end
@@ -119,24 +138,117 @@ module RuboCop
 
         def autocorrect_with_signature_type(corrector, node, type)
           target = leftmost_send_ancestor(node)
-          suggest = create_signature_suggestion(target, type)
+          suggest = SigSuggestion.new(target.loc.column, param_type_placeholder, return_type_placeholder)
           populate_signature_suggestion(suggest, node)
-          corrector.insert_before(target, suggest.to_autocorrect)
+
+          correction = suggest.to_autocorrect
+          correction = translate_signature_to_rbs(correction, node) if type == "rbs"
+          corrector.insert_before(target, correction)
+        end
+
+        def autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
+          comments = rbs_signatures.flat_map(&:comments)
+          range = rbs_correction_range(comments)
+          rbs_source = range.source.lines.map(&:lstrip).join
+          translated = translate_rbs_to_sigs("#{rbs_source}\n#{node.source}")
+          replacement = translated_signature_prefix(translated).rstrip
+          indent = " " * range.column
+          corrector.replace(range, replacement.gsub("\n", "\n#{indent}"))
+        end
+
+        def remove_rbs(corrector, rbs_signatures)
+          comments = rbs_signatures.flat_map(&:comments)
+          range = range_by_whole_lines(rbs_correction_range(comments), include_final_newline: true)
+          corrector.remove(range)
+        end
+
+        def autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
+          range = sig_correction_range(sig_nodes)
+          sig_source = normalize_runtime_sig_receivers(range, sig_nodes)
+          translated = translate_sigs_to_rbs("#{sig_source}\n#{node.source}")
+          replacement = translated_signature_prefix(translated, reject_sig: true)
+          return unless replacement
+
+          corrector.replace(range, replacement.rstrip)
+        end
+
+        def normalize_runtime_sig_receivers(range, sig_nodes)
+          source = range.source.dup
+          sig_nodes.reverse_each do |sig_node|
+            next unless sig_with_runtime?(sig_node)
+
+            send_node = sig_node.send_node
+            receiver_start = send_node.receiver.source_range.begin_pos - range.begin_pos
+            selector_start = send_node.loc.selector.begin_pos - range.begin_pos
+            source[receiver_start...selector_start] = ""
+          end
+          source
+        end
+
+        def remove_sigs(corrector, sig_nodes)
+          range = range_by_whole_lines(sig_correction_range(sig_nodes), include_final_newline: true)
+          corrector.remove(range)
+        end
+
+        def sig_correction_range(sig_nodes)
+          sig_nodes.first.source_range.with(end_pos: sig_nodes.last.source_range.end_pos)
+        end
+
+        def rbs_correction_range(comments)
+          first_comment = comments.first
+          expected_line = first_comment.loc.line
+          processed_source.comments.reverse_each do |comment|
+            next if comment.loc.line >= first_comment.loc.line
+            break unless comment.loc.line + 1 == expected_line && comment.text.start_with?("# @")
+
+            first_comment = comment
+            expected_line = comment.loc.line
+          end
+
+          first_comment.source_range.with(end_pos: comments.last.source_range.end_pos)
+        end
+
+        def translate_signature_to_rbs(signature, node)
+          translated = translate_sigs_to_rbs("#{signature}#{node.source}")
+          translated_signature_prefix(translated, reject_sig: true)
+        end
+
+        def translated_signature_prefix(translated, reject_sig: false)
+          translated_source = RuboCop::ProcessedSource.new(
+            translated,
+            [processed_source.ruby_version, 3.3].max,
+            parser_engine: processed_source.parser_engine,
+          )
+          return if reject_sig && translated_source.ast&.each_node&.any? { |child| signature?(child) }
+
+          signable_node = translated_source.ast&.each_node&.find do |child|
+            child.any_def_type? || accessor?(child)
+          end
+          raise "Spoom translation did not produce a method or accessor" unless signable_node
+
+          target = leftmost_send_ancestor(signable_node)
+          translated.byteslice(0, target.source_range.begin_pos)
+        end
+
+        def translate_sigs_to_rbs(input)
+          ::Spoom::Sorbet::Translate.sorbet_sigs_to_rbs_comments(
+            input,
+            file: processed_source.file_path,
+            positional_names: false,
+          )
+        end
+
+        def translate_rbs_to_sigs(input)
+          ::Spoom::Sorbet::Translate::RBSCommentsToSorbetSigs::HumanReadableTranslator.new(
+            input,
+            file: processed_source.file_path,
+          ).rewrite
         end
 
         def leftmost_send_ancestor(node)
           ancestor = node
           ancestor = ancestor.parent while ancestor.parent&.send_type?
           ancestor
-        end
-
-        def create_signature_suggestion(node, type)
-          case type
-          when "rbs"
-            RBSSuggestion.new(node.loc.column)
-          else # "sig"
-            SigSuggestion.new(node.loc.column, param_type_placeholder, return_type_placeholder)
-          end
         end
 
         def populate_signature_suggestion(suggest, node)
@@ -151,11 +263,7 @@ module RuboCop
           suggest.returns = "void" if instance_initialize?(node)
 
           node.arguments.each do |arg|
-            if arg.blockarg_type? && suggest.respond_to?(:has_block=)
-              suggest.has_block = true
-            else
-              suggest.params << Param.new(arg.children.first, arg.type)
-            end
+            suggest.params << Param.new(arg.children.first, arg.type)
           end
         end
 
@@ -177,11 +285,6 @@ module RuboCop
         def populate_accessor_suggestion(suggest, node)
           method = node.children[1]
           symbol = node.children[2]
-
-          if suggest.is_a?(RBSSuggestion)
-            suggest.attribute = true
-            return
-          end
 
           add_accessor_parameter_if_needed(suggest, symbol, method)
           set_void_return_for_writer(suggest, method)
@@ -248,27 +351,29 @@ module RuboCop
         end
 
         class RBSSignatureChecker < SignatureChecker
-          def signature_node(node)
-            ::RuboCop::Sorbet::RBSParser.rbs_signatures_before(processed_source, node).first&.comments&.first
+          def signatures(node)
+            ::RuboCop::Sorbet::RBSParser.rbs_signatures_before(processed_source, node)
           end
         end
 
         class SigSignatureChecker < SignatureChecker
+          EMPTY_SIGNATURES = [].freeze
+
           def initialize(processed_source)
             super(processed_source)
-            @last_sig_for_scope = {}
+            @signatures_for_scope = {}
           end
 
-          def signature_node(scope)
-            @last_sig_for_scope[scope]
+          def signature_nodes(scope)
+            @signatures_for_scope.fetch(scope, EMPTY_SIGNATURES)
           end
 
           def on_signature(node, scope)
-            @last_sig_for_scope[scope] = node
+            (@signatures_for_scope[scope] ||= []) << node
           end
 
           def clear_signature(scope)
-            @last_sig_for_scope[scope] = nil
+            @signatures_for_scope.delete(scope)
           end
         end
 
@@ -303,59 +408,6 @@ module RuboCop
               "void"
             else
               "returns(#{@returns})"
-            end
-          end
-        end
-
-        class RBSSuggestion
-          attr_accessor :params, :returns, :has_block, :attribute
-
-          def initialize(indent)
-            @params = []
-            @returns = nil
-            @has_block = false
-            @attribute = false
-            @indent = indent
-          end
-
-          def to_autocorrect
-            "#: #{generate_signature}\n#{" " * @indent}"
-          end
-
-          private
-
-          def generate_signature
-            return @returns || "untyped" if @attribute
-
-            param_types = @params.map { |param| rbs_param(param) }.join(", ")
-            return_type = @returns || "untyped"
-
-            signature = if @params.empty?
-              "()"
-            else
-              "(#{param_types})"
-            end
-
-            signature += " { (?) -> untyped }" if @has_block
-            signature += " -> #{return_type}"
-
-            signature
-          end
-
-          def rbs_param(param)
-            case param.kind
-            when :kwarg
-              "#{param.name}: untyped"
-            when :kwoptarg
-              "?#{param.name}: untyped"
-            when :optarg
-              "?untyped"
-            when :restarg
-              "*untyped"
-            when :kwrestarg
-              "**untyped"
-            else
-              "untyped"
             end
           end
         end
