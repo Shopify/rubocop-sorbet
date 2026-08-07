@@ -81,7 +81,6 @@ module RuboCop
         minimum_target_sorbet_static_version "0.6.13304"
 
         MSG = "Redundant %{annotation} for %{type} literal. Sorbet can infer this type automatically."
-        RBS_ANNOTATION = /\A#\s*:\s*(?<type>.+?)\s*\z/
 
         # Simple literal node types Sorbet infers, mapped to the class name.
         # Interpolated strings/symbols (`dstr`/`dsym`) infer as `String`/`Symbol`.
@@ -171,8 +170,10 @@ module RuboCop
 
         def check_rbs_annotation(node)
           value_node = node.children[2]
-          comment, annotated_type = trailing_rbs_annotation(node)
+          comment, annotation = ::RuboCop::Sorbet::RBSParser.rbs_annotation_after(processed_source, node)
           return unless comment
+
+          annotated_type = normalize(annotation)
 
           literal_node = inferable_literal_node(value_node)
           if literal_node
@@ -186,28 +187,12 @@ module RuboCop
 
           return unless enabled_for_sorbet_static_version?
 
-          frozen = value_node.send_type? && value_node.method?(:freeze)
+          frozen = value_node.send_type? && value_node.method?(:freeze) && !value_node.receiver.nil?
           array_node = frozen ? value_node.receiver : value_node
           return unless inferable_array?(array_node)
           return unless redundant_rbs_array_annotation?(array_node, annotated_type, frozen: frozen)
 
           register_rbs_offense(node, comment, :Array)
-        end
-
-        def trailing_rbs_annotation(node)
-          last_line = node.source_range.last_line
-          comment = processed_source.each_comment_in_lines(last_line..last_line).find do |candidate|
-            next false if candidate.source_range.begin_pos < node.source_range.end_pos
-
-            gap = processed_source.buffer.source[node.source_range.end_pos...candidate.source_range.begin_pos]
-            gap.match?(/\A[ \t]*\z/)
-          end
-          return unless comment
-
-          match = RBS_ANNOTATION.match(comment.text)
-          return unless match
-
-          [comment, normalize(match[:type])]
         end
 
         def register_rbs_offense(node, comment, type)

@@ -839,6 +839,12 @@ module RuboCop
           RUBY
         end
 
+        def test_no_offense_for_receiverless_freeze_with_rbs_annotation
+          assert_no_offenses(<<~RUBY)
+            VALUE = freeze #: Array[String]
+          RUBY
+        end
+
         def test_no_offense_for_trailing_rbs_annotation_inside_conditional
           assert_no_offenses(<<~RUBY)
             if enabled?
