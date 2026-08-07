@@ -109,7 +109,7 @@ Sorbet/EnforceSignatures:
   AutocorrectStyle: sig
   SafeAutoCorrect: false
   VersionAdded: 0.3.4
-  VersionChanged: '0.13.0'
+  VersionChanged: '<<next>>'
 
 Sorbet/EnforceSingleSigil:
   Description: 'Ensures that there is only one Sorbet sigil in a file.'
