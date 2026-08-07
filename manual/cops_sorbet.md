@@ -1241,9 +1241,9 @@ Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChan
 --- | --- | --- | --- | ---
 Enabled | Yes | Yes (Unsafe) | 0.13.0 | -
 
-Checks for redundant `T.let` declarations where the first argument
-is a literal whose type Sorbet can infer automatically, so wrapping
-it in `T.let` is redundant.
+Checks for redundant `T.let` declarations and trailing RBS annotations
+where the assigned value is a literal whose type Sorbet can infer
+automatically.
 
 Simple literals (strings, symbols, integers, floats, regexps) infer as
 their own class. Regexp literals are the only simple literals whose
@@ -1274,6 +1274,8 @@ FROZEN_PATTERN = T.let(/foo/.freeze, Regexp)
 STATUS = T.let(:active, Symbol)
 SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
 NAMES = T.let(["alice", "bob"], T::Array[String])
+RBS_GREETING = "hello" #: String
+RBS_NAMES = ["alice", "bob"] #: Array[String]
 
 # good
 MAX_RETRIES = 3
@@ -1284,6 +1286,8 @@ FROZEN_PATTERN = /foo/.freeze
 STATUS = :active
 SHELLS = [:bash, :zsh].freeze
 NAMES = ["alice", "bob"]
+RBS_GREETING = "hello"
+RBS_NAMES = ["alice", "bob"]
 
 # good — non-regexp frozen simple literals are not inferred
 GREETING = T.let("hello".freeze, String)

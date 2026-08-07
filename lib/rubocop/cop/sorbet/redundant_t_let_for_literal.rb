@@ -5,9 +5,9 @@ require "rubocop"
 module RuboCop
   module Cop
     module Sorbet
-      # Checks for redundant `T.let` declarations where the first argument
-      # is a literal whose type Sorbet can infer automatically, so wrapping
-      # it in `T.let` is redundant.
+      # Checks for redundant `T.let` declarations and trailing RBS annotations
+      # where the assigned value is a literal whose type Sorbet can infer
+      # automatically.
       #
       # Simple literals (strings, symbols, integers, floats, regexps) infer as
       # their own class. Regexp literals are the only simple literals whose
@@ -36,6 +36,8 @@ module RuboCop
       #   STATUS = T.let(:active, Symbol)
       #   SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
       #   NAMES = T.let(["alice", "bob"], T::Array[String])
+      #   RBS_GREETING = "hello" #: String
+      #   RBS_NAMES = ["alice", "bob"] #: Array[String]
       #
       #   # good
       #   MAX_RETRIES = 3
@@ -46,6 +48,8 @@ module RuboCop
       #   STATUS = :active
       #   SHELLS = [:bash, :zsh].freeze
       #   NAMES = ["alice", "bob"]
+      #   RBS_GREETING = "hello"
+      #   RBS_NAMES = ["alice", "bob"]
       #
       #   # good — non-regexp frozen simple literals are not inferred
       #   GREETING = T.let("hello".freeze, String)
@@ -70,15 +74,14 @@ module RuboCop
         include TLetCorrection
         extend AutoCorrector
 
-        # The frozen-literal and literal-array inference the newer cases rely on
-        # was added up to Sorbet 0.6.13304 (frozen regexp via freeze-transparent
-        # inference; literal arrays via constant tuple inference). Flagging them
-        # against an older Sorbet could remove a `T.let` it still requires, so
-        # those paths disable themselves below that version. Bare simple
-        # literals (`T.let(3, Integer)`) predate this and are not gated.
+        # Frozen-literal and literal-array inference require Sorbet 0.6.13304 or
+        # newer. Those paths disable themselves for older targets, while bare
+        # simple literals predate that version and remain eligible for both
+        # `T.let` and RBS annotations.
         minimum_target_sorbet_static_version "0.6.13304"
 
-        MSG = "Redundant `T.let` for %{type} literal. Sorbet can infer this type automatically."
+        MSG = "Redundant %{annotation} for %{type} literal. Sorbet can infer this type automatically."
+        RBS_ANNOTATION = /\A#\s*:\s*(?<type>.+?)\s*\z/
 
         # Simple literal node types Sorbet infers, mapped to the class name.
         # Interpolated strings/symbols (`dstr`/`dsym`) infer as `String`/`Symbol`.
@@ -131,26 +134,29 @@ module RuboCop
             register_offense(node, value_node, class_name)
           end
 
-          return unless enabled_for_sorbet_static_version?
+          if enabled_for_sorbet_static_version?
+            t_let_with_array?(node) do |value_node, type_node|
+              frozen = value_node.send_type?
+              array_node = frozen ? value_node.receiver : value_node
+              next unless inferable_array?(array_node)
+              next unless redundant_array_annotation?(array_node, type_node, frozen: frozen)
 
-          t_let_with_array?(node) do |value_node, type_node|
-            frozen = value_node.send_type?
-            array_node = frozen ? value_node.receiver : value_node
-            next unless inferable_array?(array_node)
-            next unless redundant_array_annotation?(array_node, type_node, frozen: frozen)
-
-            register_offense(node, value_node, :Array)
+              register_offense(node, value_node, :Array)
+            end
           end
+
+          check_rbs_annotation(node)
         end
 
         private
 
         # Returns the underlying literal when its inference is supported by the
-        # target Sorbet version. Bare literals are always supported; for example,
-        # `3` returns its integer node. Frozen literals are version-gated, so
-        # `/foo/.freeze` returns its regexp node only for supported targets.
+        # target Sorbet version. Bare literals return themselves. A frozen value
+        # returns its receiver only for regexps, whose inference survives
+        # `.freeze` on supported targets.
         def inferable_literal_node(value_node)
           return value_node unless value_node.send_type?
+          return unless value_node.method?(:freeze) && value_node.receiver&.regexp_type?
           return unless enabled_for_sorbet_static_version?
 
           value_node.receiver
@@ -158,9 +164,64 @@ module RuboCop
 
         def register_offense(node, value_node, type)
           t_let_node = node.children[2]
-          add_offense(t_let_node, message: format(MSG, type: type)) do |corrector|
+          add_offense(t_let_node, message: format(MSG, annotation: "`T.let`", type: type)) do |corrector|
             replace_t_let(corrector, t_let_node, value_node)
           end
+        end
+
+        def check_rbs_annotation(node)
+          value_node = node.children[2]
+          comment, annotated_type = trailing_rbs_annotation(node)
+          return unless comment
+
+          literal_node = inferable_literal_node(value_node)
+          if literal_node
+            inferred_type = LITERAL_TYPE_TO_CLASS[literal_node.type]
+            if inferred_type
+              return unless annotated_type.delete_prefix("::") == inferred_type.to_s
+
+              return register_rbs_offense(node, comment, inferred_type)
+            end
+          end
+
+          return unless enabled_for_sorbet_static_version?
+
+          frozen = value_node.send_type? && value_node.method?(:freeze)
+          array_node = frozen ? value_node.receiver : value_node
+          return unless inferable_array?(array_node)
+          return unless redundant_rbs_array_annotation?(array_node, annotated_type, frozen: frozen)
+
+          register_rbs_offense(node, comment, :Array)
+        end
+
+        def trailing_rbs_annotation(node)
+          last_line = node.source_range.last_line
+          comment = processed_source.each_comment_in_lines(last_line..last_line).find do |candidate|
+            next false if candidate.source_range.begin_pos < node.source_range.end_pos
+
+            gap = processed_source.buffer.source[node.source_range.end_pos...candidate.source_range.begin_pos]
+            gap.match?(/\A[ \t]*\z/)
+          end
+          return unless comment
+
+          match = RBS_ANNOTATION.match(comment.text)
+          return unless match
+
+          [comment, normalize(match[:type])]
+        end
+
+        def register_rbs_offense(node, comment, type)
+          add_offense(comment, message: format(MSG, annotation: "RBS annotation", type: type)) do |corrector|
+            range = comment.source_range.with(begin_pos: node.source_range.end_pos)
+            corrector.remove(range)
+          end
+        end
+
+        def redundant_rbs_array_annotation?(array_node, type, frozen:)
+          rbs_type = type.delete_prefix("::")
+          return rbs_type.match?(/\AArray\[(?:.+)\]\z/) if frozen
+
+          inferred_array_type(array_node)&.delete_prefix("T::") == rbs_type
         end
 
         # An array literal is inferable only when every element is one of the
