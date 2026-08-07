@@ -19,6 +19,9 @@ module RuboCop
 
             x = T.bind(self, String)
                 ^^^^^^^^^^^^^^^^^^^^ #{MSG}
+
+            ::T.bind(self, String)
+            ^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
           RUBY
         end
       end
