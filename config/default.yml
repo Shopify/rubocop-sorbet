@@ -234,7 +234,10 @@ Sorbet/ForbidTBindInAssignment:
 Sorbet/ForbidTCast:
   Description: 'Forbid usage of T.cast.'
   Enabled: false
+  AutocorrectToRBS: false
+  SafeAutoCorrect: false
   VersionAdded: 0.10.4
+  VersionChanged: '<<next>>'
 
 Sorbet/ForbidTLet:
   Description: 'Forbid usage of T.let.'
