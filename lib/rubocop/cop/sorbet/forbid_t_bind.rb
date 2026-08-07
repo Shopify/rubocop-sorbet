@@ -17,11 +17,10 @@ module RuboCop
       #   # good
       #   #: self as Integer
       class ForbidTBind < RuboCop::Cop::Base
-        include RangeHelp
+        include RBSAssertionCorrection
         extend AutoCorrector
 
         MSG = "Do not use `T.bind`."
-        LINE_ENDINGS = ["", "\n", "\r", "#"].freeze
         RESTRICT_ON_SEND = [:bind].freeze
 
         # @!method t_bind?(node)
@@ -37,30 +36,13 @@ module RuboCop
         private
 
         def autocorrect_t_bind_to_rbs(corrector, node)
-          return unless cop_config["AutocorrectToRBS"]
-          return unless autocorrectable_t_bind?(node)
+          return unless node.first_argument&.self_type?
+          return unless rbs_assertion_autocorrectable?(node)
 
           type = ::RBI::Type.parse_string(node.last_argument.source).rbs_string
           corrector.replace(node, "#: self as #{type}")
         rescue ::RBI::Type::Error
           nil
-        end
-
-        def autocorrectable_t_bind?(node)
-          return false unless node.first_argument&.self_type?
-          return false unless assertion_ends_line?(node)
-          return false if ::RuboCop::Sorbet::RBSParser.rbs_annotation_after(processed_source, node)
-
-          node.source_range.source_line.index(/\S/) == node.source_range.column
-        end
-
-        def assertion_ends_line?(node)
-          LINE_ENDINGS.include?(source_after_horizontal_whitespace(node))
-        end
-
-        def source_after_horizontal_whitespace(node, length: 1)
-          range = range_with_surrounding_space(node.source_range, side: :right, newlines: false)
-          range.source_buffer.source[range.end_pos, length]
         end
       end
     end
