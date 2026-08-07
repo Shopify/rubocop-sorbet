@@ -226,7 +226,10 @@ Sorbet/ForbidTAbsurd:
 Sorbet/ForbidTBind:
   Description: 'Forbid usage of T.bind.'
   Enabled: false
+  AutocorrectToRBS: false
   VersionAdded: 0.10.4
+  SafeAutoCorrect: false
+  VersionChanged: '<<next>>'
 
 Sorbet/ForbidTBindInAssignment:
   Description: 'Forbid assigning the result of T.bind.'
