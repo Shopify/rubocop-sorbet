@@ -35,6 +35,30 @@ module RuboCop
       #
       #     def some_method; end
       #   end
+      #
+      # @example AutocorrectStyle: rbs
+      #
+      #   # bad
+      #   class MyStruct < T::Struct
+      #     const :foo, String
+      #     prop :bar, T.nilable(Integer), default: 0
+      #   end
+      #
+      #   # good
+      #   class MyStruct
+      #     #: String
+      #     attr_reader :foo
+      #
+      #     #: Integer?
+      #     attr_accessor :bar
+      #
+      #     #: (foo: String, ?bar: Integer?) -> void
+      #     def initialize(foo:, bar: 0)
+      #       @foo = foo
+      #       @bar = bar
+      #     end
+      #   end
+      #
       class ForbidTStruct < RuboCop::Cop::Base
         include Alignment
         include RangeHelp
@@ -46,17 +70,19 @@ module RuboCop
         MSG_STRUCT = "Using `T::Struct` or its variants is deprecated in this codebase."
         MSG_PROPS = "Using `T::Props` or its variants is deprecated in this codebase."
 
+        VALID_AUTOCORRECT_STYLES = ["sig", "rbs"].freeze
         # This class walks down the class body of a T::Struct and collects all the properties that will need to be
         # translated into `attr_reader` and `attr_accessor` methods.
         class TStructWalker
           include AST::Traversal
           extend AST::NodePattern::Macros
+          attr_reader :props, :has_extend_t_sig, :extend_t_sig_node
 
-          attr_reader :props, :has_extend_t_sig
-
-          def initialize
+          def initialize(style = "sig")
             @props = []
             @has_extend_t_sig = false
+            @extend_t_sig_node = nil
+            @style = style
           end
 
           # @!method extend_t_sig?(node)
@@ -73,6 +99,7 @@ module RuboCop
             if extend_t_sig?(node)
               # So we know we won't need to generate again a `extend T::Sig` line in the new class body
               @has_extend_t_sig = true
+              @extend_t_sig_node = node
               return
             end
 
@@ -97,27 +124,39 @@ module RuboCop
               end
             end
 
-            @props << Property.new(node, kind, name, type, default: default, factory: factory)
+            @props << Property.new(node, kind, name, type, default: default, factory: factory, style: @style)
           end
         end
 
         class Property
+          # Sorbet `T::X[...]` generics that have a direct RBS equivalent.
+          GENERIC_BASE_NAMES = [:Array, :Hash, :Set, :Range].freeze
+
+          # Sorbet bare `T::X` constants that map to an RBS built-in.
+          T_CONST_MAP = { Boolean: "bool" }.freeze
+
           attr_reader :node, :kind, :name, :default, :factory
 
-          def initialize(node, kind, name, type, default:, factory:)
+          def initialize(node, kind, name, type, default:, factory:, style: "sig")
             @node = node
             @kind = kind
             @name = name
             @type = type
+            @type_node = node.arguments[1]
             @default = default
             @factory = factory
+            @style = style
 
             # A T::Struct should have both a default and a factory, if we find one let's raise an error
             raise if @default && @factory
           end
 
           def attr_sig
-            "sig { returns(#{type}) }"
+            if rbs?
+              "#: #{rbs_type}"
+            else
+              "sig { returns(#{type}) }"
+            end
           end
 
           def attr_accessor
@@ -125,7 +164,10 @@ module RuboCop
           end
 
           def initialize_sig_param
-            "#{name}: #{type}"
+            type_str = rbs? ? rbs_type : type
+            return "?#{name}: #{type_str}" if rbs? && optional?
+
+            "#{name}: #{type_str}"
           end
 
           def initialize_param
@@ -152,9 +194,112 @@ module RuboCop
             type.start_with?("T.nilable(")
           end
 
+          # A prop is optional when it declares a `default:`, a `factory:`, or
+          # is nilable (which gives it an implicit `nil` default). RBS marks
+          # optional keyword parameters with `?name:`, mirroring the default
+          # value that `initialize_param` emits.
+          def optional?
+            !!(default || factory || nilable?)
+          end
+
           def type
             copy = @type.gsub(/[[:space:]]+/, "").strip # Remove newlines and spaces
             copy.gsub(",", ", ") # Add a space after each comma
+          end
+
+          def rbs?
+            @style == "rbs"
+          end
+
+          def rbs_type
+            sorbet_type_to_rbs(@type_node)
+          end
+
+          # Translate a Sorbet type expression AST node into RBS syntax.
+          # Handles the constructs most commonly found on `T::Struct` props:
+          # `T.nilable`, `T.any`, `T.all`, `T.untyped`, `T.class_of`, and
+          # generics like `T::Array[X]`. Any unrecognized node falls back to
+          # the valid RBS `untyped` rather than emitting malformed Sorbet
+          # syntax (e.g. `T.proc...`) into an RBS annotation.
+          def sorbet_type_to_rbs(node)
+            return "untyped" if node.nil?
+
+            case node.type
+            when :const
+              translate_const(node)
+            when :send
+              translate_send_type(node)
+            else
+              "untyped"
+            end
+          end
+
+          def translate_send_type(node)
+            receiver = node.receiver
+            method = node.method_name
+            args = node.arguments
+
+            if t_const?(receiver)
+              translate_t_method(method, args)
+            elsif method == :[] && (base = generic_base(receiver))
+              "#{base}[#{args.map { |arg| sorbet_type_to_rbs(arg) }.join(", ")}]"
+            else
+              "untyped"
+            end
+          end
+
+          # Maps `T.xxx(...)` type constructors to RBS. Unknown `T.xxx` sends
+          # become `untyped` so the annotation stays valid RBS.
+          def translate_t_method(method, args)
+            case method
+            when :nilable
+              inner = sorbet_type_to_rbs(args.first)
+              inner = "(#{inner})" if inner.include?(" | ") || inner.include?(" & ")
+              "#{inner}?"
+            when :any
+              args.map { |arg| sorbet_type_to_rbs(arg) }.join(" | ")
+            when :all
+              args.map { |arg| sorbet_type_to_rbs(arg) }.join(" & ")
+            when :untyped
+              "untyped"
+            when :noreturn
+              "bot"
+            when :class_of
+              "singleton(#{sorbet_type_to_rbs(args.first)})"
+            else
+              "untyped"
+            end
+          end
+
+          def t_const?(node)
+            node&.const_type? && node.children[1] == :T
+          end
+
+          # Bare class constants are valid RBS class-instance types, except
+          # for Sorbet's `T::Boolean` (-> `bool`) and other `T::X` constants
+          # which have no RBS equivalent and fall back to `untyped`.
+          def translate_const(node)
+            return "untyped" if t_const?(node)
+
+            if t_const?(node.children[0])
+              T_CONST_MAP.fetch(node.children[1]) { "untyped" }
+            else
+              node.source
+            end
+          end
+
+          # `T::Array[X]`, `T::Hash[K, V]`, and `T::Set[X]` become the RBS
+          # generics `Array[X]`, `Hash[K, V]`, `Set[X]`. Other const receivers
+          # keep their class name (custom generics). Non-const receivers return
+          # nil so the caller falls back to `untyped` instead of `untyped[X]`.
+          def generic_base(node)
+            return unless node&.const_type?
+
+            if t_const?(node.children[0]) && GENERIC_BASE_NAMES.include?(node.children[1])
+              node.children[1].to_s
+            elsif !t_const?(node.children[0])
+              node.source
+            end
           end
         end
 
@@ -170,14 +315,18 @@ module RuboCop
           return unless t_struct?(node.parent_class)
 
           add_offense(node, message: MSG_STRUCT) do |corrector|
-            walker = TStructWalker.new
+            walker = TStructWalker.new(autocorrect_style)
             walker.walk(node.body)
 
             range = range_between(node.identifier.source_range.end_pos, node.parent_class.source_range.end_pos)
             corrector.remove(range)
             next if node.single_line?
 
-            unless walker.has_extend_t_sig
+            if rbs? && walker.extend_t_sig_node
+              corrector.remove(range_by_whole_lines(walker.extend_t_sig_node.source_range, include_final_newline: true))
+            end
+
+            unless walker.has_extend_t_sig || rbs?
               indent = offset(node)
               corrector.insert_after(node.identifier, "\n#{indent}  extend T::Sig\n")
             end
@@ -221,19 +370,23 @@ module RuboCop
 
           string = +"\n"
 
-          line = "#{indent}sig { params(#{sorted_props.map(&:initialize_sig_param).join(", ")}).void }\n"
-          if max_line_length.nil? || line.length <= max_line_length
-            string << line
+          if rbs?
+            string << "#{indent}#: (#{sorted_props.map(&:initialize_sig_param).join(", ")}) -> void\n"
           else
-            string << "#{indent}sig do\n"
-            string << "#{indent}  params(\n"
-            sorted_props.each do |prop|
-              string << "#{indent}    #{prop.initialize_sig_param}"
-              string << "," if prop != sorted_props.last
-              string << "\n"
+            line = "#{indent}sig { params(#{sorted_props.map(&:initialize_sig_param).join(", ")}).void }\n"
+            if max_line_length.nil? || line.length <= max_line_length
+              string << line
+            else
+              string << "#{indent}sig do\n"
+              string << "#{indent}  params(\n"
+              sorted_props.each do |prop|
+                string << "#{indent}    #{prop.initialize_sig_param}"
+                string << "," if prop != sorted_props.last
+                string << "\n"
+              end
+              string << "#{indent}  ).void\n"
+              string << "#{indent}end\n"
             end
-            string << "#{indent}  ).void\n"
-            string << "#{indent}end\n"
           end
 
           line = "#{indent}def initialize(#{sorted_props.map(&:initialize_param).join(", ")})\n"
@@ -257,6 +410,20 @@ module RuboCop
 
         def previous_line_blank?(node)
           processed_source.buffer.source_line(node.source_range.line - 1).blank?
+        end
+
+        def autocorrect_style
+          config_value = cop_config["AutocorrectStyle"] || "sig"
+          unless VALID_AUTOCORRECT_STYLES.include?(config_value)
+            raise ArgumentError,
+              "Invalid AutocorrectStyle option: '#{config_value}'. Valid options are: #{VALID_AUTOCORRECT_STYLES.join(", ")}"
+          end
+
+          config_value
+        end
+
+        def rbs?
+          autocorrect_style == "rbs"
         end
       end
     end

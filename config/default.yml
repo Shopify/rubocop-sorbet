@@ -1,3 +1,10 @@
+# Allow RBS inline-comment annotations (`#:` / `#|`) without a space after `#`,
+# so cops that autocorrect to RBS (e.g. Sorbet/ForbidTStruct with
+# `AutocorrectStyle: rbs`) produce valid signatures that Layout/LeadingCommentSpace
+# does not rewrite to `# :`.
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
+
 Sorbet/ForbidTHelpers:
   Description: 'Forbid usage of T::Helpers via `extend` or `include`.'
   Enabled: false
@@ -206,7 +213,9 @@ Sorbet/ForbidTEnum:
 Sorbet/ForbidTStruct:
   Description: 'Forbid usage of T::Struct.'
   Enabled: false
+  AutocorrectStyle: sig
   VersionAdded: 0.7.4
+  VersionChanged: '<<next>>'
   Safe: false
 
 Sorbet/ForbidTAbsurd:

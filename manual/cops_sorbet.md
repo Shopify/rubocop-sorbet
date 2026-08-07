@@ -858,7 +858,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | No | Yes  | 0.7.4 | -
+Disabled | No | Yes  | 0.7.4 | <<next>>
 
 Disallow using `T::Struct` and `T::Props`.
 
@@ -892,6 +892,36 @@ class MyStruct
   def some_method; end
 end
 ```
+#### AutocorrectStyle: rbs
+
+```ruby
+# bad
+class MyStruct < T::Struct
+  const :foo, String
+  prop :bar, T.nilable(Integer), default: 0
+end
+
+# good
+class MyStruct
+  #: String
+  attr_reader :foo
+
+  #: Integer?
+  attr_accessor :bar
+
+  #: (foo: String, ?bar: Integer?) -> void
+  def initialize(foo:, bar: 0)
+    @foo = foo
+    @bar = bar
+  end
+end
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+AutocorrectStyle | `sig` | String
 
 ## Sorbet/ForbidTTypeAlias
 
