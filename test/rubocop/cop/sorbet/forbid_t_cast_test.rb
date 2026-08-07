@@ -6,13 +6,11 @@ module RuboCop
   module Cop
     module Sorbet
       class ForbidTCastTest < ::Minitest::Test
-        MSG = "Sorbet/ForbidTCast: Do not use `T.cast`."
-
-        def setup
-          @cop = ForbidTCast.new
-        end
+        MSG = "Do not use `T.cast`."
 
         def test_adds_offense_when_using_t_cast
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
           assert_offense(<<~RUBY)
             T.cast(foo, String)
             ^^^^^^^^^^^^^^^^^^^ #{MSG}
@@ -20,6 +18,79 @@ module RuboCop
             x = T.cast(foo, String)
                 ^^^^^^^^^^^^^^^^^^^ #{MSG}
           RUBY
+
+          assert_no_corrections
+        end
+
+        def test_autocorrects_t_cast_to_an_rbs_type_assertion_when_enabled
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            # café
+            T.cast(foo, T::Array[String])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+
+            x = T.cast(foo, T.any(String, Symbol))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            # café
+            foo #: as Array[String]
+
+            x = foo #: as (String | Symbol)
+          RUBY
+        end
+
+        def test_does_not_autocorrect_t_cast_nested_in_an_expression
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            consume(T.cast(foo, String))
+                    ^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_no_corrections
+        end
+
+        def test_does_not_autocorrect_nested_t_cast_calls
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            T.cast(T.cast(foo, String), Object)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+                   ^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_no_corrections
+        end
+
+        def test_does_not_autocorrect_t_cast_with_an_existing_rbs_annotation
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            T.cast(foo, String) #: as Existing
+            ^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_no_corrections
+        end
+
+        def test_does_not_autocorrect_an_untranslatable_type
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            T.cast(foo, type)
+            ^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_no_corrections
+        end
+
+        private
+
+        def target_cop
+          ForbidTCast
         end
       end
     end
