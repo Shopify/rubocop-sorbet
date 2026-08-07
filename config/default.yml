@@ -261,8 +261,10 @@ Sorbet/ForbidTTypeAlias:
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'
   Enabled: false
+  AutocorrectToRBS: false
+  SafeAutoCorrect: false
   VersionAdded: 0.7.0
-  VersionChanged: 0.7.0
+  VersionChanged: '<<next>>'
 
 Sorbet/ForbidTUntyped:
   Description: 'Forbid usage of T.untyped'
