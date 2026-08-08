@@ -455,6 +455,20 @@ Sorbet/StrongSigil:
   - db/**/*.rb
   - script/**/*
 
+Sorbet/TestsDefinedWithEach:
+  Description: >-
+    Checks for tests generated inside `each`, which Sorbet cannot see through.
+    Use `test_each` or `test_each_hash` instead.
+  Enabled: false
+  Safe: true
+  SafeAutoCorrect: false
+  VersionAdded: '<<next>>'
+  Include:
+  - "**/test/**/*"
+  - "**/*_test.rb"
+  - "**/spec/**/*"
+  - "**/*_spec.rb"
+
 Sorbet/TrueSigil:
   Description: 'All files must be at least at strictness `true`.'
   Enabled: false
