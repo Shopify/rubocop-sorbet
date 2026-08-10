@@ -251,7 +251,10 @@ Sorbet/ForbidTCast:
 Sorbet/ForbidTLet:
   Description: 'Forbid usage of T.let.'
   Enabled: false
+  AutocorrectToRBS: false
+  SafeAutoCorrect: false
   VersionAdded: 0.10.4
+  VersionChanged: '<<next>>'
 
 Sorbet/ForbidTMust:
   Description: 'Forbid usage of T.must.'

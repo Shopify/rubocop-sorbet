@@ -814,9 +814,10 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | 0.10.4 | -
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
 
 Disallows using `T.let` anywhere.
+Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
 
 ### Examples
 
@@ -827,6 +828,12 @@ T.let(foo, Integer)
 # good
 foo #: Integer
 ```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+AutocorrectToRBS | `false` | Boolean
 
 ## Sorbet/ForbidTMust
 
