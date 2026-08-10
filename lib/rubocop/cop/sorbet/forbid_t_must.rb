@@ -35,6 +35,7 @@ module RuboCop
         private
 
         def autocorrect_t_must_to_rbs(corrector, node)
+          return if node.first_argument.splat_type?
           return if t_must?(node.first_argument)
           return unless rbs_assertion_autocorrectable?(node, allow_assignment: true)
 

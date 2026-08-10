@@ -42,6 +42,19 @@ module RuboCop
           RUBY
         end
 
+        def test_autocorrection_preserves_a_trailing_comment
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            T.must(foo) # some comment
+            ^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            foo #: as !nil # some comment
+          RUBY
+        end
+
         def test_does_not_autocorrect_t_must_nested_in_an_expression
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
 
@@ -60,6 +73,17 @@ module RuboCop
             T.must(T.must(foo))
             ^^^^^^^^^^^^^^^^^^^ #{MSG}
                    ^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_no_corrections
+        end
+
+        def test_does_not_autocorrect_t_must_with_a_splat_argument
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            T.must(*values)
+            ^^^^^^^^^^^^^^^ #{MSG}
           RUBY
 
           assert_no_corrections
