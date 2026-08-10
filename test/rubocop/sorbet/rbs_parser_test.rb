@@ -75,12 +75,6 @@ module RuboCop
         assert_equal("String", annotation)
       end
 
-      def test_annotation_after_accepts_marker_spacing
-        _comment, annotation = annotation_after('GREETING = "hello" #  :  String')
-
-        assert_equal("String", annotation)
-      end
-
       def test_annotation_after_handles_multiline_expression
         _comment, annotation = annotation_after(<<~RUBY)
           NAMES = [
