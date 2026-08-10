@@ -42,6 +42,19 @@ module RuboCop
           RUBY
         end
 
+        def test_autocorrection_preserves_a_trailing_comment
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            T.unsafe(foo) # some comment
+            ^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            foo #: as untyped # some comment
+          RUBY
+        end
+
         def test_does_not_autocorrect_t_unsafe_nested_in_an_expression
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
 
