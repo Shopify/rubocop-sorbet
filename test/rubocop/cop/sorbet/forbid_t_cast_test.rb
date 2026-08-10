@@ -42,6 +42,19 @@ module RuboCop
           RUBY
         end
 
+        def test_adds_rbs_assertion_before_a_trailing_comment
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            T.cast(foo, String) # why this cast is needed
+            ^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            foo #: as String # why this cast is needed
+          RUBY
+        end
+
         def test_does_not_autocorrect_t_cast_nested_in_an_expression
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
 
