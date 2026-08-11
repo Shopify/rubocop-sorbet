@@ -39,6 +39,22 @@ module RuboCop
 
           corrector.replace(node, "#{node.first_argument.source} #: absurd")
         end
+
+        def assertion_statement(node, allow_assignment:)
+          inline_else = inline_else_statement(node)
+          return super(inline_else, allow_assignment: allow_assignment) if inline_else
+
+          super
+        end
+
+        def inline_else_statement(node)
+          parent = node.parent
+          return unless parent&.case_type?
+          return unless parent.children.last.equal?(node)
+
+          else_range = parent.loc.else
+          parent if else_range&.source == "else" && else_range.line == node.first_line
+        end
       end
     end
   end
