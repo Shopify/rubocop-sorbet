@@ -14,24 +14,41 @@ module RuboCop
 
         private
 
-        def autocorrect_rbs_assertion(corrector, node, allow_assignment: false)
-          context = rbs_assertion_correction_context(node, allow_assignment: allow_assignment)
+        def autocorrect_rbs_assertion(corrector, node, allow_assignment: false, allow_arguments: true)
+          context = rbs_assertion_correction_context(
+            node,
+            allow_assignment: allow_assignment,
+            allow_arguments: allow_arguments,
+          )
           return unless context
 
-          replacement = yield
+          replacement = yield(context.first)
           case context.first
           when :direct
             corrector.replace(node, replacement)
+          when :receiver
+            autocorrect_receiver(corrector, node, replacement)
           when :arguments
             autocorrect_argument_list(corrector, node, replacement, context)
           end
         end
 
-        def rbs_assertion_correction_context(node, allow_assignment:)
+        def rbs_assertion_correction_context(node, allow_assignment:, allow_arguments:)
           return [:direct] if rbs_assertion_autocorrectable?(node, allow_assignment: allow_assignment)
           return unless nested_rbs_assertion_autocorrectable?(node)
 
-          call_argument_context(node)
+          receiver_context(node) || (call_argument_context(node) if allow_arguments)
+        end
+
+        def receiver_context(node)
+          call = node.parent
+          return unless call&.type?(:call) && call.receiver.equal?(node)
+          return unless call.single_line? && call.loc.dot
+          return unless statement_starts_line?(call)
+          return if comments_within?(call)
+          return unless one_matching_assertion?(call, node)
+
+          [:receiver]
         end
 
         def call_argument_context(node)
@@ -77,6 +94,14 @@ module RuboCop
           return unless items.include?(target)
 
           [:arguments, call, items, target]
+        end
+
+        def autocorrect_receiver(corrector, node, replacement)
+          indentation = node.source_range.source_line[/\A[ \t]*/]
+          replacement = replacement.gsub("\n", "\n#{indentation}")
+          continuation_indentation = indentation + (" " * configured_indentation_width)
+          corrector.replace(node, "#{replacement}\n#{continuation_indentation}#{node.parent.loc.dot.source}")
+          corrector.remove(node.parent.loc.dot)
         end
 
         def autocorrect_argument_list(corrector, node, replacement, context)
@@ -135,7 +160,11 @@ module RuboCop
           return false if ::RuboCop::Sorbet::RBSParser.rbs_annotation_after(processed_source, node)
 
           statement = assertion_statement(node, allow_assignment: allow_assignment)
-          statement && statement.source_range.source_line.index(/\S/) == statement.source_range.column
+          statement && statement_starts_line?(statement)
+        end
+
+        def statement_starts_line?(node)
+          node.source_range.source_line.index(/\S/) == node.source_range.column
         end
 
         def assertion_statement(node, allow_assignment:)
