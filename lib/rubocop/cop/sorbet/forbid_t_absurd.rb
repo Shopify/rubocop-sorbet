@@ -39,6 +39,30 @@ module RuboCop
 
           corrector.replace(node, "#{node.first_argument.source} #: absurd")
         end
+
+        def assertion_statement(node, allow_assignment:)
+          inline_else = inline_else_statement(node)
+          return super(inline_else, allow_assignment: allow_assignment) if inline_else
+
+          super
+        end
+
+        def inline_else_statement(node)
+          parent = node.parent
+          return unless parent&.type?(:case, :if)
+          return unless inline_else_branch(parent).equal?(node)
+
+          else_range = parent.loc.else
+          parent if else_range&.source == "else" && else_range.line == node.first_line
+        end
+
+        # `unless` is represented as an `if` node with its branches swapped, so its source
+        # `else` branch is the second child. For `if` and `case`, it is the last child.
+        def inline_else_branch(parent)
+          return parent.children.last unless parent.if_type? && parent.keyword == "unless"
+
+          parent.children[1]
+        end
       end
     end
   end
