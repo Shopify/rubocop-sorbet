@@ -93,6 +93,25 @@ module RuboCop
           RUBY
         end
 
+        def test_autocorrects_t_absurd_after_an_inline_unless_else
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            unless true
+            then 42
+            else T.absurd(foo) # exhaustive
+                 ^^^^^^^^^^^^^ #{MSG}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            unless true
+            then 42
+            else foo #: absurd # exhaustive
+            end
+          RUBY
+        end
+
         def test_does_not_autocorrect_t_absurd_nested_after_an_inline_else
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
 

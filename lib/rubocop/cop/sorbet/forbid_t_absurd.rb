@@ -50,10 +50,18 @@ module RuboCop
         def inline_else_statement(node)
           parent = node.parent
           return unless parent&.type?(:case, :if)
-          return unless parent.children.last.equal?(node)
+          return unless inline_else_branch(parent).equal?(node)
 
           else_range = parent.loc.else
           parent if else_range&.source == "else" && else_range.line == node.first_line
+        end
+
+        # `unless` is represented as an `if` node with its branches swapped, so its source
+        # `else` branch is the second child. For `if` and `case`, it is the last child.
+        def inline_else_branch(parent)
+          return parent.children.last unless parent.if_type? && parent.keyword == "unless"
+
+          parent.children[1]
         end
       end
     end
