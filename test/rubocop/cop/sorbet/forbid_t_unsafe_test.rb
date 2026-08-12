@@ -55,12 +55,81 @@ module RuboCop
           RUBY
         end
 
-        def test_does_not_autocorrect_t_unsafe_nested_in_an_expression
+        def test_autocorrects_t_unsafe_used_as_an_argument
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
 
           assert_offense(<<~RUBY)
             consume(T.unsafe(foo))
                     ^^^^^^^^^^^^^ #{MSG}
+            consume(first, T.unsafe(foo), last)
+                           ^^^^^^^^^^^^^ #{MSG}
+            consume(value: T.unsafe(foo))
+                           ^^^^^^^^^^^^^ #{MSG}
+            consume(first, T.unsafe("already #: marker"), last)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            consume(
+              foo #: as untyped
+            )
+            consume(
+              first,
+              foo, #: as untyped
+              last
+            )
+            consume(
+              value: foo #: as untyped
+            )
+            consume(
+              first,
+              "already #: marker", #: as untyped
+              last
+            )
+          RUBY
+        end
+
+        def test_autocorrects_positional_and_keyword_splats
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            consume(*T.unsafe(values))
+                     ^^^^^^^^^^^^^^^^ #{MSG}
+            consume(**T.unsafe(options))
+                      ^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            consume(
+              *(
+                values #: as untyped
+              )
+            )
+            consume(
+              **(
+                options #: as untyped
+              )
+            )
+          RUBY
+        end
+
+        def test_does_not_autocorrect_a_keyword_splat_of_an_implicit_hash
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            consume(**T.unsafe(required: value, **options))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_no_corrections
+        end
+
+        def test_does_not_autocorrect_inside_a_single_line_block
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            assert_raises { consume(T.unsafe(foo)) }
+                                    ^^^^^^^^^^^^^ #{MSG}
           RUBY
 
           assert_no_corrections
