@@ -49,7 +49,7 @@ module RuboCop
 
         def inline_else_statement(node)
           parent = node.parent
-          return unless parent&.case_type?
+          return unless parent&.type?(:case, :if)
           return unless parent.children.last.equal?(node)
 
           else_range = parent.loc.else
