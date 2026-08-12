@@ -55,7 +55,7 @@ module RuboCop
           RUBY
         end
 
-        def test_does_not_autocorrect_t_cast_nested_in_an_expression
+        def test_autocorrects_t_cast_used_as_an_argument
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
 
           assert_offense(<<~RUBY)
@@ -63,7 +63,11 @@ module RuboCop
                     ^^^^^^^^^^^^^^^^^^^ #{MSG}
           RUBY
 
-          assert_no_corrections
+          assert_correction(<<~RUBY)
+            consume(
+              foo #: as String
+            )
+          RUBY
         end
 
         def test_does_not_autocorrect_nested_t_cast_calls

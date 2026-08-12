@@ -37,10 +37,11 @@ module RuboCop
 
         def autocorrect_t_let_to_rbs(corrector, node)
           return if t_let?(node.first_argument)
-          return unless rbs_assertion_autocorrectable?(node, allow_assignment: true)
 
-          type = ::RBI::Type.parse_string(node.last_argument.source).rbs_string
-          corrector.replace(node, "#{node.first_argument.source} #: #{type}")
+          autocorrect_rbs_assertion(corrector, node, allow_assignment: true) do
+            type = ::RBI::Type.parse_string(node.last_argument.source).rbs_string
+            "#{node.first_argument.source} #: #{type}"
+          end
         rescue ::RBI::Type::Error
           nil
         end
