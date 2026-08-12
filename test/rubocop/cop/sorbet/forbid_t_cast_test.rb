@@ -69,6 +69,20 @@ module RuboCop
           RUBY
         end
 
+        def test_autocorrects_a_receiver_used_as_an_assignment_value
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            x = T.cast(foo, String).bar
+                ^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            x = foo #: as String
+              .bar
+          RUBY
+        end
+
         def test_autocorrects_t_cast_used_as_an_argument
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
 

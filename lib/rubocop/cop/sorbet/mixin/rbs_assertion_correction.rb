@@ -44,11 +44,27 @@ module RuboCop
           call = node.parent
           return unless call&.type?(:call) && call.receiver.equal?(node)
           return unless call.single_line? && call.loc.dot
-          return unless statement_starts_line?(call)
-          return if comments_within?(call)
-          return unless one_matching_assertion?(call, node)
+
+          chain = receiver_chain(call)
+          return unless receiver_chain_starts_statement?(chain)
+          return if comments_within?(chain)
+          return unless one_matching_assertion?(chain, node)
 
           [:receiver]
+        end
+
+        def receiver_chain(call)
+          call = call.parent while call.parent&.type?(:call) && call.parent.receiver.equal?(call)
+          call
+        end
+
+        def receiver_chain_starts_statement?(chain)
+          return true if statement_starts_line?(chain)
+
+          assignment = chain.parent
+          assignment&.assignment? &&
+            assignment.children.last.equal?(chain) &&
+            statement_starts_line?(assignment)
         end
 
         def call_argument_context(node)
