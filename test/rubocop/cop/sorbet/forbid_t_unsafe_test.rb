@@ -55,6 +55,59 @@ module RuboCop
           RUBY
         end
 
+        def test_autocorrects_t_unsafe_used_as_a_receiver
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            T.unsafe(foo).bar.baz
+            ^^^^^^^^^^^^^ #{MSG}
+              T.unsafe(foo)&.bar
+              ^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            foo #: as untyped
+              .bar.baz
+              foo #: as untyped
+                &.bar
+          RUBY
+        end
+
+        def test_autocorrects_a_receiver_used_as_an_assignment_value
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            x = T.unsafe(foo).bar
+                ^^^^^^^^^^^^^ #{MSG}
+            x = T.unsafe(self).bar
+                ^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            x = foo #: as untyped
+              .bar
+            x = self #: as untyped
+              .bar
+          RUBY
+        end
+
+        def test_does_not_autocorrect_an_embedded_receiver
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            wrapper(T.unsafe(foo).bar)
+                    ^^^^^^^^^^^^^ #{MSG}
+            puts T.unsafe(foo).bar
+                 ^^^^^^^^^^^^^ #{MSG}
+            return T.unsafe(foo).bar
+                   ^^^^^^^^^^^^^ #{MSG}
+            other + T.unsafe(foo).bar
+                    ^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_no_corrections
+        end
+
         def test_autocorrects_t_unsafe_used_as_an_argument
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
 
