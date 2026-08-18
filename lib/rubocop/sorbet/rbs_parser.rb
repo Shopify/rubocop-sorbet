@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "rbs"
+
 module RuboCop
   module Sorbet
     # Pure helpers for parsing RBS inline-comment signatures (`#:` / `#|`).
@@ -13,11 +15,15 @@ module RuboCop
     # `rbs_signatures_before` returns `Signature` objects that encapsulate one
     # RBS overload each. `rbs_annotation_after` returns the trailing RBS
     # annotation attached to an expression and its comment node.
+    # `rbs_comment?` and `rbs_tokens` identify RBS comments and split them
+    # into RBS tokens whose positions map back into the comment.
     module RBSParser
       # `#:` begins an RBS signature (each repeated `#:` line is a new overload).
       RBS_SIGNATURE_PREFIX = /\A#:/
       # `#|` continues the preceding `#:` signature (e.g. multiline params/returns).
       RBS_CONTINUATION_PREFIX = /\A#\|/
+      WHITESPACE = :tTRIVIA
+      END_OF_INPUT = :pEOF
 
       class << self
         # The RBS signatures attached to `node`, one `Signature` per overload.
@@ -47,6 +53,22 @@ module RuboCop
           return if annotation.empty?
 
           [comment, annotation]
+        end
+
+        def rbs_comment?(comment)
+          comment.text.match?(RBS_SIGNATURE_PREFIX) ||
+            comment.text.match?(RBS_CONTINUATION_PREFIX)
+        end
+
+        # Split a comment into RBS tokens, with the leading `#:`/`#|`, whitespace,
+        # and end-of-input marker dropped. Empty for non-RBS comments.
+        def rbs_tokens(comment)
+          return [] unless rbs_comment?(comment)
+
+          comment_text = "  #{comment.text[2..]}"
+          ::RBS::Parser.lex(comment_text).value.reject do |token|
+            token.type == WHITESPACE || token.type == END_OF_INPUT
+          end
         end
 
         private
