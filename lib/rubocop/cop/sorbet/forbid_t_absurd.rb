@@ -13,14 +13,24 @@ module RuboCop
       #   # bad
       #   T.absurd(foo)
       #
-      #   # good
+      #   # good (Sorbet before 0.6.99999)
       #   foo #: absurd
+      #
+      #   # good (Sorbet 0.6.99999 and later)
+      #   raise #: absurd(foo)
       class ForbidTAbsurd < RuboCop::Cop::Base
         include RBSAssertionCorrection
+        include TargetSorbetVersion
         extend AutoCorrector
 
         MSG = "Do not use `T.absurd`."
         RESTRICT_ON_SEND = [:absurd].freeze
+
+        # TODO: Replace with the real release version once https://github.com/Shopify/sorbet/pull/871 lands.
+        MINIMUM_RBS_ABSURD_VERSION = "0.6.99999"
+        SUPPORTED_ABSURD_VARIABLE_TYPES = [:lvar, :ivar, :cvar, :gvar, :self].freeze
+
+        minimum_target_sorbet_static_version MINIMUM_RBS_ABSURD_VERSION
 
         # @!method t_absurd?(node)
         def_node_matcher(:t_absurd?, "(send (const nil? :T) :absurd _)")
@@ -35,9 +45,26 @@ module RuboCop
         private
 
         def autocorrect_t_absurd_to_rbs(corrector, node)
+          argument = node.first_argument
+
+          if enabled_for_sorbet_static_version?
+            autocorrect_new_rbs_absurd(corrector, node, argument)
+          else
+            autocorrect_legacy_rbs_absurd(corrector, node, argument)
+          end
+        end
+
+        def autocorrect_new_rbs_absurd(corrector, node, argument)
+          return unless rbs_assertion_autocorrectable?(node)
+          return unless SUPPORTED_ABSURD_VARIABLE_TYPES.include?(argument.type)
+
+          corrector.replace(node, "raise #: absurd(#{argument.source})")
+        end
+
+        def autocorrect_legacy_rbs_absurd(corrector, node, argument)
           return unless rbs_assertion_autocorrectable?(node, allow_assignment: true)
 
-          corrector.replace(node, "#{node.first_argument.source} #: absurd")
+          corrector.replace(node, "#{argument.source} #: absurd")
         end
 
         def assertion_statement(node, allow_assignment:)
