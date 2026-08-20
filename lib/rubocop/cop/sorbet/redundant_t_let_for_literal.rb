@@ -14,6 +14,10 @@ module RuboCop
       # inference survives a `.freeze` call (Sorbet 0.6.13304+), so
       # `T.let(/foo/.freeze, Regexp)` is also redundant; other frozen simple
       # literals (e.g. `"hello".freeze`) are not inferred and still need `T.let`.
+      # Exact annotations on `true`, `false`, and `nil` are also redundant,
+      # whether expressed as `T.let(..., TrueClass)` or RBS singleton types.
+      # With RBS comments enabled, Sorbet infers the same `TrueClass`,
+      # `FalseClass`, and `NilClass` types without them.
       #
       # Array literals of simple literals are also inferred:
       #
@@ -36,7 +40,10 @@ module RuboCop
       #   STATUS = T.let(:active, Symbol)
       #   SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
       #   NAMES = T.let(["alice", "bob"], T::Array[String])
+      #   local_truth = T.let(true, TrueClass)
       #   RBS_GREETING = "hello" #: String
+      #   local_count = 1 #: Integer
+      #   local_tlet_count = T.let(1, Integer)
       #   RBS_NAMES = ["alice", "bob"] #: Array[String]
       #
       #   # good
@@ -48,7 +55,10 @@ module RuboCop
       #   STATUS = :active
       #   SHELLS = [:bash, :zsh].freeze
       #   NAMES = ["alice", "bob"]
+      #   local_truth = true
       #   RBS_GREETING = "hello"
+      #   local_count = 1
+      #   local_tlet_count = 1
       #   RBS_NAMES = ["alice", "bob"]
       #
       #   # good — non-regexp frozen simple literals are not inferred
@@ -63,11 +73,25 @@ module RuboCop
       #   # good — type is not the literal's own class
       #   value = T.let("hello", T.nilable(String))
       #
+      #   # good — bool annotations widen a singleton boolean type
+      #   local_bool = true #: bool
+      #   local_tlet_bool = T.let(true, T::Boolean)
+      #
+      #   # bad — the initializer annotation hides an untyped block assignment
+      #   observed_locale = T.let("", String)
+      #   records.each do |record|
+      #     observed_locale = record.locale
+      #   end
+      #
+      #   # good — cast the value at the untyped boundary
+      #   observed_locale = ""
+      #   records.each do |record|
+      #     observed_locale = record.locale #: as String
+      #   end
+      #
       #   # good — instance variables need T.let for Sorbet to track their type
       #   @max_retries = T.let(3, Integer)
       #
-      #   # good — local variables may need T.let so Sorbet allows reassignment
-      #   count = T.let(0, Integer)
       class RedundantTLetForLiteral < Base
         include ConstantScope
         include TargetSorbetVersion
@@ -87,12 +111,21 @@ module RuboCop
         LITERAL_TYPE_TO_CLASS = {
           dstr: :String,
           dsym: :Symbol,
+          false: :FalseClass,
           float: :Float,
           int: :Integer,
+          nil: :NilClass,
           regexp: :Regexp,
           str: :String,
           sym: :Symbol,
+          true: :TrueClass,
         }.freeze
+
+        RBS_LITERAL_TYPE = LITERAL_TYPE_TO_CLASS.merge(
+          false: :false,
+          nil: :nil,
+          true: :true,
+        ).freeze
 
         # Element node types allowed inside an inferable array literal: the
         # literals whose class Sorbet reflects into the array's element type.
@@ -115,6 +148,11 @@ module RuboCop
         # @!method t_let_with_literal_and_class?(node)
         def_node_matcher :t_let_with_literal_and_class?, <<~PATTERN
           (casgn _ _ (send (const {nil? cbase} :T) :let ${literal? (send (regexp ...) :freeze)} (const nil? $_)))
+        PATTERN
+
+        # @!method local_t_let_with_literal_and_class?(node)
+        def_node_matcher :local_t_let_with_literal_and_class?, <<~PATTERN
+          (lvasgn _ (send (const {nil? cbase} :T) :let ${literal? (send (regexp ...) :freeze)} (const nil? $_)))
         PATTERN
 
         # @!method t_let_with_array?(node)
@@ -144,7 +182,19 @@ module RuboCop
             end
           end
 
-          check_rbs_annotation(node)
+          check_rbs_annotation(node, include_arrays: true)
+        end
+
+        def on_lvasgn(node)
+          local_t_let_with_literal_and_class?(node) do |value_node, class_name|
+            literal_node = inferable_literal_node(value_node)
+            next unless literal_node
+            next unless LITERAL_TYPE_TO_CLASS[literal_node.type] == class_name
+
+            register_offense(node, value_node, class_name)
+          end
+
+          check_rbs_annotation(node, include_arrays: false)
         end
 
         private
@@ -162,14 +212,16 @@ module RuboCop
         end
 
         def register_offense(node, value_node, type)
-          t_let_node = node.children[2]
+          t_let_node = node.children.last
           add_offense(t_let_node, message: format(MSG, annotation: "`T.let`", type: type)) do |corrector|
             replace_t_let(corrector, t_let_node, value_node)
           end
         end
 
-        def check_rbs_annotation(node)
-          value_node = node.children[2]
+        def check_rbs_annotation(node, include_arrays:)
+          value_node = node.children.last
+          return unless value_node
+
           comment, annotation = ::RuboCop::Sorbet::RBSParser.rbs_annotation_after(processed_source, node)
           return unless comment
 
@@ -177,7 +229,7 @@ module RuboCop
 
           literal_node = inferable_literal_node(value_node)
           if literal_node
-            inferred_type = LITERAL_TYPE_TO_CLASS[literal_node.type]
+            inferred_type = RBS_LITERAL_TYPE[literal_node.type]
             if inferred_type
               return unless annotated_type.delete_prefix("::") == inferred_type.to_s
 
@@ -185,6 +237,7 @@ module RuboCop
             end
           end
 
+          return unless include_arrays
           return unless enabled_for_sorbet_static_version?
 
           frozen = value_node.send_type? && value_node.method?(:freeze) && !value_node.receiver.nil?
