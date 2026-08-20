@@ -1343,10 +1343,10 @@ FROZEN_PATTERN = T.let(/foo/.freeze, Regexp)
 STATUS = T.let(:active, Symbol)
 SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
 NAMES = T.let(["alice", "bob"], T::Array[String])
+local_truth = T.let(true, TrueClass)
 RBS_GREETING = "hello" #: String
 local_count = 1 #: Integer
 local_tlet_count = T.let(1, Integer)
-local_truth = T.let(true, TrueClass)
 RBS_NAMES = ["alice", "bob"] #: Array[String]
 
 # good
@@ -1358,10 +1358,10 @@ FROZEN_PATTERN = /foo/.freeze
 STATUS = :active
 SHELLS = [:bash, :zsh].freeze
 NAMES = ["alice", "bob"]
+local_truth = true
 RBS_GREETING = "hello"
 local_count = 1
 local_tlet_count = 1
-local_truth = true
 RBS_NAMES = ["alice", "bob"]
 
 # good — non-regexp frozen simple literals are not inferred
