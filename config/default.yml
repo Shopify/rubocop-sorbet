@@ -259,7 +259,10 @@ Sorbet/ForbidTLet:
 Sorbet/ForbidTMust:
   Description: 'Forbid usage of T.must.'
   Enabled: false
+  AutocorrectToRBS: false
+  SafeAutoCorrect: false
   VersionAdded: 0.10.4
+  VersionChanged: '<<next>>'
 
 Sorbet/ForbidTAnyWithNil:
   Description: 'Forbid usage of T.any(NilClass).'
