@@ -310,7 +310,7 @@ other comments or magic comments are left in the same place.
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.3.4 | <<next>>
+Disabled | Yes | Yes (Unsafe) | 0.3.4 | 0.15.0
 
 Checks that every method definition and attribute accessor has a Sorbet signature.
 
@@ -639,7 +639,7 @@ Exclude | `db/migrate/*.rb` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.15.0
 
 Disallows using `T.absurd` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
@@ -686,7 +686,7 @@ T.nilable(T.any(Symbol, String))
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.15.0
 
 Disallows using `T.bind` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
@@ -711,7 +711,7 @@ AutocorrectToRBS | `false` | Boolean
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | 0.15.0 | -
 
 Disallows assigning the result of `T.bind`.
 
@@ -733,7 +733,7 @@ foo = T.cast(self, Integer)
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.15.0
 
 Disallows using `T.cast` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
@@ -814,7 +814,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.15.0
 
 Disallows using `T.let` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
@@ -839,7 +839,7 @@ AutocorrectToRBS | `false` | Boolean
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.15.0
 
 Disallows using `T.must` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
@@ -893,7 +893,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | No | Yes  | 0.7.4 | <<next>>
+Disabled | No | Yes  | 0.7.4 | 0.15.0
 
 Disallow using `T::Struct` and `T::Props`.
 
@@ -980,7 +980,7 @@ STRING_OR_INTEGER = T.type_alias { T.any(Integer, String) }
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.7.0 | <<next>>
+Disabled | Yes | Yes (Unsafe) | 0.7.0 | 0.15.0
 
 Disallows using `T.unsafe` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
@@ -1616,7 +1616,7 @@ Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | No | <<next>> | -
+Enabled | Yes | No | 0.15.0 | -
 
 Checks that `T::Struct` property names use the configured style.
 The supported styles and name filters match `Naming/MethodName`.

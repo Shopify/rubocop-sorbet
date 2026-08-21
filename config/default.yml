@@ -27,7 +27,7 @@ Sorbet/RedundantTLet:
 Sorbet/StructPropName:
   Description: 'Checks that T::Struct property names use the configured naming style.'
   Enabled: pending
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.15.0'
   EnforcedStyle: snake_case
   SupportedStyles:
   - snake_case
@@ -128,7 +128,7 @@ Sorbet/EnforceSignatures:
   AutocorrectStyle: sig
   SafeAutoCorrect: false
   VersionAdded: 0.3.4
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.15.0'
 
 Sorbet/EnforceSingleSigil:
   Description: 'Ensures that there is only one Sorbet sigil in a file.'
@@ -215,7 +215,7 @@ Sorbet/ForbidTStruct:
   Enabled: false
   AutocorrectStyle: sig
   VersionAdded: 0.7.4
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.15.0'
   Safe: false
 
 Sorbet/ForbidTAbsurd:
@@ -224,7 +224,7 @@ Sorbet/ForbidTAbsurd:
   AutocorrectToRBS: false
   VersionAdded: 0.10.4
   SafeAutoCorrect: false
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.15.0'
 
 Sorbet/ForbidTBind:
   Description: 'Forbid usage of T.bind.'
@@ -232,13 +232,13 @@ Sorbet/ForbidTBind:
   AutocorrectToRBS: false
   VersionAdded: 0.10.4
   SafeAutoCorrect: false
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.15.0'
 
 Sorbet/ForbidTBindInAssignment:
   Description: 'Forbid assigning the result of T.bind.'
   Enabled: pending
   SafeAutoCorrect: false
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.15.0'
 
 Sorbet/ForbidTCast:
   Description: 'Forbid usage of T.cast.'
@@ -246,7 +246,7 @@ Sorbet/ForbidTCast:
   AutocorrectToRBS: false
   SafeAutoCorrect: false
   VersionAdded: 0.10.4
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.15.0'
 
 Sorbet/ForbidTLet:
   Description: 'Forbid usage of T.let.'
@@ -254,7 +254,7 @@ Sorbet/ForbidTLet:
   AutocorrectToRBS: false
   SafeAutoCorrect: false
   VersionAdded: 0.10.4
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.15.0'
 
 Sorbet/ForbidTMust:
   Description: 'Forbid usage of T.must.'
@@ -262,7 +262,7 @@ Sorbet/ForbidTMust:
   AutocorrectToRBS: false
   SafeAutoCorrect: false
   VersionAdded: 0.10.4
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.15.0'
 
 Sorbet/ForbidTAnyWithNil:
   Description: 'Forbid usage of T.any(NilClass).'
@@ -282,7 +282,7 @@ Sorbet/ForbidTUnsafe:
   AutocorrectToRBS: false
   SafeAutoCorrect: false
   VersionAdded: 0.7.0
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.15.0'
 
 Sorbet/ForbidTUntyped:
   Description: 'Forbid usage of T.untyped'
