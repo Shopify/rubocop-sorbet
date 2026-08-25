@@ -35,9 +35,9 @@ module RuboCop
         private
 
         def autocorrect_t_unsafe_to_rbs(corrector, node)
-          return unless rbs_assertion_autocorrectable?(node, allow_assignment: true)
-
-          corrector.replace(node, "#{node.first_argument.source} #: as untyped")
+          autocorrect_rbs_assertion(corrector, node, allow_assignment: true) do
+            [node.first_argument.source, "as untyped"]
+          end
         end
       end
     end
