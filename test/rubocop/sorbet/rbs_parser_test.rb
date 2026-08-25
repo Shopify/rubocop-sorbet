@@ -191,7 +191,96 @@ module RuboCop
         assert_nil(sig.return_type)
       end
 
+      # --- rbs_comment? ---
+
+      def test_rbs_comment_matches_signature_marker
+        assert(RBSParser.rbs_comment?(comment("#: (String) -> void")))
+      end
+
+      def test_rbs_comment_matches_continuation_marker
+        assert(RBSParser.rbs_comment?(comment("#| ) -> void")))
+      end
+
+      def test_rbs_comment_rejects_plain_comment
+        refute(RBSParser.rbs_comment?(comment("# plain comment")))
+      end
+
+      def test_rbs_comment_rejects_space_within_marker
+        refute(RBSParser.rbs_comment?(comment("# : (String) -> void")))
+      end
+
+      # --- rbs_tokens ---
+
+      def test_rbs_tokens_splits_signatures
+        tokens = RBSParser.rbs_tokens(comment("#: (String) -> void"))
+
+        assert_equal(
+          [[:pLPAREN, "("], [:tUIDENT, "String"], [:pRPAREN, ")"], [:pARROW, "->"], [:kVOID, "void"]],
+          tokens.map { |token| [token.type, token.location.source] },
+        )
+      end
+
+      def test_rbs_tokens_splits_continued_signatures
+        tokens = RBSParser.rbs_tokens(comment("#| ) -> String"))
+
+        assert_equal(
+          [[:pRPAREN, ")"], [:pARROW, "->"], [:tUIDENT, "String"]],
+          tokens.map { |token| [token.type, token.location.source] },
+        )
+      end
+
+      def test_rbs_tokens_splits_annotations
+        tokens = RBSParser.rbs_tokens(comment("values = [] #: Array[String]"))
+
+        assert_equal(
+          [[:tUIDENT, "Array"], [:pLBRACKET, "["], [:tUIDENT, "String"], [:pRBRACKET, "]"]],
+          tokens.map { |token| [token.type, token.location.source] },
+        )
+      end
+
+      def test_rbs_tokens_splits_assertions
+        tokens = RBSParser.rbs_tokens(comment("values = result #: as Hash[Symbol, Integer]"))
+
+        assert_equal(
+          [
+            [:kAS, "as"],
+            [:tUIDENT, "Hash"],
+            [:pLBRACKET, "["],
+            [:tUIDENT, "Symbol"],
+            [:pCOMMA, ","],
+            [:tUIDENT, "Integer"],
+            [:pRBRACKET, "]"],
+          ],
+          tokens.map { |token| [token.type, token.location.source] },
+        )
+      end
+
+      def test_rbs_tokens_splits_type_aliases
+        tokens = RBSParser.rbs_tokens(comment("#: type user_id = Integer"))
+
+        assert_equal(
+          [[:kTYPE, "type"], [:tLIDENT, "user_id"], [:pEQ, "="], [:tUIDENT, "Integer"]],
+          tokens.map { |token| [token.type, token.location.source] },
+        )
+      end
+
+      def test_rbs_tokens_empty_for_non_rbs_comment
+        assert_empty(RBSParser.rbs_tokens(comment("# plain comment")))
+      end
+
+      def test_rbs_tokens_positions_match_their_place_in_comment
+        comment = comment("values = [] #: Hash[Symbol, Integer]")
+
+        RBSParser.rbs_tokens(comment).each do |token|
+          assert_equal(token.location.source, comment.text[token.location.start_pos...token.location.end_pos])
+        end
+      end
+
       private
+
+      def comment(source)
+        parse(source).comments.first
+      end
 
       def signatures_before(source)
         ps = parse(source)

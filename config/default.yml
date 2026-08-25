@@ -5,6 +5,12 @@
 Layout/LeadingCommentSpace:
   AllowRBSInlineAnnotation: true
 
+Sorbet/ForbidSorbetGenericTypesInRBSComments:
+  Description: 'Forbid Sorbet `T::` generic types in RBS comments.'
+  Enabled: pending
+  SafeAutoCorrect: false
+  VersionAdded: '<<next>>'
+
 Sorbet/ForbidTHelpers:
   Description: 'Forbid usage of T::Helpers via `extend` or `include`.'
   Enabled: false

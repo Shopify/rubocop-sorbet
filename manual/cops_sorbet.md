@@ -604,6 +604,24 @@ T::Sig::WithoutRuntime.sig { void }
 def foo; end
 ```
 
+## Sorbet/ForbidSorbetGenericTypesInRBSComments
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
+
+Forbids Sorbet's `T::` generic types in RBS comments.
+
+### Examples
+
+```ruby
+# bad
+#: (T::Array[String]) -> ::T::Hash[Symbol, Integer]
+
+# good
+#: (Array[String]) -> Hash[Symbol, Integer]
+```
+
 ## Sorbet/ForbidSuperclassConstLiteral
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
