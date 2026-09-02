@@ -249,7 +249,7 @@ Sorbet/ForbidTCast:
   AutocorrectToRBS: false
   SafeAutoCorrect: false
   VersionAdded: 0.10.4
-  VersionChanged: '0.15.0'
+  VersionChanged: '0.16.0'
 
 Sorbet/ForbidTLet:
   Description: 'Forbid usage of T.let.'
@@ -257,7 +257,7 @@ Sorbet/ForbidTLet:
   AutocorrectToRBS: false
   SafeAutoCorrect: false
   VersionAdded: 0.10.4
-  VersionChanged: '0.15.0'
+  VersionChanged: '0.16.0'
 
 Sorbet/ForbidTMust:
   Description: 'Forbid usage of T.must.'
@@ -285,7 +285,7 @@ Sorbet/ForbidTUnsafe:
   AutocorrectToRBS: false
   SafeAutoCorrect: false
   VersionAdded: 0.7.0
-  VersionChanged: '0.15.0'
+  VersionChanged: '0.16.0'
 
 Sorbet/ForbidTUntyped:
   Description: 'Forbid usage of T.untyped'

@@ -733,7 +733,7 @@ foo = T.cast(self, Integer)
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.15.0
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.16.0
 
 Disallows using `T.cast` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
@@ -814,7 +814,7 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.15.0
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.16.0
 
 Disallows using `T.let` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
@@ -980,7 +980,7 @@ STRING_OR_INTEGER = T.type_alias { T.any(Integer, String) }
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.7.0 | 0.15.0
+Disabled | Yes | Yes (Unsafe) | 0.7.0 | 0.16.0
 
 Disallows using `T.unsafe` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
