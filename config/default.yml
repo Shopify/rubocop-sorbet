@@ -5,6 +5,9 @@
 Layout/LeadingCommentSpace:
   AllowRBSInlineAnnotation: true
 
+Lint/SelfAssignment:
+  AllowRBSInlineAnnotation: true
+
 Sorbet/ForbidTHelpers:
   Description: 'Forbid usage of T::Helpers via `extend` or `include`.'
   Enabled: false
