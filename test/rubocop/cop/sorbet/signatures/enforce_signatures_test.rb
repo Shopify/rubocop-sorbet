@@ -708,8 +708,13 @@ module RuboCop
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
               def self.baz(a:); end
               ^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def forward(...); end
+              ^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def no_keywords(**nil); end
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def destructured((a, b)); end
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
             RUBY
-
             assert_correction(<<~RUBY)
               #: -> untyped
               def foo; end
@@ -723,6 +728,12 @@ module RuboCop
               def self.bar(a, *b, **c); end
               #: (a: untyped) -> untyped
               def self.baz(a:); end
+              #: (*untyped, **untyped) ?{ (?) -> untyped } -> untyped
+              def forward(...); end
+              #: (**nil) -> untyped
+              def no_keywords(**nil); end
+              #: (untyped) -> untyped
+              def destructured((a, b)); end
             RUBY
           end
 
@@ -751,6 +762,74 @@ module RuboCop
                 #: untyped
                 attr_accessor :baz
               end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_custom_placeholders
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+              "ParameterTypePlaceholder" => "PARAM",
+              "ReturnTypePlaceholder" => "RET",
+            }))
+
+            assert_offense(<<~RUBY)
+              def foo(a); end
+              ^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              class Foo
+                attr_reader :reader
+                ^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+                attr_writer :writer
+                ^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+                attr_accessor :accessor
+                ^^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: (PARAM) -> RET
+              def foo(a); end
+              class Foo
+                #: RET
+                attr_reader :reader
+                #: PARAM
+                attr_writer :writer
+                #: RET
+                attr_accessor :accessor
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_required_block_placeholder
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+              "ParameterTypePlaceholder" => "T.proc.void",
+            }))
+
+            assert_offense(<<~RUBY)
+              def foo(&block); end
+              ^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: { -> void } -> untyped
+              def foo(&block); end
+            RUBY
+          end
+
+          def test_enforce_rbs_autocorrects_optional_block_placeholder
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+              "ParameterTypePlaceholder" => "T.nilable(T.proc.void)",
+            }))
+
+            assert_offense(<<~RUBY)
+              def foo(&block); end
+              ^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: ?{ -> void } -> untyped
+              def foo(&block); end
             RUBY
           end
 

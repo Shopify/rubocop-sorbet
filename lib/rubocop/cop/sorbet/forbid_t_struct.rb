@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "rubocop"
+require "rbi"
 
 module RuboCop
   module Cop
@@ -129,12 +130,6 @@ module RuboCop
         end
 
         class Property
-          # Sorbet `T::X[...]` generics that have a direct RBS equivalent.
-          GENERIC_BASE_NAMES = [:Array, :Hash, :Set, :Range].freeze
-
-          # Sorbet bare `T::X` constants that map to an RBS built-in.
-          T_CONST_MAP = { Boolean: "bool" }.freeze
-
           attr_reader :node, :kind, :name, :default, :factory
 
           def initialize(node, kind, name, type, default:, factory:, style: "sig")
@@ -142,7 +137,6 @@ module RuboCop
             @kind = kind
             @name = name
             @type = type
-            @type_node = node.arguments[1]
             @default = default
             @factory = factory
             @style = style
@@ -212,94 +206,9 @@ module RuboCop
           end
 
           def rbs_type
-            sorbet_type_to_rbs(@type_node)
-          end
-
-          # Translate a Sorbet type expression AST node into RBS syntax.
-          # Handles the constructs most commonly found on `T::Struct` props:
-          # `T.nilable`, `T.any`, `T.all`, `T.untyped`, `T.class_of`, and
-          # generics like `T::Array[X]`. Any unrecognized node falls back to
-          # the valid RBS `untyped` rather than emitting malformed Sorbet
-          # syntax (e.g. `T.proc...`) into an RBS annotation.
-          def sorbet_type_to_rbs(node)
-            return "untyped" if node.nil?
-
-            case node.type
-            when :const
-              translate_const(node)
-            when :send
-              translate_send_type(node)
-            else
-              "untyped"
-            end
-          end
-
-          def translate_send_type(node)
-            receiver = node.receiver
-            method = node.method_name
-            args = node.arguments
-
-            if t_const?(receiver)
-              translate_t_method(method, args)
-            elsif method == :[] && (base = generic_base(receiver))
-              "#{base}[#{args.map { |arg| sorbet_type_to_rbs(arg) }.join(", ")}]"
-            else
-              "untyped"
-            end
-          end
-
-          # Maps `T.xxx(...)` type constructors to RBS. Unknown `T.xxx` sends
-          # become `untyped` so the annotation stays valid RBS.
-          def translate_t_method(method, args)
-            case method
-            when :nilable
-              inner = sorbet_type_to_rbs(args.first)
-              inner = "(#{inner})" if inner.include?(" | ") || inner.include?(" & ")
-              "#{inner}?"
-            when :any
-              args.map { |arg| sorbet_type_to_rbs(arg) }.join(" | ")
-            when :all
-              args.map { |arg| sorbet_type_to_rbs(arg) }.join(" & ")
-            when :untyped
-              "untyped"
-            when :noreturn
-              "bot"
-            when :class_of
-              "singleton(#{sorbet_type_to_rbs(args.first)})"
-            else
-              "untyped"
-            end
-          end
-
-          def t_const?(node)
-            node&.const_type? && node.children[1] == :T
-          end
-
-          # Bare class constants are valid RBS class-instance types, except
-          # for Sorbet's `T::Boolean` (-> `bool`) and other `T::X` constants
-          # which have no RBS equivalent and fall back to `untyped`.
-          def translate_const(node)
-            return "untyped" if t_const?(node)
-
-            if t_const?(node.children[0])
-              T_CONST_MAP.fetch(node.children[1]) { "untyped" }
-            else
-              node.source
-            end
-          end
-
-          # `T::Array[X]`, `T::Hash[K, V]`, and `T::Set[X]` become the RBS
-          # generics `Array[X]`, `Hash[K, V]`, `Set[X]`. Other const receivers
-          # keep their class name (custom generics). Non-const receivers return
-          # nil so the caller falls back to `untyped` instead of `untyped[X]`.
-          def generic_base(node)
-            return unless node&.const_type?
-
-            if t_const?(node.children[0]) && GENERIC_BASE_NAMES.include?(node.children[1])
-              node.children[1].to_s
-            elsif !t_const?(node.children[0])
-              node.source
-            end
+            RBI::Type.parse_string(@type).rbs_string
+          rescue RBI::Type::Error
+            "untyped"
           end
         end
 
