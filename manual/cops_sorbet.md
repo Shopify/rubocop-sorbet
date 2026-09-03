@@ -650,8 +650,11 @@ Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments
 # bad
 T.absurd(foo)
 
-# good
+# good (Sorbet before 0.6.99999)
 foo #: absurd
+
+# good (Sorbet 0.6.99999 and later)
+raise #: absurd(foo)
 ```
 
 ### Configurable attributes
