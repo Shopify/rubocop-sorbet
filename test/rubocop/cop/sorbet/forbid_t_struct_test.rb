@@ -332,7 +332,7 @@ module RuboCop
 
           assert_correction(<<~RUBY)
             class Foo
-              #: Integer | String
+              #: (Integer | String)
               attr_reader :a
 
               #: Array[String]
@@ -341,10 +341,10 @@ module RuboCop
               #: Hash[Symbol, Integer]
               attr_reader :c
 
-              #: Comparable & Numeric
+              #: (Comparable & Numeric)
               attr_reader :d
 
-              #: (a: Integer | String, b: Array[String], c: Hash[Symbol, Integer], d: Comparable & Numeric) -> void
+              #: (a: (Integer | String), b: Array[String], c: Hash[Symbol, Integer], d: (Comparable & Numeric)) -> void
               def initialize(a:, b:, c:, d:)
                 @a = a
                 @b = b
@@ -379,10 +379,10 @@ module RuboCop
               #: Hash[Symbol, bool]
               attr_reader :c
 
-              #: untyped
+              #: Enumerable[Integer]
               attr_reader :d
 
-              #: (a: bool, b: Range[Integer], c: Hash[Symbol, bool], d: untyped) -> void
+              #: (a: bool, b: Range[Integer], c: Hash[Symbol, bool], d: Enumerable[Integer]) -> void
               def initialize(a:, b:, c:, d:)
                 @a = a
                 @b = b
@@ -393,7 +393,7 @@ module RuboCop
           RUBY
         end
 
-        def test_autocorrects_rbs_maps_unsupported_types_to_untyped
+        def test_autocorrects_rbs_translates_special_types
           @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
 
           assert_offense(<<~RUBY)
@@ -415,7 +415,7 @@ module RuboCop
               #: singleton(Foo)
               attr_reader :b
 
-              #: untyped
+              #: ^(Integer x) -> String
               attr_reader :c
 
               #: bot
@@ -424,7 +424,7 @@ module RuboCop
               #: untyped
               attr_reader :e
 
-              #: (a: untyped, b: singleton(Foo), c: untyped, d: bot, e: untyped) -> void
+              #: (a: untyped, b: singleton(Foo), c: ^(Integer x) -> String, d: bot, e: untyped) -> void
               def initialize(a:, b:, c:, d:, e:)
                 @a = a
                 @b = b

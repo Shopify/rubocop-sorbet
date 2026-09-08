@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "rbi"
 require "spoom"
 
 module RuboCop
@@ -138,12 +139,15 @@ module RuboCop
 
         def autocorrect_with_signature_type(corrector, node, type)
           target = leftmost_send_ancestor(node)
-          suggest = SigSuggestion.new(target.loc.column, param_type_placeholder, return_type_placeholder)
+          suggest = create_signature_suggestion(target, type)
           populate_signature_suggestion(suggest, node)
 
-          correction = suggest.to_autocorrect
-          correction = translate_signature_to_rbs(correction, node) if type == "rbs"
-          corrector.insert_before(target, correction)
+          corrector.insert_before(target, suggest.to_autocorrect)
+        end
+
+        def create_signature_suggestion(node, type)
+          suggestion_class = type == "rbs" ? RBSSuggestion : SigSuggestion
+          suggestion_class.new(node.loc.column, param_type_placeholder, return_type_placeholder)
         end
 
         def autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
@@ -206,11 +210,6 @@ module RuboCop
           end
 
           first_comment.source_range.with(end_pos: comments.last.source_range.end_pos)
-        end
-
-        def translate_signature_to_rbs(signature, node)
-          translated = translate_sigs_to_rbs("#{signature}#{node.source}")
-          translated_signature_prefix(translated, reject_sig: true)
         end
 
         def translated_signature_prefix(translated, reject_sig: false)
@@ -286,6 +285,7 @@ module RuboCop
           method = node.children[1]
           symbol = node.children[2]
 
+          suggest.accessor = method
           add_accessor_parameter_if_needed(suggest, symbol, method)
           set_void_return_for_writer(suggest, method)
         end
@@ -377,8 +377,76 @@ module RuboCop
           end
         end
 
+        class RBSSuggestion
+          attr_accessor :params, :accessor
+
+          def initialize(indent, param_placeholder, return_placeholder)
+            @params = []
+            @returns = nil
+            @accessor = nil
+            @indent = indent
+            @param_type = RBI::Type.parse_string(param_placeholder)
+            @return_type = RBI::Type.parse_string(return_placeholder)
+          end
+
+          def returns=(value)
+            @returns = value == "void" ? RBI::Type.void : value
+          end
+
+          def to_autocorrect
+            signature = if accessor
+              type = accessor == :attr_writer ? @param_type : @return_type
+              "#: #{type.rbs_string}"
+            else
+              method = RBI::Method.new("f")
+              sig = RBI::Sig.new(return_type: @returns || @return_type)
+              params.each do |param|
+                rbi_params(param).each do |method_param, sig_param|
+                  method << method_param
+                  sig << RBI::SigParam.new(sig_param, @param_type) if sig_param
+                end
+              end
+              method.sigs << sig
+              "#: #{method.rbs_string(positional_names: false).delete_prefix("def f: ").delete_suffix("\n")}"
+            end
+
+            "#{signature}\n#{" " * @indent}"
+          end
+
+          private
+
+          def rbi_params(param)
+            case param.kind
+            when :arg
+              [[RBI::ReqParam.new(param.name), param.name]]
+            when :optarg
+              [[RBI::OptParam.new(param.name, "nil"), param.name]]
+            when :restarg
+              [[RBI::RestParam.new(param.name), param.name || "*"]]
+            when :kwarg
+              [[RBI::KwParam.new(param.name), param.name]]
+            when :kwoptarg
+              [[RBI::KwOptParam.new(param.name, "nil"), param.name]]
+            when :kwrestarg
+              [[RBI::KwRestParam.new(param.name), param.name || "**"]]
+            when :blockarg
+              [[RBI::BlockParam.new(param.name), param.name || "&"]]
+            when :forward_arg
+              [
+                [RBI::RestParam.new(nil), "*"],
+                [RBI::KwRestParam.new(nil), "**"],
+                [RBI::BlockParam.new(nil), "&"],
+              ]
+            when :nokey, :kwnilarg
+              [[RBI::NoKwParam.new, nil]]
+            else
+              [[RBI::ReqParam.new("untyped"), "untyped"]]
+            end
+          end
+        end
+
         class SigSuggestion
-          attr_accessor :params, :returns
+          attr_accessor :params, :returns, :accessor
 
           def initialize(indent, param_placeholder, return_placeholder)
             @params = []

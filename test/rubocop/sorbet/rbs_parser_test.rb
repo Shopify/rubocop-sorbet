@@ -105,6 +105,14 @@ module RuboCop
         refute(sig.void?)
       end
 
+      def test_signature_return_type_parenthesized_simple
+        sig = signature("#: () -> (String)\ndef foo; end")
+        assert_equal("String", sig.return_type)
+        highlight, replace = sig.return_type_range
+        assert_equal("String", highlight.source)
+        assert_equal("String", replace.source)
+      end
+
       def test_signature_return_type_multiline_params
         sig = signature("#: (\n#| String name\n#| ) -> String\ndef foo; end")
         assert_equal("String", sig.return_type)
@@ -138,11 +146,18 @@ module RuboCop
       end
 
       def test_signature_return_type_multiline_union
-        sig = signature("#: (String) ->\n#| Integer |\n#| String\ndef foo; end")
+        sig = signature("#: (String) ->\n#| (Integer | String)\ndef foo; end")
         assert_equal("Integer | String", sig.return_type)
         highlight, replace = sig.return_type_range
         assert_equal("Integer", highlight.source)
-        assert_equal("Integer |\n#| String", replace.source)
+        assert_equal("Integer | String", replace.source)
+      end
+
+      def test_signature_return_type_nil_for_unparenthesized_union
+        sig = signature("#: (Integer) -> Integer | String\ndef foo; end")
+        assert_nil(sig.return_type)
+        assert_nil(sig.return_type_range)
+        refute(sig.void?)
       end
 
       def test_signature_void_return
