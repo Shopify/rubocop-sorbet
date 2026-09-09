@@ -1322,6 +1322,10 @@ their own class. Regexp literals are the only simple literals whose
 inference survives a `.freeze` call (Sorbet 0.6.13304+), so
 `T.let(/foo/.freeze, Regexp)` is also redundant; other frozen simple
 literals (e.g. `"hello".freeze`) are not inferred and still need `T.let`.
+Exact annotations on `true`, `false`, and `nil` are also redundant,
+whether expressed as `T.let(..., TrueClass)` or RBS singleton types.
+With RBS comments enabled, Sorbet infers the same `TrueClass`,
+`FalseClass`, and `NilClass` types without them.
 
 Array literals of simple literals are also inferred:
 
@@ -1346,7 +1350,10 @@ FROZEN_PATTERN = T.let(/foo/.freeze, Regexp)
 STATUS = T.let(:active, Symbol)
 SHELLS = T.let([:bash, :zsh].freeze, T::Array[Symbol])
 NAMES = T.let(["alice", "bob"], T::Array[String])
+local_truth = T.let(true, TrueClass)
 RBS_GREETING = "hello" #: String
+local_count = 1 #: Integer
+local_tlet_count = T.let(1, Integer)
 RBS_NAMES = ["alice", "bob"] #: Array[String]
 
 # good
@@ -1358,7 +1365,10 @@ FROZEN_PATTERN = /foo/.freeze
 STATUS = :active
 SHELLS = [:bash, :zsh].freeze
 NAMES = ["alice", "bob"]
+local_truth = true
 RBS_GREETING = "hello"
+local_count = 1
+local_tlet_count = 1
 RBS_NAMES = ["alice", "bob"]
 
 # good — non-regexp frozen simple literals are not inferred
@@ -1373,11 +1383,24 @@ NAMES = T.let(["alice", "bob"], T::Array[T.nilable(String)])
 # good — type is not the literal's own class
 value = T.let("hello", T.nilable(String))
 
+# good — bool annotations widen a singleton boolean type
+local_bool = true #: bool
+local_tlet_bool = T.let(true, T::Boolean)
+
+# bad — the initializer annotation hides an untyped block assignment
+observed_locale = T.let("", String)
+records.each do |record|
+  observed_locale = record.locale
+end
+
+# good — cast the value at the untyped boundary
+observed_locale = ""
+records.each do |record|
+  observed_locale = record.locale #: as String
+end
+
 # good — instance variables need T.let for Sorbet to track their type
 @max_retries = T.let(3, Integer)
-
-# good — local variables may need T.let so Sorbet allows reassignment
-count = T.let(0, Integer)
 ```
 
 ## Sorbet/Refinement
