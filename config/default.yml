@@ -48,9 +48,10 @@ Sorbet:
   DocumentationExtension: .md
 
 Sorbet/AllowIncompatibleOverride:
-  Description: 'Disallows using `.override(allow_incompatible: true)`.'
+  Description: 'Disallows incompatible overrides in Sorbet signatures and RBS comments.'
   Enabled: true
   VersionAdded: 0.2.0
+  VersionChanged: '<<next>>'
 
 Sorbet/BindingConstantWithoutTypeAlias:
   Description: >-

@@ -13,13 +13,16 @@ module RuboCop
     # No Cop::Base state is required.
     #
     # `rbs_signatures_before` returns `Signature` objects that encapsulate one
-    # RBS overload each. `rbs_annotation_after` returns the trailing RBS
-    # annotation attached to an expression and its comment node.
+    # RBS overload each. `rbs_annotations_before` returns the attached `# @`
+    # comments. `rbs_annotation_after` returns the trailing RBS annotation
+    # attached to an expression and its comment node.
     module RBSParser
       # `#:` begins an RBS signature (each repeated `#:` line is a new overload).
       RBS_SIGNATURE_PREFIX = /\A#:/
       # `#|` continues the preceding `#:` signature (e.g. multiline params/returns).
       RBS_CONTINUATION_PREFIX = /\A#\|/
+      # `# @` begins a Sorbet method annotation used alongside RBS signatures.
+      RBS_ANNOTATION_PREFIX = /\A#\s*@/
 
       class << self
         # The RBS signatures attached to `node`, one `Signature` per overload.
@@ -30,6 +33,16 @@ module RuboCop
           node = node.parent while node.parent&.send_type?
           rbs_signature_groups(comments_above(processed_source, node))
             .map { |group| Signature.new(processed_source, group) }
+        end
+
+        # The Sorbet `# @` annotation comments attached to `node`, in source
+        # order. Other comments in the contiguous block, including the RBS
+        # signature itself, are omitted.
+        def rbs_annotations_before(processed_source, node)
+          node = node.parent while node.parent&.send_type?
+          comments_above(processed_source, node).select do |comment|
+            comment.text.match?(RBS_ANNOTATION_PREFIX)
+          end
         end
 
         # The trailing RBS annotation attached to `node`, as `[comment, text]`.

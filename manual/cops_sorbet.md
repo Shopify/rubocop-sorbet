@@ -4,9 +4,9 @@
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | No | 0.2.0 | -
+Enabled | Yes | No | 0.2.0 | <<next>>
 
-Disallows using `.override(allow_incompatible: true)`.
+Disallows incompatible overrides in Sorbet signatures and RBS comments.
 Using `allow_incompatible` suggests a violation of the Liskov
 Substitution Principle, meaning that a subclass is not a valid
 subtype of its superclass. This Cop prevents these design smells
@@ -16,10 +16,23 @@ from occurring.
 
 ```ruby
 # bad
-sig.override(allow_incompatible: true)
+sig { override(allow_incompatible: true).void }
+def foo; end
+
+# @override(allow_incompatible: true)
+#: () -> void
+def foo; end
+
+# @override(allow_incompatible: true)
+#: String
+attr_reader :foo
 
 # good
-sig.override
+sig { override.void }
+
+# @override
+#: () -> void
+def foo; end
 ```
 
 ## Sorbet/BindingConstantWithoutTypeAlias
