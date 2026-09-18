@@ -61,6 +61,8 @@ module RuboCop
           assert_offense(<<~RUBY)
             T.unsafe(foo).bar.baz
             ^^^^^^^^^^^^^ #{MSG}
+            T.unsafe(foo.bar).baz
+            ^^^^^^^^^^^^^^^^^ #{MSG}
               T.unsafe(foo)&.bar
               ^^^^^^^^^^^^^ #{MSG}
           RUBY
@@ -68,6 +70,8 @@ module RuboCop
           assert_correction(<<~RUBY)
             foo #: as untyped
               .bar.baz
+            foo.bar #: as untyped
+              .baz
               foo #: as untyped
                 &.bar
           RUBY
