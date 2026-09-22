@@ -60,6 +60,7 @@ require_relative "sorbet/signatures/keyword_argument_ordering"
 require_relative "sorbet/signatures/runtime_on_failure_depends_on_checked"
 require_relative "sorbet/signatures/setter_return_type"
 require_relative "sorbet/signatures/signature_build_order"
+require_relative "sorbet/signatures/useless_type_parameter"
 require_relative "sorbet/signatures/void_checked_tests"
 
 require_relative "sorbet/sigils/valid_sigil"

@@ -101,6 +101,11 @@ module RuboCop
           @comments = comments
         end
 
+        # The parsed RBS method type, or nil if parsing fails.
+        def method_type
+          parsed_method_type
+        end
+
         # The return type expression as a string, or nil if parsing fails.
         def return_type
           return_type_node&.to_s

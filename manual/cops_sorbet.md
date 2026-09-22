@@ -1728,6 +1728,35 @@ Name | Default value | Configurable values
 Include | `**/*.{rb,rbi,rake,ru}` | Array
 Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
+## Sorbet/UselessTypeParameter
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Enabled | Yes | Yes  | <<next>> | -
+
+Checks for type parameters that do not establish a relationship across
+at least two uses in a Sorbet method or RBS inline signature.
+Unreferenced parameters and unbounded parameters referenced only once
+are useless.
+
+### Examples
+
+```ruby
+# bad
+sig { type_parameters(:U).params(value: T.type_parameter(:U)).void }
+
+# good
+sig { type_parameters(:U).params(value: T.type_parameter(:U)).returns(T.type_parameter(:U)) }
+
+# bad
+#: [U] () -> U
+def foo; end
+
+# good
+#: [U] (U) -> U
+def foo(value); end
+```
+
 ## Sorbet/ValidGemVersionAnnotations
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
