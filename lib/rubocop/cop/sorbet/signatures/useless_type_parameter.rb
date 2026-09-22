@@ -3,8 +3,8 @@
 module RuboCop
   module Cop
     module Sorbet
-      # Checks for type parameters that do not establish a relationship across
-      # at least two uses in a Sorbet method or RBS inline signature.
+      # Checks for type parameters that do not establish a relationship between
+      # at least two uses in a Sorbet `sig` or RBS inline signature.
       # Unreferenced parameters and unbounded parameters referenced only once
       # are useless.
       #
@@ -38,8 +38,6 @@ module RuboCop
         def on_signature(node)
           usages = Hash.new { |hash, name| hash[name] = [] }
           collect_sorbet_type_parameter_usages(node, usages)
-          method_node = following_method_definition(node)
-          collect_sorbet_type_parameter_usages(method_node.body, usages) if method_node
 
           signature_type_parameter_declarations(node.body).each do |declaration|
             useless = declaration.arguments.select do |argument|
@@ -75,16 +73,6 @@ module RuboCop
             name = type_parameter_usage?(call)
             usages[name] << call if name
           end
-        end
-
-        def following_method_definition(signature)
-          siblings = signature.parent&.children
-          return unless siblings
-
-          candidate = siblings.drop(signature.sibling_index + 1).find { |sibling| !signature?(sibling) }
-          return candidate if candidate&.any_def_type?
-
-          candidate.each_descendant(:any_def).first if candidate&.call_type?
         end
 
         def register_sorbet_offenses(declaration, useless, usages)

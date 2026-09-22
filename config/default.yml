@@ -499,7 +499,7 @@ Sorbet/UselessTypeParameter:
   Description: 'Checks for type parameters that do not establish a relationship between signature positions.'
   Enabled: pending
   Safe: true
-  SafeAutoCorrect: true
+  SafeAutoCorrect: false
   VersionAdded: '<<next>>'
 
 Sorbet/ValidSigil:

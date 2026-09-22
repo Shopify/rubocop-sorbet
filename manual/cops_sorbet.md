@@ -1732,10 +1732,10 @@ Exclude | `bin/**/*`, `db/**/*.rb`, `script/**/*` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes  | <<next>> | -
+Enabled | Yes | Yes (Unsafe) | <<next>> | -
 
-Checks for type parameters that do not establish a relationship across
-at least two uses in a Sorbet method or RBS inline signature.
+Checks for type parameters that do not establish a relationship between
+at least two uses in a Sorbet `sig` or RBS inline signature.
 Unreferenced parameters and unbounded parameters referenced only once
 are useless.
 
