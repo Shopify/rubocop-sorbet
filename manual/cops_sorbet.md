@@ -754,6 +754,57 @@ Name | Default value | Configurable values
 --- | --- | ---
 AutocorrectToRBS | `false` | Boolean
 
+## Sorbet/ForbidTCollectionInstantiation
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | Yes (Unsafe) | <<next>> | -
+
+Disallows instantiating Sorbet collection types. Instantiate the Ruby
+collection directly and declare its type separately when needed.
+
+Checks `T::Array`, `T::Hash`, `T::Set`, `T::Range`, `T::Enumerable`,
+`T::Enumerator`, `T::Enumerator::Lazy`, and `T::Enumerator::Chain`,
+with or without type arguments.
+
+Set `AutocorrectToRBS: true` to replace standalone or assigned constructors
+with Ruby constructors and RBS inline type annotations. Calls with an
+existing RBS annotation or an untranslatable type are not autocorrected.
+
+### Examples
+
+```ruby
+# bad
+T::Array[String].new
+T::Hash[Symbol, Integer].new
+T::Set[String].new
+T::Array.new
+
+# good
+Array.new
+Hash.new
+Set.new
+T.let(Array.new, T::Array[String])
+Set.new #: Set[String]
+```
+#### AutocorrectToRBS: true
+
+```ruby
+# bad
+arr = T::Array[String].new
+items = T::Set[T.nilable(String)].new(values)
+
+# good
+arr = Array.new #: Array[String]
+items = Set.new(values) #: Set[String?]
+```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+AutocorrectToRBS | `false` | Boolean
+
 ## Sorbet/ForbidTEnum
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
