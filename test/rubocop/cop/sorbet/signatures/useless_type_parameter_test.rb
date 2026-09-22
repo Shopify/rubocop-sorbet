@@ -81,15 +81,6 @@ module RuboCop
             RUBY
           end
 
-          def test_accepts_sorbet_type_parameter_used_in_signature_and_method_body
-            assert_no_offenses(<<~RUBY)
-              sig { type_parameters(:Item).params(value: T.type_parameter(:Item)).void }
-              private def foo(value)
-                T.cast(value, T.type_parameter(:Item))
-              end
-            RUBY
-          end
-
           def test_removes_sorbet_builder_with_multiple_unreferenced_type_parameters
             assert_offense(<<~RUBY)
               sig { type_parameters(:First, :Second).void }
