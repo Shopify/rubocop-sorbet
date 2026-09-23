@@ -563,9 +563,54 @@ module RuboCop
 
         # Non-constant assignments
 
-        def test_no_offense_for_local_variable
-          assert_no_offenses(<<~RUBY)
+        def test_registers_offense_for_local_variable
+          assert_offense(<<~RUBY)
             x = T.let(42, Integer)
+                ^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Integer")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            x = 42
+          RUBY
+        end
+
+        def test_registers_offense_for_local_t_let_with_exact_boolean_and_nil_classes
+          assert_offense(<<~RUBY)
+            exact_true = T.let(true, TrueClass)
+                         ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "TrueClass")}
+            exact_false = T.let(false, FalseClass)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "FalseClass")}
+            exact_nil = T.let(nil, NilClass)
+                        ^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "NilClass")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            exact_true = true
+            exact_false = false
+            exact_nil = nil
+          RUBY
+        end
+
+        def test_registers_offense_for_constant_t_let_with_exact_boolean_and_nil_classes
+          assert_offense(<<~RUBY)
+            EXACT_TRUE = T.let(true, TrueClass)
+                         ^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "TrueClass")}
+            EXACT_FALSE = T.let(false, FalseClass)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "FalseClass")}
+            EXACT_NIL = T.let(nil, NilClass)
+                        ^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "NilClass")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            EXACT_TRUE = true
+            EXACT_FALSE = false
+            EXACT_NIL = nil
+          RUBY
+        end
+
+        def test_no_offense_for_local_variable_with_wider_type
+          assert_no_offenses(<<~RUBY)
+            x = T.let(42, Numeric)
           RUBY
         end
 
@@ -765,6 +810,87 @@ module RuboCop
           RUBY
         end
 
+        def test_registers_offense_for_local_variable_literal_annotations
+          assert_offense(<<~RUBY)
+            local_var1 = 1 #: Integer
+                           ^^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "Integer")}
+            local_var2 = "" #: String
+                            ^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "String")}
+            local_var3 = 1.0 #: Float
+                             ^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "Float")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            local_var1 = 1
+            local_var2 = ""
+            local_var3 = 1.0
+          RUBY
+        end
+
+        def test_registers_offense_for_t_let_with_trailing_rbs_annotation
+          assert_offense(<<~RUBY)
+            value = T.let(42, Integer) #: Integer
+                    ^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "`T.let`", type: "Integer")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            value = 42
+          RUBY
+        end
+
+        def test_registers_offense_for_other_local_scalar_literal_annotations
+          assert_offense(<<~'RUBY')
+            negative = -1 #: Integer
+                          ^^^^^^^^^^ Sorbet/RedundantTLetForLiteral: Redundant RBS annotation for Integer literal. Sorbet can infer this type automatically.
+            symbol = :active #: Symbol
+                             ^^^^^^^^^ Sorbet/RedundantTLetForLiteral: Redundant RBS annotation for Symbol literal. Sorbet can infer this type automatically.
+            regexp = /foo/ #: Regexp
+                           ^^^^^^^^^ Sorbet/RedundantTLetForLiteral: Redundant RBS annotation for Regexp literal. Sorbet can infer this type automatically.
+            string = "#{prefix}value" #: String
+                                      ^^^^^^^^^ Sorbet/RedundantTLetForLiteral: Redundant RBS annotation for String literal. Sorbet can infer this type automatically.
+            interpolated_symbol = :"value_#{suffix}" #: Symbol
+                                                     ^^^^^^^^^ Sorbet/RedundantTLetForLiteral: Redundant RBS annotation for Symbol literal. Sorbet can infer this type automatically.
+          RUBY
+
+          assert_correction(<<~'RUBY')
+            negative = -1
+            symbol = :active
+            regexp = /foo/
+            string = "#{prefix}value"
+            interpolated_symbol = :"value_#{suffix}"
+          RUBY
+        end
+
+        def test_registers_offense_for_reassigned_local_variable
+          assert_offense(<<~RUBY)
+            count = 0 #: Integer
+                      ^^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "Integer")}
+            count = fetch_count
+          RUBY
+
+          assert_correction(<<~RUBY)
+            count = 0
+            count = fetch_count
+          RUBY
+        end
+
+        def test_registers_offense_when_local_variable_is_reassigned_in_block
+          assert_offense(<<~RUBY)
+            captured = "" #: String
+                          ^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "String")}
+            values.each do |value|
+              captured = value
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            captured = ""
+            values.each do |value|
+              captured = value
+            end
+          RUBY
+        end
+
         def test_no_offense_for_frozen_string_with_trailing_rbs_annotation
           assert_no_offenses(<<~RUBY)
             GREETING = "hello".freeze #: String
@@ -799,6 +925,23 @@ module RuboCop
           RUBY
         end
 
+        def test_registers_offense_for_exact_boolean_and_nil_rbs_literal_types
+          assert_offense(<<~RUBY)
+            exact_true = true #: true
+                              ^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "true")}
+            exact_false = false #: false
+                                ^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "false")}
+            exact_nil = nil #: nil
+                            ^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "nil")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            exact_true = true
+            exact_false = false
+            exact_nil = nil
+          RUBY
+        end
+
         def test_registers_offense_for_trailing_rbs_array_annotation
           assert_offense(<<~RUBY)
             NAMES = ["alice", "bob"] #: Array[String]
@@ -827,14 +970,17 @@ module RuboCop
           RUBY
         end
 
-        def test_no_offense_for_nonredundant_or_nonconstant_rbs_annotations
+        def test_no_offense_for_nonredundant_rbs_annotations
           assert_no_offenses(<<~RUBY)
             MAYBE = "hello" #: String?
             WIDE = "hello" #: Object
             CAST = "hello" #: as String
 
             NAMES = ["alice", "bob"] #: Array[String?]
-            local = "hello" #: String
+            local_array = ["alice", "bob"] #: Array[String]
+            local_boolean = true #: bool
+            local_tlet_boolean = T.let(true, T::Boolean)
+            local_optional = nil #: String?
             @greeting = "hello" #: String
           RUBY
         end
