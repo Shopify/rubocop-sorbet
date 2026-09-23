@@ -35,8 +35,8 @@ module RuboCop
         MSG = "Usage of `allow_incompatible` suggests a violation of the Liskov Substitution Principle. " \
           "Instead, strive to write interfaces which respect subtyping principles and remove `allow_incompatible`"
         RBS_ALLOW_INCOMPATIBLE_OVERRIDE = /\A#\s*@override\(\s*(allow_incompatible\s*:\s*true)\s*\)\s*\z/
-        RBS_ATTRIBUTE_METHODS = [:attr, :attr_reader, :attr_writer, :attr_accessor].freeze
-        RESTRICT_ON_SEND = [:override, :attr, :attr_reader, :attr_writer, :attr_accessor].freeze
+        RBS_ATTRIBUTE_METHODS = [:attr_reader, :attr_writer, :attr_accessor].freeze
+        RESTRICT_ON_SEND = [:override, :attr_reader, :attr_writer, :attr_accessor].freeze
 
         # @!method sig_dot_override?(node)
         def_node_matcher(:sig_dot_override?, <<~PATTERN)

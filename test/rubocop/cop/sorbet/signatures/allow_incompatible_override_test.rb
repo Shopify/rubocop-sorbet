@@ -100,11 +100,14 @@ module RuboCop
                           ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
               #: String
               attr_accessor :baz
+            RUBY
+          end
 
+          def test_ignores_rbs_override_annotation_on_unsupported_attr
+            assert_no_offenses(<<~RUBY)
               # @override(allow_incompatible: true)
-                          ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
               #: String
-              attr :qux
+              attr :foo
             RUBY
           end
 
