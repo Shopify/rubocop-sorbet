@@ -63,6 +63,28 @@ module RuboCop
             RUBY
           end
 
+          def test_reindents_leading_dot_builder_promoted_by_correction
+            assert_offense(<<~RUBY)
+              sig do
+                type_parameters(:Item)
+                                ^^^^^ Type parameter `Item` must be referenced at least twice.
+                  .params(
+                    value: T.type_parameter(:Item),
+                  )
+              end
+              def foo(value); end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig do
+                params(
+                  value: T.untyped,
+                )
+              end
+              def foo(value); end
+            RUBY
+          end
+
           def test_replaces_single_sorbet_output_use_with_untyped
             assert_offense(<<~RUBY)
               sig { type_parameters(:Item).returns(T.type_parameter(:Item)) }
@@ -177,6 +199,19 @@ module RuboCop
             assert_correction(<<~RUBY)
               #: () { (untyped) -> void } -> void
               def foo(&block); end
+            RUBY
+          end
+
+          def test_removes_single_rbs_use_from_intersection
+            assert_offense(<<~RUBY)
+              #: [T] (T & Foo) -> void
+                  ^ Type parameter `T` must be referenced at least twice.
+              def foo(value); end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: (Foo) -> void
+              def foo(value); end
             RUBY
           end
 
