@@ -763,13 +763,15 @@ Disabled | Yes | Yes (Unsafe) | <<next>> | -
 Disallows instantiating Sorbet collection types. Instantiate the Ruby
 collection directly and declare its type separately when needed.
 
-Checks `T::Array`, `T::Hash`, `T::Set`, `T::Range`, `T::Enumerable`,
+Checks `T::Array`, `T::Hash`, `T::Set`, `T::Range`,
 `T::Enumerator`, `T::Enumerator::Lazy`, and `T::Enumerator::Chain`,
 with or without type arguments.
 
 Set `AutocorrectToRBS: true` to replace standalone or assigned constructors
 with Ruby constructors and RBS inline type annotations. Calls with an
 existing RBS annotation or an untranslatable type are not autocorrected.
+Empty Array and Hash constructors use literals unless arguments, blocks,
+or comments inside the call need to be preserved.
 
 ### Examples
 
@@ -795,7 +797,7 @@ arr = T::Array[String].new
 items = T::Set[T.nilable(String)].new(values)
 
 # good
-arr = Array.new #: Array[String]
+arr = [] #: Array[String]
 items = Set.new(values) #: Set[String?]
 ```
 

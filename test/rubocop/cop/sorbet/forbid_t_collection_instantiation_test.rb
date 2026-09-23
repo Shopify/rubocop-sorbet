@@ -22,8 +22,6 @@ module RuboCop
             ^^^^^^^^^^^^^^ #{MSG}
             T::Range[Integer].new(1, 3)
             ^^^^^^^^^^^^^^^^^ #{MSG}
-            T::Enumerable[String].new
-            ^^^^^^^^^^^^^^^^^^^^^ #{MSG}
             T::Enumerator[String].new { |y| y << "item" }
             ^^^^^^^^^^^^^^^^^^^^^ #{MSG}
             T::Enumerator::Lazy[String].new(items) { |y, item| y << item }
@@ -33,11 +31,10 @@ module RuboCop
           RUBY
 
           assert_correction(<<~RUBY)
-            Array.new #: Array[String]
-            Hash.new #: Hash[Symbol, Integer]
+            [] #: Array[String]
+            {} #: Hash[Symbol, Integer]
             Set.new #: Set[String]
             Range.new(1, 3) #: Range[Integer]
-            Enumerable.new #: Enumerable[String]
             Enumerator.new { |y| y << "item" } #: Enumerator[String]
             Enumerator::Lazy.new(items) { |y, item| y << item } #: Enumerator::Lazy[String]
             Enumerator::Chain.new(first, second) #: Enumerator::Chain[String]
@@ -54,8 +51,6 @@ module RuboCop
             ^^^^^^ #{MSG}
             T::Range.new(1, 3)
             ^^^^^^^^ #{MSG}
-            T::Enumerable.new
-            ^^^^^^^^^^^^^ #{MSG}
             T::Enumerator.new { |y| y << "item" }
             ^^^^^^^^^^^^^ #{MSG}
             T::Enumerator::Lazy.new(items) { |y, item| y << item }
@@ -69,7 +64,6 @@ module RuboCop
             Hash.new(0)
             Set.new(items)
             Range.new(1, 3)
-            Enumerable.new
             Enumerator.new { |y| y << "item" }
             Enumerator::Lazy.new(items) { |y, item| y << item }
             Enumerator::Chain.new(first, second)
@@ -99,7 +93,7 @@ module RuboCop
           RUBY
 
           assert_correction(<<~RUBY)
-            Array&.new #: Array[String]
+            [] #: Array[String]
             ::Set&.new(items)
           RUBY
         end
@@ -142,6 +136,8 @@ module RuboCop
             T::Struct.new
             T::Enum.new
             T::Proc.new
+            T::Enumerable.new
+            T::Enumerable[String].new
             CustomCollection[String].new
             collection.new
             new
@@ -166,7 +162,7 @@ module RuboCop
           RUBY
 
           assert_correction(<<~RUBY)
-            arr = Array.new #: Array[String]
+            arr = [] #: Array[String]
           RUBY
         end
 
@@ -268,6 +264,55 @@ module RuboCop
           RUBY
 
           assert_no_corrections
+        end
+
+        def test_uses_literals_for_empty_parentheses_and_bare_constructors
+          assert_offense(<<~RUBY)
+            arr = ::T::Array[String].new()
+                  ^^^^^^^^^^^^^^^^^^ #{MSG}
+            hash = T::Hash[Symbol, String].new()
+                   ^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            arr = T::Array.new
+                  ^^^^^^^^ #{MSG}
+            hash = ::T::Hash.new()
+                   ^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            arr = [] #: ::Array[String]
+            hash = {} #: Hash[Symbol, String]
+            arr = []
+            hash = {}
+          RUBY
+        end
+
+        def test_preserves_explicit_and_forwarded_constructor_blocks
+          assert_offense(<<~RUBY)
+            arr = T::Array[String].new { "item" }
+                  ^^^^^^^^^^^^^^^^ #{MSG}
+            hash = T::Hash[Symbol, String].new(&factory)
+                   ^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            arr = Array.new { "item" } #: Array[String]
+            hash = Hash.new(&factory) #: Hash[Symbol, String]
+          RUBY
+        end
+
+        def test_preserves_comments_inside_empty_constructor_parentheses
+          assert_offense(<<~RUBY)
+            arr = T::Array[String].new(
+                  ^^^^^^^^^^^^^^^^ #{MSG}
+              # Keep this explanation.
+            )
+          RUBY
+
+          assert_correction(<<~RUBY)
+            arr = Array.new(
+              # Keep this explanation.
+            ) #: Array[String]
+          RUBY
         end
 
         private

@@ -8,13 +8,15 @@ module RuboCop
       # Disallows instantiating Sorbet collection types. Instantiate the Ruby
       # collection directly and declare its type separately when needed.
       #
-      # Checks `T::Array`, `T::Hash`, `T::Set`, `T::Range`, `T::Enumerable`,
+      # Checks `T::Array`, `T::Hash`, `T::Set`, `T::Range`,
       # `T::Enumerator`, `T::Enumerator::Lazy`, and `T::Enumerator::Chain`,
       # with or without type arguments.
       #
       # Set `AutocorrectToRBS: true` to replace standalone or assigned constructors
       # with Ruby constructors and RBS inline type annotations. Calls with an
       # existing RBS annotation or an untranslatable type are not autocorrected.
+      # Empty Array and Hash constructors use literals unless arguments, blocks,
+      # or comments inside the call need to be preserved.
       #
       # @safety
       #   Autocorrection removes runtime evaluation of type arguments and changes
@@ -40,7 +42,7 @@ module RuboCop
       #   items = T::Set[T.nilable(String)].new(values)
       #
       #   # good
-      #   arr = Array.new #: Array[String]
+      #   arr = [] #: Array[String]
       #   items = Set.new(values) #: Set[String?]
       class ForbidTCollectionInstantiation < Base
         include RBSAssertionCorrection
@@ -52,7 +54,7 @@ module RuboCop
         # @!method t_collection?(node)
         def_node_matcher :t_collection?, <<~PATTERN
           {
-            (const (const {nil? cbase} :T) {:Array :Hash :Set :Range :Enumerable :Enumerator})
+            (const (const {nil? cbase} :T) {:Array :Hash :Set :Range :Enumerator})
             (const (const (const {nil? cbase} :T) :Enumerator) {:Lazy :Chain})
           }
         PATTERN
@@ -82,9 +84,24 @@ module RuboCop
             annotation = "#{ruby_class}[#{arguments.join(", ")}]"
             corrector.insert_after(expression, " #: #{annotation}")
           end
-          corrector.replace(node.receiver, ruby_class)
+          literal = empty_collection_literal(node, type)
+          if literal
+            corrector.replace(node, literal)
+          else
+            corrector.replace(node.receiver, ruby_class)
+          end
         rescue ::RBI::Type::Error
           nil
+        end
+
+        def empty_collection_literal(node, type)
+          return unless node.arguments.empty? && !node.block_node
+          return if comments_within?(node)
+
+          case type.short_name
+          when :Array then "[]"
+          when :Hash then "{}"
+          end
         end
       end
     end
