@@ -80,6 +80,13 @@ module RuboCop
           RUBY
         end
 
+        def test_does_not_register_offense_for_sorbet_generic_type_in_trailing_comment
+          assert_no_offenses(<<~RUBY)
+            #: -> void # some comment with T::Array
+            def foo; end
+          RUBY
+        end
+
         def test_does_not_register_offense_on_non_generic_types
           assert_no_offenses(<<~RUBY)
             #: () -> T::Array
