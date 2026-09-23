@@ -697,7 +697,10 @@ Disallows using `T.assert_type!` anywhere.
 T.assert_type!(foo, Integer)
 
 # good
-foo
+raise unless foo.is_a?(Integer)
+
+# good
+assert_kind_of(Integer, foo)
 ```
 
 ## Sorbet/ForbidTBind

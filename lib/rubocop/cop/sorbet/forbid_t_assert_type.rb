@@ -13,7 +13,10 @@ module RuboCop
       #   T.assert_type!(foo, Integer)
       #
       #   # good
-      #   foo
+      #   raise unless foo.is_a?(Integer)
+      #
+      #   # good
+      #   assert_kind_of(Integer, foo)
       class ForbidTAssertType < RuboCop::Cop::Base
         MSG = "Do not use `T.assert_type!`."
         RESTRICT_ON_SEND = [:assert_type!].freeze
