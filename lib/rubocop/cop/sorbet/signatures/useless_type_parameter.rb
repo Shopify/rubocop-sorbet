@@ -105,10 +105,28 @@ module RuboCop
           elsif declaration.receiver
             corrector.replace(declaration, declaration.receiver.source)
           elsif declaration.parent&.call_type? && declaration.parent.receiver.equal?(declaration)
-            range = range_between(declaration.source_range.begin_pos, declaration.parent.loc.selector.begin_pos)
+            promoted_call = declaration.parent
+            reindent_promoted_call(corrector, declaration, promoted_call)
+            range = range_between(declaration.source_range.begin_pos, promoted_call.loc.selector.begin_pos)
             corrector.remove(range)
           else
             corrector.remove(declaration)
+          end
+        end
+
+        def reindent_promoted_call(corrector, declaration, promoted_call)
+          dot = promoted_call.loc.dot
+          continuation_column = dot.line == promoted_call.loc.selector.line ? dot.column : promoted_call.loc.selector.column
+          indentation_width = continuation_column - declaration.source_range.column
+          return unless indentation_width.positive?
+
+          first_line = promoted_call.loc.selector.line + 1
+          (first_line..promoted_call.source_range.last_line).each do |line|
+            line_range = processed_source.buffer.line_range(line)
+            indentation = line_range.source[/\A[ \t]*/]
+            next if indentation.length < indentation_width
+
+            corrector.remove(range_between(line_range.begin_pos, line_range.begin_pos + indentation_width))
           end
         end
 
