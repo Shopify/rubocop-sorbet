@@ -111,6 +111,39 @@ module RuboCop
             RUBY
           end
 
+          def test_removes_single_sorbet_use_from_intersection
+            assert_offense(<<~RUBY)
+              sig { type_parameters(:T).params(value: T.all(T.type_parameter(:T), Foo)).void }
+                                    ^^ Type parameter `T` must be referenced at least twice.
+              def foo(value); end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { params(value: Foo).void }
+              def foo(value); end
+            RUBY
+          end
+
+          def test_removes_single_sorbet_use_from_union
+            assert_offense(<<~RUBY)
+              sig { type_parameters(:T).params(value: T.any(T.type_parameter(:T), Foo)).void }
+                                    ^^ Type parameter `T` must be referenced at least twice.
+              def foo(value); end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { params(value: Foo).void }
+              def foo(value); end
+            RUBY
+          end
+
+          def test_accepts_nested_single_sorbet_use_without_safe_rewrite
+            assert_no_offenses(<<~RUBY)
+              sig { type_parameters(:T).params(values: T::Array[T.type_parameter(:T)]).void }
+              def foo(values); end
+            RUBY
+          end
+
           def test_accepts_sorbet_type_parameters_that_connect_positions
             assert_no_offenses(<<~RUBY)
               sig do
@@ -211,6 +244,20 @@ module RuboCop
 
             assert_correction(<<~RUBY)
               #: (Foo) -> void
+              def foo(value); end
+            RUBY
+          end
+
+          def test_replaces_intersection_of_only_useless_rbs_parameters_with_untyped
+            assert_offense(<<~RUBY)
+              #: [A, B] (A & B) -> void
+                  ^ Type parameter `A` must be referenced at least twice.
+                     ^ Type parameter `B` must be referenced at least twice.
+              def foo(value); end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: (untyped) -> void
               def foo(value); end
             RUBY
           end

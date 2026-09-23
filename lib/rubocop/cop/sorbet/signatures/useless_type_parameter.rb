@@ -35,13 +35,19 @@ module RuboCop
           (call (const {nil? cbase} :T) :type_parameter $_)
         PATTERN
 
+        # @!method type_combination?(node)
+        def_node_matcher(:type_combination?, <<~PATTERN)
+          (call (const {nil? cbase} :T) {:all :any} ...)
+        PATTERN
+
         def on_signature(node)
           usages = Hash.new { |hash, name| hash[name] = [] }
           collect_sorbet_type_parameter_usages(node, usages)
 
           signature_type_parameter_declarations(node.body).each do |declaration|
             useless = declaration.arguments.select do |argument|
-              argument.sym_type? && usages[argument.value].length < 2
+              occurrences = usages[argument.value]
+              argument.sym_type? && (occurrences.empty? || (occurrences.one? && occurrences.first[1]))
             end
             register_sorbet_offenses(declaration, useless, usages) if useless.any?
           end
@@ -65,19 +71,24 @@ module RuboCop
 
         def type_parameter_usage(node)
           argument = type_parameter_argument(node)
-          argument = argument.children.first while argument&.begin_type? && argument.children.one?
+          argument = unwrap_parentheses(argument)
           argument.value if argument&.sym_type?
+        end
+
+        def unwrap_parentheses(node)
+          node = node.children.first while node&.begin_type? && node.children.one?
+          node
         end
 
         def collect_sorbet_type_parameter_usages(node, usages)
           return unless node
 
           if node.call_type? && (name = type_parameter_usage(node))
-            usages[name] << node
+            usages[name] << [node, sorbet_usage_replacement_target(node)]
           end
           node.each_descendant(:call) do |call|
             name = type_parameter_usage(call)
-            usages[name] << call if name
+            usages[name] << [call, sorbet_usage_replacement_target(call)] if name
           end
         end
 
@@ -86,12 +97,52 @@ module RuboCop
             add_offense(parameter, message: format(MSG, name: parameter.value)) do |corrector|
               next if index.nonzero?
 
-              usages.slice(*useless.map(&:value)).each_value do |calls|
-                corrector.replace(calls.first, "T.untyped") if calls.one?
+              sorbet_usage_corrections(useless, usages).each_value do |target, replacement|
+                corrector.replace(target, replacement)
               end
               autocorrect_sorbet_declaration(corrector, declaration, useless)
             end
           end
+        end
+
+        def sorbet_usage_replacement_target(call)
+          expression = call
+          expression = expression.parent while expression.parent&.begin_type? && expression.parent.children.one?
+          parent = expression.parent
+          return parent if type_combination?(parent) && parent.arguments.include?(expression)
+
+          call if standalone_sorbet_type?(expression, parent)
+        end
+
+        def standalone_sorbet_type?(expression, parent)
+          return parent.children[1].equal?(expression) if parent&.pair_type?
+
+          parent&.call_type? && parent.method?(:returns) && parent.first_argument.equal?(expression)
+        end
+
+        def sorbet_usage_corrections(useless, usages)
+          useless_names = useless.map(&:value).to_set
+          useless.each_with_object({}) do |parameter, corrections|
+            target = usages[parameter.value].first&.at(1)
+            next unless target
+
+            replacement = if type_combination?(target)
+              remaining = target.arguments.reject do |argument|
+                useless_names.include?(type_parameter_usage(unwrap_parentheses(argument)))
+              end
+              sorbet_combination_replacement(target, remaining)
+            else
+              "T.untyped"
+            end
+            corrections[target.source_range.begin_pos] = [target, replacement]
+          end
+        end
+
+        def sorbet_combination_replacement(combination, remaining)
+          return "T.untyped" if remaining.empty?
+          return remaining.first.source if remaining.one?
+
+          "#{combination.receiver.source}.#{combination.method_name}(#{remaining.map(&:source).join(", ")})"
         end
 
         def autocorrect_sorbet_declaration(corrector, declaration, useless)
@@ -213,10 +264,10 @@ module RuboCop
             location = occurrence[2]
             intersection = occurrence[4]
             replacement = if intersection
-              intersection.types
+              remaining = intersection.types
                 .reject { |type| type.is_a?(RBS::Types::Variable) && useless_names.include?(type.name) }
                 .map(&:to_s)
-                .join(" & ")
+              remaining.empty? ? "untyped" : remaining.join(" & ")
             else
               occurrence[3]
             end
