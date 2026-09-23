@@ -66,6 +66,30 @@ module RuboCop
         assert_empty(signatures_before("def foo; end"))
       end
 
+      # --- rbs_annotations_before ---
+
+      def test_annotations_before_returns_only_attached_method_annotations
+        annotations = annotations_before(<<~RUBY)
+          # documentation
+          # @override(allow_incompatible: true)
+          #: () -> void
+          def foo; end
+        RUBY
+
+        assert_equal(["# @override(allow_incompatible: true)"], annotations.map(&:text))
+      end
+
+      def test_annotations_before_blank_line_separates
+        annotations = annotations_before(<<~RUBY)
+          # @override(allow_incompatible: true)
+
+          #: () -> void
+          def foo; end
+        RUBY
+
+        assert_empty(annotations)
+      end
+
       # --- rbs_annotation_after ---
 
       def test_annotation_after_returns_comment_and_text
@@ -211,6 +235,11 @@ module RuboCop
       def signatures_before(source)
         ps = parse(source)
         RBSParser.rbs_signatures_before(ps, def_node(ps))
+      end
+
+      def annotations_before(source)
+        ps = parse(source)
+        RBSParser.rbs_annotations_before(ps, def_node(ps))
       end
 
       def annotation_after(source)

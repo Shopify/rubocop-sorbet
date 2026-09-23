@@ -75,6 +75,67 @@ module RuboCop
             RUBY
           end
 
+          def test_disallows_rbs_override_allow_incompatible_true_annotation
+            assert_offense(<<~RUBY)
+              # @override(allow_incompatible: true)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              #: () -> void
+              def foo; end
+            RUBY
+          end
+
+          def test_disallows_rbs_override_allow_incompatible_true_annotation_on_attributes
+            assert_offense(<<~RUBY)
+              # @override(allow_incompatible: true)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              #: String
+              attr_reader :foo
+
+              # @override(allow_incompatible: true)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              #: String
+              attr_writer :bar
+
+              # @override(allow_incompatible: true)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              #: String
+              attr_accessor :baz
+            RUBY
+          end
+
+          def test_ignores_rbs_override_annotation_on_unsupported_attr
+            assert_no_offenses(<<~RUBY)
+              # @override(allow_incompatible: true)
+              #: String
+              attr :foo
+            RUBY
+          end
+
+          def test_allows_unattached_rbs_override_annotation
+            assert_no_offenses(<<~RUBY)
+              # @override(allow_incompatible: true)
+
+              #: () -> void
+              def foo; end
+            RUBY
+          end
+
+          def test_allows_other_rbs_override_annotations
+            assert_no_offenses(<<~RUBY)
+              # @override
+              #: () -> void
+              def foo; end
+
+              # @override(allow_incompatible: false)
+              #: () -> void
+              def bar; end
+
+              # @override(allow_incompatible: :visibility)
+              #: () -> void
+              def baz; end
+            RUBY
+          end
+
           def test_allows_override_without_allow_incompatible
             assert_no_offenses(<<~RUBY)
               class Foo
