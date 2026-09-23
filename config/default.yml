@@ -8,6 +8,11 @@ Layout/LeadingCommentSpace:
 Lint/SelfAssignment:
   AllowRBSInlineAnnotation: true
 
+Sorbet/ForbidTAssertType:
+  Description: 'Forbid usage of T.assert_type!.'
+  Enabled: false
+  VersionAdded: '<<next>>'
+
 Sorbet/ForbidTHelpers:
   Description: 'Forbid usage of T::Helpers via `extend` or `include`.'
   Enabled: false

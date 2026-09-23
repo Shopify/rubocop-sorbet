@@ -682,6 +682,27 @@ T.nilable(String)
 T.nilable(T.any(Symbol, String))
 ```
 
+## Sorbet/ForbidTAssertType
+
+Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
+--- | --- | --- | --- | ---
+Disabled | Yes | No | <<next>> | -
+
+Disallows using `T.assert_type!` anywhere.
+
+### Examples
+
+```ruby
+# bad
+T.assert_type!(foo, Integer)
+
+# good
+raise unless foo.is_a?(Integer)
+
+# good
+assert_kind_of(Integer, foo)
+```
+
 ## Sorbet/ForbidTBind
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
