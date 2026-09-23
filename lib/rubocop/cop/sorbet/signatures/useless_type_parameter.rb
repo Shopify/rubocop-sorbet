@@ -30,9 +30,9 @@ module RuboCop
 
         MSG = "Type parameter `%<name>s` must be referenced at least twice."
 
-        # @!method type_parameter_usage?(node)
-        def_node_matcher(:type_parameter_usage?, <<~PATTERN)
-          (call (const {nil? cbase} :T) :type_parameter (sym $_))
+        # @!method type_parameter_argument(node)
+        def_node_matcher(:type_parameter_argument, <<~PATTERN)
+          (call (const {nil? cbase} :T) :type_parameter $_)
         PATTERN
 
         def on_signature(node)
@@ -63,14 +63,20 @@ module RuboCop
           declarations
         end
 
+        def type_parameter_usage(node)
+          argument = type_parameter_argument(node)
+          argument = argument.children.first while argument&.begin_type? && argument.children.one?
+          argument.value if argument&.sym_type?
+        end
+
         def collect_sorbet_type_parameter_usages(node, usages)
           return unless node
 
-          if node.call_type? && (name = type_parameter_usage?(node))
+          if node.call_type? && (name = type_parameter_usage(node))
             usages[name] << node
           end
           node.each_descendant(:call) do |call|
-            name = type_parameter_usage?(call)
+            name = type_parameter_usage(call)
             usages[name] << call if name
           end
         end
