@@ -143,7 +143,7 @@ module RuboCop
           useless = method_type.type_params.select do |parameter|
             occurrences = usages[parameter.name]
             occurrences.empty? ||
-              (occurrences.one? && occurrences.first.first == :signature && !rbs_type_parameter_constrained?(parameter))
+              (occurrences.one? && occurrences.first[2] && !rbs_type_parameter_constrained?(parameter))
           end
           return if useless.empty?
 
@@ -152,9 +152,8 @@ module RuboCop
             add_offense(name_range, message: format(MSG, name: parameter.name)) do |corrector|
               next if index.nonzero?
 
-              useless.each do |useless_parameter|
-                occurrence = usages[useless_parameter.name].first
-                corrector.replace(parser_range(occurrence.last.location), "untyped") if occurrence
+              rbs_usage_corrections(useless, usages).each_value do |location, replacement|
+                corrector.replace(parser_range(location), replacement)
               end
               autocorrect_rbs_declaration(corrector, method_type, useless)
             end
@@ -163,21 +162,66 @@ module RuboCop
 
         def rbs_type_parameter_usages(method_type)
           usages = Hash.new { |hash, name| hash[name] = [] }
-          collect_rbs_type_variables(method_type.type, usages, :signature)
-          collect_rbs_type_variables(method_type.block.type, usages, :signature) if method_type.block
+          method_type.type.each_type { |type| collect_rbs_type_variables(type, usages, :signature, direct: true) }
+          method_type.block&.type&.each_type do |type|
+            collect_rbs_type_variables(type, usages, :signature, direct: true)
+          end
           method_type.type_params.each do |parameter|
-            collect_rbs_type_variables(parameter.upper_bound_type, usages, :bound)
-            collect_rbs_type_variables(parameter.lower_bound_type, usages, :bound)
-            collect_rbs_type_variables(parameter.default_type, usages, :bound)
+            collect_rbs_type_variables(parameter.upper_bound_type, usages, :bound, direct: false)
+            collect_rbs_type_variables(parameter.lower_bound_type, usages, :bound, direct: false)
+            collect_rbs_type_variables(parameter.default_type, usages, :bound, direct: false)
           end
           usages
         end
 
-        def collect_rbs_type_variables(type, usages, context)
+        def collect_rbs_type_variables(type, usages, context, direct:)
           return unless type
 
-          usages[type.name] << [context, type] if type.is_a?(RBS::Types::Variable)
-          type.each_type { |child| collect_rbs_type_variables(child, usages, context) }
+          if type.is_a?(RBS::Types::Variable)
+            replacement = direct ? [type.location, "untyped"] : [nil, nil]
+            usages[type.name] << [context, type, *replacement, nil]
+          elsif type.is_a?(RBS::Types::Intersection)
+            collect_rbs_intersection_variables(type, usages, context)
+          else
+            type.each_type { |child| collect_rbs_type_variables(child, usages, context, direct: false) }
+          end
+        end
+
+        def collect_rbs_intersection_variables(intersection, usages, context)
+          intersection.types.each do |type|
+            if type.is_a?(RBS::Types::Variable)
+              remaining = intersection.types.reject { |candidate| candidate.equal?(type) }
+              usages[type.name] << [
+                context,
+                type,
+                intersection.location,
+                remaining.map(&:to_s).join(" & "),
+                intersection,
+              ]
+            else
+              collect_rbs_type_variables(type, usages, context, direct: false)
+            end
+          end
+        end
+
+        def rbs_usage_corrections(useless, usages)
+          useless_names = useless.map(&:name).to_set
+          useless.each_with_object({}) do |parameter, corrections|
+            occurrence = usages[parameter.name].first
+            next unless occurrence
+
+            location = occurrence[2]
+            intersection = occurrence[4]
+            replacement = if intersection
+              intersection.types
+                .reject { |type| type.is_a?(RBS::Types::Variable) && useless_names.include?(type.name) }
+                .map(&:to_s)
+                .join(" & ")
+            else
+              occurrence[3]
+            end
+            corrections[[location.start_pos, location.end_pos]] = [location, replacement]
+          end
         end
 
         def rbs_type_parameter_constrained?(parameter)
