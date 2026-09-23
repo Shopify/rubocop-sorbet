@@ -81,6 +81,17 @@ module RuboCop
             RUBY
           end
 
+          def test_accepts_parenthesized_type_parameter_that_connects_positions
+            assert_no_offenses(<<~RUBY)
+              sig do
+                type_parameters(:T)
+                  .params(block: T.proc.returns(T.type_parameter((:T))))
+                  .returns(T.type_parameter(:T))
+              end
+              def foo(&block); end
+            RUBY
+          end
+
           def test_removes_sorbet_builder_with_multiple_unreferenced_type_parameters
             assert_offense(<<~RUBY)
               sig { type_parameters(:First, :Second).void }
