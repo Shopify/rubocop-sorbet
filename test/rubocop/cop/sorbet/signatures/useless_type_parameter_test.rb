@@ -124,7 +124,7 @@ module RuboCop
             RUBY
           end
 
-          def test_removes_single_sorbet_use_from_union
+          def test_collapses_single_sorbet_use_in_union_to_untyped
             assert_offense(<<~RUBY)
               sig { type_parameters(:T).params(value: T.any(T.type_parameter(:T), Foo)).void }
                                     ^^ Type parameter `T` must be referenced at least twice.
@@ -132,7 +132,7 @@ module RuboCop
             RUBY
 
             assert_correction(<<~RUBY)
-              sig { params(value: Foo).void }
+              sig { params(value: T.untyped).void }
               def foo(value); end
             RUBY
           end
@@ -244,6 +244,19 @@ module RuboCop
 
             assert_correction(<<~RUBY)
               #: (Foo) -> void
+              def foo(value); end
+            RUBY
+          end
+
+          def test_collapses_single_rbs_use_in_union_to_untyped
+            assert_offense(<<~RUBY)
+              #: [T] (T | Foo) -> void
+                  ^ Type parameter `T` must be referenced at least twice.
+              def foo(value); end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: (untyped) -> void
               def foo(value); end
             RUBY
           end

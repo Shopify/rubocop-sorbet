@@ -139,6 +139,7 @@ module RuboCop
         end
 
         def sorbet_combination_replacement(combination, remaining)
+          return "T.untyped" if combination.method?(:any)
           return "T.untyped" if remaining.empty?
           return remaining.first.source if remaining.one?
 
@@ -233,6 +234,8 @@ module RuboCop
             usages[type.name] << [context, type, *replacement, nil]
           elsif type.is_a?(RBS::Types::Intersection)
             collect_rbs_intersection_variables(type, usages, context)
+          elsif type.is_a?(RBS::Types::Union)
+            collect_rbs_union_variables(type, usages, context)
           else
             type.each_type { |child| collect_rbs_type_variables(child, usages, context, direct: false) }
           end
@@ -249,6 +252,16 @@ module RuboCop
                 remaining.map(&:to_s).join(" & "),
                 intersection,
               ]
+            else
+              collect_rbs_type_variables(type, usages, context, direct: false)
+            end
+          end
+        end
+
+        def collect_rbs_union_variables(union, usages, context)
+          union.types.each do |type|
+            if type.is_a?(RBS::Types::Variable)
+              usages[type.name] << [context, type, union.location, "untyped", nil]
             else
               collect_rbs_type_variables(type, usages, context, direct: false)
             end
