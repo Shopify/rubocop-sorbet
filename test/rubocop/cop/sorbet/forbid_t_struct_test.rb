@@ -140,6 +140,115 @@ module RuboCop
           RUBY
         end
 
+        def test_autocorrects_nested_structs_with_independent_properties
+          assert_offense(<<~RUBY)
+            class Outer < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              class Inner < T::Struct
+              ^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+                extend T::Sig
+                const :name, String
+              end
+
+              prop :name, String
+              const :inner, Inner
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Outer
+              extend T::Sig
+
+              class Inner
+                extend T::Sig
+                sig { returns(String) }
+                attr_reader :name
+
+                sig { params(name: String).void }
+                def initialize(name:)
+                  @name = name
+                end
+              end
+
+              sig { returns(String) }
+              attr_accessor :name
+
+              sig { returns(Inner) }
+              attr_reader :inner
+
+              sig { params(name: String, inner: Inner).void }
+              def initialize(name:, inner:)
+                @name = name
+                @inner = inner
+              end
+            end
+          RUBY
+        end
+
+        def test_autocorrects_rbs_without_changing_nested_scopes
+          @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
+
+          assert_offense(<<~RUBY)
+            class Outer < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+              module Namespace
+                extend T::Sig
+                prop :untouched, String
+
+                class Inner < T::Struct
+                ^^^^^^^^^^^^^^^^^^^^^^^ Using `T::Struct` or its variants is deprecated in this codebase.
+                  const :name, String
+                end
+              end
+
+              class Other
+                const :untouched, String
+              end
+
+              class << self
+                prop :untouched, String
+              end
+
+              const :name, String
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Outer
+              module Namespace
+                extend T::Sig
+                prop :untouched, String
+
+                class Inner
+                  #: String
+                  attr_reader :name
+
+                  #: (name: String) -> void
+                  def initialize(name:)
+                    @name = name
+                  end
+                end
+              end
+
+              class Other
+                const :untouched, String
+              end
+
+              class << self
+                prop :untouched, String
+              end
+
+              #: String
+              attr_reader :name
+
+              #: (name: String) -> void
+              def initialize(name:)
+                @name = name
+              end
+            end
+          RUBY
+        end
+
         def test_autocorrects_generates_initialize_parameters_in_correct_order
           assert_offense(<<~RUBY)
             class Foo < T::Struct
