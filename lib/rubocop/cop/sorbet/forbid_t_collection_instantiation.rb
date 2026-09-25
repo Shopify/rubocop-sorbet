@@ -12,9 +12,10 @@ module RuboCop
       # `T::Enumerator`, `T::Enumerator::Lazy`, and `T::Enumerator::Chain`,
       # with or without type arguments.
       #
-      # Set `AutocorrectToRBS: true` to replace standalone or assigned constructors
-      # with Ruby constructors and RBS inline type annotations. Calls with an
-      # existing RBS annotation or an untranslatable type are not autocorrected.
+      # Set `AutocorrectToRBS: true` to replace Sorbet constructors with Ruby
+      # constructors. RBS inline type annotations are added only to assignments.
+      # Assignments with an existing RBS annotation or an untranslatable type
+      # are not autocorrected.
       # Empty Array and Hash constructors use literals unless arguments, blocks,
       # or comments inside the call need to be preserved.
       #
@@ -40,10 +41,12 @@ module RuboCop
       #   # bad
       #   arr = T::Array[String].new
       #   items = T::Set[T.nilable(String)].new(values)
+      #   consume(T::Array[String].new)
       #
       #   # good
       #   arr = [] #: Array[String]
       #   items = Set.new(values) #: Set[String?]
+      #   consume([])
       class ForbidTCollectionInstantiation < Base
         include RBSAssertionCorrection
         extend AutoCorrector
@@ -73,13 +76,18 @@ module RuboCop
         private
 
         def autocorrect_to_rbs(corrector, node, type)
+          return unless cop_config["AutocorrectToRBS"]
+
           expression = node.block_node || node
-          return unless rbs_assertion_autocorrectable?(expression, allow_assignment: true)
+          expression = expression.parent while expression.parent&.begin_type? && expression.parent.children.one?
+          assignment = expression.parent
+          annotate = node.receiver.send_type? && assignment&.assignment? && assignment.children.last.equal?(expression)
+          return if annotate && !rbs_assertion_autocorrectable?(expression, allow_assignment: true)
           return if comments_within?(node.receiver)
 
           ruby_class = type.const_name.delete_prefix("T::")
           ruby_class = "::#{ruby_class}" if type.source.start_with?("::")
-          if node.receiver.send_type?
+          if annotate
             arguments = node.receiver.arguments.map { |argument| ::RBI::Type.parse_string(argument.source).rbs_string }
             annotation = "#{ruby_class}[#{arguments.join(", ")}]"
             corrector.insert_after(expression, " #: #{annotation}")
@@ -100,7 +108,13 @@ module RuboCop
 
           case type.short_name
           when :Array then "[]"
-          when :Hash then "{}"
+          when :Hash
+            parent = node.parent
+            if parent&.call_type? && parent.arguments.include?(node) && !parent.loc.begin
+              "({})"
+            else
+              "{}"
+            end
           end
         end
       end

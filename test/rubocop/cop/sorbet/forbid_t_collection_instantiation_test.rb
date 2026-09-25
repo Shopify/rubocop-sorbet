@@ -31,13 +31,13 @@ module RuboCop
           RUBY
 
           assert_correction(<<~RUBY)
-            [] #: Array[String]
-            {} #: Hash[Symbol, Integer]
-            Set.new #: Set[String]
-            Range.new(1, 3) #: Range[Integer]
-            Enumerator.new { |y| y << "item" } #: Enumerator[String]
-            Enumerator::Lazy.new(items) { |y, item| y << item } #: Enumerator::Lazy[String]
-            Enumerator::Chain.new(first, second) #: Enumerator::Chain[String]
+            []
+            {}
+            Set.new
+            Range.new(1, 3)
+            Enumerator.new { |y| y << "item" }
+            Enumerator::Lazy.new(items) { |y, item| y << item }
+            Enumerator::Chain.new(first, second)
           RUBY
         end
 
@@ -79,8 +79,8 @@ module RuboCop
           RUBY
 
           assert_correction(<<~RUBY)
-            ::Set.new #: ::Set[String]
-            ::Enumerator::Chain.new(first, second) #: ::Enumerator::Chain[String]
+            ::Set.new
+            ::Enumerator::Chain.new(first, second)
           RUBY
         end
 
@@ -93,19 +93,19 @@ module RuboCop
           RUBY
 
           assert_correction(<<~RUBY)
-            [] #: Array[String]
+            []
             ::Set&.new(items)
           RUBY
         end
 
         def test_registers_one_offense_for_nested_type_arguments
           assert_offense(<<~RUBY)
-            T::Hash[Integer, T::Array[T.nilable(String)]].new { |hash, key| hash[key] = [] }
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            values = T::Hash[Integer, T::Array[T.nilable(String)]].new { |hash, key| hash[key] = [] }
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
           RUBY
 
           assert_correction(<<~RUBY)
-            Hash.new { |hash, key| hash[key] = [] } #: Hash[Integer, Array[String?]]
+            values = Hash.new { |hash, key| hash[key] = [] } #: Hash[Integer, Array[String?]]
           RUBY
         end
 
@@ -220,18 +220,10 @@ module RuboCop
 
         def test_does_not_autocorrect_when_an_annotation_would_swallow_code_or_target_another_expression
           assert_offense(<<~RUBY)
-            consume(T::Array[String].new)
-                    ^^^^^^^^^^^^^^^^ #{MSG}
-            T::Array[String].new.size
-            ^^^^^^^^^^^^^^^^ #{MSG}
             arr = T::Array[String].new; consume(arr)
                   ^^^^^^^^^^^^^^^^ #{MSG}
             arr = T::Array[String].new if condition
                   ^^^^^^^^^^^^^^^^ #{MSG}
-            arr = (T::Array[String].new)
-                   ^^^^^^^^^^^^^^^^ #{MSG}
-            arr = [T::Array[String].new]
-                   ^^^^^^^^^^^^^^^^ #{MSG}
           RUBY
 
           assert_no_corrections
@@ -312,6 +304,52 @@ module RuboCop
             arr = Array.new(
               # Keep this explanation.
             ) #: Array[String]
+          RUBY
+        end
+
+        def test_corrects_call_arguments_without_annotations
+          assert_offense(<<~RUBY)
+            consume(T::Array[String].new, T::Hash[Symbol, Integer].new)
+                    ^^^^^^^^^^^^^^^^ #{MSG}
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            consume T::Hash[Symbol, Integer].new
+                    ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            result = consume(T::Set[String].new(items))
+                             ^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            consume([], {})
+            consume ({})
+            result = consume(Set.new(items))
+          RUBY
+        end
+
+        def test_corrects_nested_expressions_without_annotating_the_enclosing_assignment
+          assert_offense(<<~RUBY)
+            size = T::Array[String].new.size
+                   ^^^^^^^^^^^^^^^^ #{MSG}
+            arrays = [T::Array[String].new]
+                      ^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            size = [].size
+            arrays = [[]]
+          RUBY
+        end
+
+        def test_annotates_parenthesized_and_instance_variable_assignments
+          assert_offense(<<~RUBY)
+            @arr = (T::Array[String].new)
+                    ^^^^^^^^^^^^^^^^ #{MSG}
+            VALUES = T::Hash[Symbol, Integer].new
+                     ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            @arr = ([]) #: Array[String]
+            VALUES = {} #: Hash[Symbol, Integer]
           RUBY
         end
 

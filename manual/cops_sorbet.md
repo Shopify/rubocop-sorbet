@@ -767,9 +767,10 @@ Checks `T::Array`, `T::Hash`, `T::Set`, `T::Range`,
 `T::Enumerator`, `T::Enumerator::Lazy`, and `T::Enumerator::Chain`,
 with or without type arguments.
 
-Set `AutocorrectToRBS: true` to replace standalone or assigned constructors
-with Ruby constructors and RBS inline type annotations. Calls with an
-existing RBS annotation or an untranslatable type are not autocorrected.
+Set `AutocorrectToRBS: true` to replace Sorbet constructors with Ruby
+constructors. RBS inline type annotations are added only to assignments.
+Assignments with an existing RBS annotation or an untranslatable type
+are not autocorrected.
 Empty Array and Hash constructors use literals unless arguments, blocks,
 or comments inside the call need to be preserved.
 
@@ -795,10 +796,12 @@ Set.new #: Set[String]
 # bad
 arr = T::Array[String].new
 items = T::Set[T.nilable(String)].new(values)
+consume(T::Array[String].new)
 
 # good
 arr = [] #: Array[String]
 items = Set.new(values) #: Set[String?]
+consume([])
 ```
 
 ### Configurable attributes
