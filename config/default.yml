@@ -283,7 +283,10 @@ Sorbet/ForbidTAnyWithNil:
 Sorbet/ForbidTTypeAlias:
   Description: 'Forbid usage of T.type_alias.'
   Enabled: false
+  AutocorrectToRBS: false
+  SafeAutoCorrect: false
   VersionAdded: 0.10.4
+  VersionChanged: '<<next>>'
 
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'
