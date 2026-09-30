@@ -32,6 +32,7 @@ In the following section you find all available cops:
 * [Sorbet/ForbidTBind](cops_sorbet.md#sorbetforbidtbind)
 * [Sorbet/ForbidTBindInAssignment](cops_sorbet.md#sorbetforbidtbindinassignment)
 * [Sorbet/ForbidTCast](cops_sorbet.md#sorbetforbidtcast)
+* [Sorbet/ForbidTCollectionInstantiation](cops_sorbet.md#sorbetforbidtcollectioninstantiation)
 * [Sorbet/ForbidTEnum](cops_sorbet.md#sorbetforbidtenum)
 * [Sorbet/ForbidTHelpers](cops_sorbet.md#sorbetforbidthelpers)
 * [Sorbet/ForbidTLet](cops_sorbet.md#sorbetforbidtlet)
