@@ -96,6 +96,13 @@ module RuboCop
             (send nil? {:const :prop} ...)
           PATTERN
 
+          # Override AST::Traversal's callbacks to stop at nested scopes, so their properties and `extend T::Sig` stay
+          # out of this class.
+          # RuboCop's separate traversal still visits nested structs and creates a fresh walker for each.
+          def on_class(_node); end
+          alias_method :on_module, :on_class
+          alias_method :on_sclass, :on_class
+
           def on_send(node)
             if extend_t_sig?(node)
               # So we know we won't need to generate again a `extend T::Sig` line in the new class body
