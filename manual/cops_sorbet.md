@@ -962,9 +962,13 @@ AutocorrectStyle | `sig` | String
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | 0.10.4 | -
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
 
 Disallows using `T.type_alias` anywhere.
+Set `AutocorrectToRBS: true` to replace standalone constant assignments with RBS type aliases.
+Autocorrection is unsafe because it removes the Ruby constant. References to the
+constant must be migrated separately to the lowercase RBS alias name.
+Declarations containing RuboCop directives are not autocorrected.
 
 ### Examples
 
@@ -975,6 +979,12 @@ STRING_OR_INTEGER = T.type_alias { T.any(Integer, String) }
 # good
 #: type string_or_integer = Integer | String
 ```
+
+### Configurable attributes
+
+Name | Default value | Configurable values
+--- | --- | ---
+AutocorrectToRBS | `false` | Boolean
 
 ## Sorbet/ForbidTUnsafe
 
