@@ -462,7 +462,7 @@ module RuboCop
             RUBY
           end
 
-          def test_enforce_sig_autocorrects_abstract_rbs_signature_without_changing_method
+          def test_enforce_sig_removes_abstract_forwarding_body
             @cop = target_cop.new(cop_config({
               "Style" => "sig",
             }))
@@ -470,11 +470,74 @@ module RuboCop
               # @abstract
               #: -> Integer
               ^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
-              def foo; end
+              def foo; super; end
             RUBY
 
             assert_correction(<<~RUBY)
               # @abstract
+              sig { abstract.returns(Integer) }
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_removes_multiline_abstract_body_preserving_header
+            @cop = target_cop.new(cop_config({
+              "Style" => "sig",
+            }))
+            assert_offense(<<~RUBY)
+              class Foo
+                # @abstract
+                #: (Integer, key: String) -> Integer
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+                def self.foo(value, key:) # Keep this header comment.
+                  super
+                end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                # @abstract
+                sig { abstract.params(value: Integer, key: String).returns(Integer) }
+                def self.foo(value, key:) # Keep this header comment.
+                end
+              end
+            RUBY
+          end
+
+          def test_enforce_sig_converts_endless_abstract_method_to_empty_definition
+            stubs(:ruby_version).returns(3.3)
+            @cop = target_cop.new(cop_config({
+              "Style" => "sig",
+            }))
+            assert_offense(<<~RUBY)
+              # @abstract
+              #: (Integer) -> Integer
+              ^^^^^^^^^^^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+              def foo(value = 1) = super # Keep this comment.
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+              sig { abstract.params(value: Integer).returns(Integer) }
+              def foo(value = 1); end # Keep this comment.
+            RUBY
+          end
+
+          def test_enforce_sig_removes_forwarding_body_when_abstract_sig_already_exists
+            stubs(:ruby_version).returns(3.3)
+            @cop = target_cop.new(cop_config({
+              "Style" => "sig",
+            }))
+            assert_offense(<<~RUBY)
+              # @abstract
+              #: -> Integer
+              ^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+              sig { abstract.returns(Integer) }
+              def foo = super
+            RUBY
+
+            assert_correction(<<~RUBY)
               sig { abstract.returns(Integer) }
               def foo; end
             RUBY
@@ -1145,12 +1208,82 @@ module RuboCop
             RUBY
           end
 
-          def test_enforce_rbs_autocorrects_abstract_sig_without_changing_method
+          def test_enforce_rbs_adds_forwarding_body_for_multistatement_abstract_sig
             @cop = target_cop.new(cop_config({
               "Style" => "rbs",
             }))
 
             assert_offense(<<~RUBY)
+              sig do
+              ^^^^^^ Use RBS signature comments rather than sig blocks.
+                abstract
+                returns(Integer)
+              end
+              def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+              #: -> Integer
+              def foo; super; end
+            RUBY
+          end
+
+          def test_enforce_rbs_adds_abstract_forwarding_body_preserving_parameters_and_comments
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                sig { abstract.params(value: Integer, key: String, block: T.proc.returns(Integer)).returns(Integer) }
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+                private def foo(value = 1, key:, &block) # Keep this header comment.
+                  # Keep this body comment.
+                end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                # @abstract
+                #: (?Integer, key: String) { -> Integer } -> Integer
+                private def foo(value = 1, key:, &block) # Keep this header comment.
+                  # Keep this body comment.
+                  super
+                end
+              end
+            RUBY
+          end
+
+          def test_enforce_rbs_replaces_existing_abstract_body_with_forwarding_super
+            stubs(:ruby_version).returns(3.3)
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              T::Sig::WithoutRuntime.sig { abstract.returns(Integer) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              def self.foo = raise NotImplementedError
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @without_runtime
+              # @abstract
+              #: -> Integer
+              def self.foo = super
+            RUBY
+          end
+
+          def test_enforce_rbs_adds_forwarding_body_when_abstract_rbs_already_exists
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              # @abstract
+              #: -> Integer
               sig { abstract.returns(Integer) }
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
               def foo; end
@@ -1159,7 +1292,49 @@ module RuboCop
             assert_correction(<<~RUBY)
               # @abstract
               #: -> Integer
+              def foo; super; end
+            RUBY
+          end
+
+          def test_enforce_rbs_reads_abstract_annotation_between_sig_and_method
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              sig { abstract.returns(Integer) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+              # @abstract
+              #: -> Integer
               def foo; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+              #: -> Integer
+              def foo; super; end
+            RUBY
+          end
+
+          def test_enforce_rbs_uses_method_annotations_before_sig_annotations
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              # @abstract
+              sig { abstract.returns(Integer) }
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+
+              #: -> Integer
+              def foo; 42; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+
+              #: -> Integer
+              def foo; 42; end
             RUBY
           end
 

@@ -347,6 +347,11 @@ You can configure the placeholders used by changing the following options:
 * `Style`: signature style to enforce - 'sig' for sig blocks, 'rbs' for RBS comments, 'both' to allow either (default: 'sig')
 * `AutocorrectStyle`: signature style to use when autocorrecting - 'sig' for sig blocks, 'rbs' for RBS comments (default: 'sig'). Only used when `Style` is 'both'.
 
+Converting abstract signatures to RBS comments replaces the method body with
+a bare `super`, forwarding arguments and blocks to inherited implementations.
+Converting back to sig blocks removes the body; endless definitions become
+ordinary empty definitions. Method parameters and header comments are preserved.
+
 ### Configurable attributes
 
 Name | Default value | Configurable values

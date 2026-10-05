@@ -27,6 +27,11 @@ module RuboCop
       # * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
       # * `Style`: signature style to enforce - 'sig' for sig blocks, 'rbs' for RBS comments, 'both' to allow either (default: 'sig')
       # * `AutocorrectStyle`: signature style to use when autocorrecting - 'sig' for sig blocks, 'rbs' for RBS comments (default: 'sig'). Only used when `Style` is 'both'.
+      #
+      # Converting abstract signatures to RBS comments replaces the method body with
+      # a bare `super`, forwarding arguments and blocks to inherited implementations.
+      # Converting back to sig blocks removes the body; endless definitions become
+      # ordinary empty definitions. Method parameters and header comments are preserved.
       class EnforceSignatures < ::RuboCop::Cop::Base
         include RangeHelp
         extend AutoCorrector
@@ -79,8 +84,13 @@ module RuboCop
         def check_node(node)
           scope = self.scope(node)
           sig_nodes = sig_checker.signature_nodes(scope)
-          rbs_signatures = rbs_checker.signatures(node)
-          rbs_signatures = rbs_checker.signatures(sig_nodes.first) if rbs_signatures.empty? && !sig_nodes.empty?
+          # Keep annotation lookup tied to the retained RBS signature.
+          rbs_node = node
+          rbs_signatures = rbs_checker.signatures(rbs_node)
+          if rbs_signatures.empty? && !sig_nodes.empty?
+            rbs_node = sig_nodes.first
+            rbs_signatures = rbs_checker.signatures(rbs_node)
+          end
 
           case signature_style
           when "rbs"
@@ -91,6 +101,7 @@ module RuboCop
                   autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
                 else
                   remove_sigs(corrector, sig_nodes)
+                  autocorrect_abstract_body(corrector, node, "rbs") if abstract_rbs?(rbs_node)
                 end
               end
               return
@@ -117,6 +128,7 @@ module RuboCop
                   autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
                 else
                   remove_rbs(corrector, rbs_signatures)
+                  autocorrect_abstract_body(corrector, node, "sig") if abstract_sig?(sig_nodes)
                 end
               end
             elsif sig_nodes.empty?
@@ -158,6 +170,7 @@ module RuboCop
           replacement = translated_signature_prefix(translated).rstrip
           indent = " " * range.column
           corrector.replace(range, replacement.gsub("\n", "\n#{indent}"))
+          autocorrect_abstract_body(corrector, node, "sig") if abstract_rbs?(node)
         end
 
         def remove_rbs(corrector, rbs_signatures)
@@ -176,6 +189,54 @@ module RuboCop
           replacement = replacement.lines.map(&:lstrip).join.rstrip
           indent = " " * range.column
           corrector.replace(range, replacement.gsub("\n", "\n#{indent}"))
+          autocorrect_abstract_body(corrector, node, "rbs") if abstract_sig?(sig_nodes)
+        end
+
+        def abstract_sig?(sig_nodes)
+          sig_nodes.any? do |sig_node|
+            body = sig_node.body
+            builders = body&.begin_type? ? body.children : [body]
+            builders.any? do |builder|
+              while builder&.send_type?
+                break true if builder.method?(:abstract)
+
+                builder = builder.receiver
+              end
+            end
+          end
+        end
+
+        def abstract_rbs?(node)
+          ::RuboCop::Sorbet::RBSParser.rbs_annotations_before(processed_source, node).any? do |comment|
+            comment.text.match?(/\A#\s*@abstract\s*\z/)
+          end
+        end
+
+        def autocorrect_abstract_body(corrector, node, type)
+          return unless node.any_def_type?
+
+          if type == "rbs"
+            if node.body
+              corrector.replace(node.body, "super")
+            elsif node.single_line?
+              corrector.insert_before(node.loc.end, "super; ")
+            else
+              indent = " " * leftmost_send_ancestor(node).loc.column
+              corrector.insert_before(node.loc.end, "  super\n#{indent}")
+            end
+          elsif node.loc.assignment
+            range = range_with_surrounding_space(range: node.loc.assignment, side: :left)
+              .with(end_pos: node.source_range.end_pos)
+            corrector.replace(range, "; end")
+          elsif node.body
+            range = node.body.source_range
+            if node.body.first_line > node.first_line && node.body.last_line < node.last_line
+              range = range_by_whole_lines(range, include_final_newline: true)
+            elsif node.single_line?
+              range = range.with(end_pos: node.loc.end.begin_pos)
+            end
+            corrector.remove(range)
+          end
         end
 
         def normalize_runtime_sig_receivers(range, sig_nodes)
