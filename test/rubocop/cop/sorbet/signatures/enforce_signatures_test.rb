@@ -1080,6 +1080,28 @@ module RuboCop
             RUBY
           end
 
+          def test_enforce_rbs_preserves_indentation_for_generated_final_annotation
+            @cop = target_cop.new(cop_config({
+              "Style" => "rbs",
+            }))
+
+            assert_offense(<<~RUBY)
+              class Foo
+                sig(:final) { void }
+                ^^^^^^^^^^^^^^^^^^^^ Use RBS signature comments rather than sig blocks.
+                def foo; end
+              end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              class Foo
+                # @final
+                #: -> void
+                def foo; end
+              end
+            RUBY
+          end
+
           def test_enforce_rbs_autocorrects_qualified_sig_signatures
             @cop = target_cop.new(cop_config({
               "Style" => "rbs",

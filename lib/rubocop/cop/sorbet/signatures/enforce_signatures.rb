@@ -173,7 +173,9 @@ module RuboCop
           replacement = translated_signature_prefix(translated, reject_sig: true)
           return unless replacement
 
-          corrector.replace(range, replacement.rstrip)
+          replacement = replacement.lines.map(&:lstrip).join.rstrip
+          indent = " " * range.column
+          corrector.replace(range, replacement.gsub("\n", "\n#{indent}"))
         end
 
         def normalize_runtime_sig_receivers(range, sig_nodes)
