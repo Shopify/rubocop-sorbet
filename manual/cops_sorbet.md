@@ -347,6 +347,10 @@ You can configure the placeholders used by changing the following options:
 * `Style`: signature style to enforce - 'sig' for sig blocks, 'rbs' for RBS comments, 'both' to allow either (default: 'sig')
 * `AutocorrectStyle`: signature style to use when autocorrecting - 'sig' for sig blocks, 'rbs' for RBS comments (default: 'sig'). Only used when `Style` is 'both'.
 
+Abstract sig-to-RBS conversion replaces the body with
+forwarding `super`, preferring `def foo = super` while preserving parameters
+and comments. Conversion back to sig blocks restores empty regular definitions.
+
 ### Configurable attributes
 
 Name | Default value | Configurable values
