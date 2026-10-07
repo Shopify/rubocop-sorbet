@@ -323,7 +323,7 @@ other comments or magic comments are left in the same place.
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.3.4 | 0.15.0
+Disabled | Yes | Yes (Unsafe) | 0.3.4 | <<next>>
 
 Checks that every method definition and attribute accessor has a Sorbet signature.
 
@@ -346,6 +346,11 @@ You can configure the placeholders used by changing the following options:
 * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
 * `Style`: signature style to enforce - 'sig' for sig blocks, 'rbs' for RBS comments, 'both' to allow either (default: 'sig')
 * `AutocorrectStyle`: signature style to use when autocorrecting - 'sig' for sig blocks, 'rbs' for RBS comments (default: 'sig'). Only used when `Style` is 'both'.
+
+Converting abstract signatures to RBS comments replaces the method body with
+a bare `super`, forwarding arguments and blocks to inherited implementations.
+Converting back to sig blocks removes the body; endless definitions become
+ordinary empty definitions. Method parameters and header comments are preserved.
 
 ### Configurable attributes
 
