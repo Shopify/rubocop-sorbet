@@ -4,7 +4,7 @@
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | No | 0.2.0 | <<next>>
+Enabled | Yes | No | 0.2.0 | 0.17.0
 
 Disallows incompatible overrides in Sorbet signatures and RBS comments.
 Using `allow_incompatible` suggests a violation of the Liskov
@@ -699,7 +699,7 @@ T.nilable(T.any(Symbol, String))
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | No | <<next>> | -
+Disabled | Yes | No | 0.17.0 | -
 
 Disallows using `T.assert_type!` anywhere.
 

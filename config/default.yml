@@ -11,7 +11,7 @@ Lint/SelfAssignment:
 Sorbet/ForbidTAssertType:
   Description: 'Forbid usage of T.assert_type!.'
   Enabled: false
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.17.0'
 
 Sorbet/ForbidTHelpers:
   Description: 'Forbid usage of T::Helpers via `extend` or `include`.'
@@ -56,7 +56,7 @@ Sorbet/AllowIncompatibleOverride:
   Description: 'Disallows incompatible overrides in Sorbet signatures and RBS comments.'
   Enabled: true
   VersionAdded: 0.2.0
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.17.0'
 
 Sorbet/BindingConstantWithoutTypeAlias:
   Description: >-
