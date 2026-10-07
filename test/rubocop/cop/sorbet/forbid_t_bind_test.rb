@@ -45,6 +45,17 @@ module RuboCop
           RUBY
         end
 
+        def test_does_not_autocorrect_t_bind_used_as_a_receiver
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          assert_offense(<<~RUBY)
+            T.bind(self, String).bar
+            ^^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+
+          assert_no_corrections
+        end
+
         def test_does_not_autocorrect_t_bind_on_another_value_or_in_an_assignment
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
 
