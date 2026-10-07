@@ -17,7 +17,7 @@ Sorbet/ForbidTCollectionInstantiation:
   Enabled: false
   AutocorrectToRBS: false
   SafeAutoCorrect: false
-  VersionAdded: '<<next>>'
+  VersionAdded: '0.17.1'
 
 Sorbet/ForbidTHelpers:
   Description: 'Forbid usage of T::Helpers via `extend` or `include`.'
@@ -292,7 +292,7 @@ Sorbet/ForbidTTypeAlias:
   AutocorrectToRBS: false
   SafeAutoCorrect: false
   VersionAdded: 0.10.4
-  VersionChanged: '<<next>>'
+  VersionChanged: '0.17.1'
 
 Sorbet/ForbidTUnsafe:
   Description: 'Forbid usage of T.unsafe.'

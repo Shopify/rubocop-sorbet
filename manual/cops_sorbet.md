@@ -792,7 +792,7 @@ AutocorrectToRBS | `false` | Boolean
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | <<next>> | -
+Disabled | Yes | Yes (Unsafe) | 0.17.1 | -
 
 Disallows instantiating Sorbet collection types. Instantiate the Ruby
 collection directly and declare its type separately when needed.
@@ -1052,7 +1052,7 @@ AutocorrectStyle | `sig` | String
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.17.1
 
 Disallows using `T.type_alias` anywhere.
 Set `AutocorrectToRBS: true` to replace standalone constant assignments with RBS type aliases.
