@@ -23,6 +23,11 @@ module RuboCop
       #   flagged when that inferred type matches the annotation exactly, to
       #   avoid silently widening (e.g. `["a", nil]` infers a nilable element).
       #
+      # An array annotation whose direct element type is a fixed-size tuple is
+      # preserved. Removing `T::Array[[...]]` or `Array[[...]]` can widen each
+      # tuple into an array with a union element type and lose its positional
+      # types.
+      #
       # Hashes are excluded: Sorbet infers hash literals as `T.untyped`, so the
       # annotation is required.
       #
@@ -59,6 +64,10 @@ module RuboCop
       #
       #   # good — unfrozen array whose annotation is wider than the inferred type
       #   NAMES = T.let(["alice", "bob"], T::Array[T.nilable(String)])
+      #
+      #   # good — the tuple element type is not inferred from the nested literals
+      #   BUCKETS = T.let([[1, "one"]].freeze, T::Array[[Integer, String]])
+      #   RBS_BUCKETS = [[1, "one"]].freeze #: Array[[Integer, String]]
       #
       #   # good — type is not the literal's own class
       #   value = T.let("hello", T.nilable(String))
@@ -204,9 +213,14 @@ module RuboCop
 
         def redundant_rbs_array_annotation?(array_node, type, frozen:)
           rbs_type = type.delete_prefix("::")
+          return false if rbs_array_type_with_tuple_element?(rbs_type)
           return rbs_type.match?(/\AArray\[(?:.+)\]\z/) if frozen
 
           inferred_array_type(array_node)&.delete_prefix("T::") == rbs_type
+        end
+
+        def rbs_array_type_with_tuple_element?(type)
+          type.match?(/\AArray\[\[.*\]\]\z/)
         end
 
         # An array literal is inferable only when every element is one of the
@@ -231,9 +245,14 @@ module RuboCop
         # any `T::Array[...]`; an unfrozen `[:a]` must infer exactly the
         # annotated type, such as `T::Array[Symbol]`.
         def redundant_array_annotation?(array_node, type_node, frozen:)
+          return false if t_array_type_with_tuple_element?(type_node)
           return t_array_type?(type_node) if frozen
 
           inferred_array_type(array_node) == normalize(type_node.source).delete_prefix("::")
+        end
+
+        def t_array_type_with_tuple_element?(node)
+          t_array_type?(node) && node.arguments.one? && node.first_argument.array_type?
         end
 
         # `T::Array[...]` (with or without a leading `::`)

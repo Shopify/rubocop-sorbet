@@ -1365,6 +1365,11 @@ Array literals of simple literals are also inferred:
   flagged when that inferred type matches the annotation exactly, to
   avoid silently widening (e.g. `["a", nil]` infers a nilable element).
 
+An array annotation whose direct element type is a fixed-size tuple is
+preserved. Removing `T::Array[[...]]` or `Array[[...]]` can widen each
+tuple into an array with a union element type and lose its positional
+types.
+
 Hashes are excluded: Sorbet infers hash literals as `T.untyped`, so the
 annotation is required.
 
@@ -1403,6 +1408,10 @@ OPTIONS = T.let({ verbose: true }, T::Hash[Symbol, T::Boolean])
 
 # good — unfrozen array whose annotation is wider than the inferred type
 NAMES = T.let(["alice", "bob"], T::Array[T.nilable(String)])
+
+# good — the tuple element type is not inferred from the nested literals
+BUCKETS = T.let([[1, "one"]].freeze, T::Array[[Integer, String]])
+RBS_BUCKETS = [[1, "one"]].freeze #: Array[[Integer, String]]
 
 # good — type is not the literal's own class
 value = T.let("hello", T.nilable(String))

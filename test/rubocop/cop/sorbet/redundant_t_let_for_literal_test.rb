@@ -255,6 +255,24 @@ module RuboCop
           RUBY
         end
 
+        def test_no_offense_for_frozen_array_with_tuple_element_annotation
+          assert_no_offenses(<<~RUBY)
+            PAIRS = T.let([[1, "one"], [2, "two"]].freeze, T::Array[[Integer, String]])
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_array_with_fully_qualified_tuple_element_annotation
+          assert_no_offenses(<<~RUBY)
+            PAIRS = ::T.let([[1, "one"], [2, "two"]].freeze, ::T::Array[[Integer, String]])
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_array_with_collection_in_tuple_element_annotation
+          assert_no_offenses(<<~RUBY)
+            RULES = T.let([[['a'], "one", "first"]].freeze, T::Array[[T::Array[String], String, String]])
+          RUBY
+        end
+
         # An unfrozen array whose annotation is wider than the inferred element
         # type must keep T.let, otherwise the type would be silently narrowed.
         def test_no_offense_for_unfrozen_array_with_wider_annotation
@@ -824,6 +842,35 @@ module RuboCop
               "alice",
               "bob",
             ]
+          RUBY
+        end
+
+        def test_registers_offense_for_nested_trailing_rbs_array_annotation
+          assert_offense(<<~RUBY)
+            PAIRS = [["a"], ["b"]].freeze #: Array[Array[String]]
+                                          ^^^^^^^^^^^^^^^^^^^^^^^ #{format(MSG, annotation: "RBS annotation", type: "Array")}
+          RUBY
+
+          assert_correction(<<~RUBY)
+            PAIRS = [["a"], ["b"]].freeze
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_array_with_tuple_element_rbs_annotation
+          assert_no_offenses(<<~RUBY)
+            PAIRS = [[1, "one"], [2, "two"]].freeze #: Array[[Integer, String]]
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_array_with_collection_in_tuple_element_rbs_annotation
+          assert_no_offenses(<<~RUBY)
+            RULES = [[["a"], "one", "first"]].freeze #: Array[[Array[String], String, String]]
+          RUBY
+        end
+
+        def test_no_offense_for_frozen_array_with_fully_qualified_tuple_element_rbs_annotation
+          assert_no_offenses(<<~RUBY)
+            PAIRS = [[1, "one"], [2, "two"]].freeze #: ::Array[[Integer, String]]
           RUBY
         end
 
