@@ -12,6 +12,12 @@ Sorbet/ForbidTAssertType:
   Description: 'Forbid usage of T.assert_type!.'
   Enabled: false
   VersionAdded: '0.17.0'
+Sorbet/ForbidTCollectionInstantiation:
+  Description: 'Forbids instantiating Sorbet collection types instead of Ruby collections.'
+  Enabled: false
+  AutocorrectToRBS: false
+  SafeAutoCorrect: false
+  VersionAdded: '<<next>>'
 
 Sorbet/ForbidTHelpers:
   Description: 'Forbid usage of T::Helpers via `extend` or `include`.'
