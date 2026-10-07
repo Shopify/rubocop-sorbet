@@ -185,6 +185,45 @@ module RuboCop
           RUBY
         end
 
+        def test_autocorrects_without_changing_method_definitions
+          assert_offense(<<~RUBY)
+            class Example < T::Struct
+            ^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              def instance_method
+                const :inside_instance_method, String
+              end
+
+              def self.class_method
+                prop :inside_class_method, Integer
+              end
+
+              const :name, String
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            class Example
+              extend T::Sig
+
+              def instance_method
+                const :inside_instance_method, String
+              end
+
+              def self.class_method
+                prop :inside_class_method, Integer
+              end
+
+              sig { returns(String) }
+              attr_reader :name
+
+              sig { params(name: String).void }
+              def initialize(name:)
+                @name = name
+              end
+            end
+          RUBY
+        end
+
         def test_autocorrects_rbs_without_changing_nested_scopes
           @cop = ForbidTStruct.new(cop_config("AutocorrectStyle" => "rbs"))
 

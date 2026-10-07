@@ -102,6 +102,8 @@ module RuboCop
           def on_class(_node); end
           alias_method :on_module, :on_class
           alias_method :on_sclass, :on_class
+          alias_method :on_def, :on_class
+          alias_method :on_defs, :on_class
 
           def on_send(node)
             if extend_t_sig?(node)
