@@ -8,6 +8,12 @@ Layout/LeadingCommentSpace:
 Lint/SelfAssignment:
   AllowRBSInlineAnnotation: true
 
+Sorbet/ForbidSorbetGenericTypesInRBSComments:
+  Description: 'Forbid Sorbet `T::` generic types in RBS comments.'
+  Enabled: pending
+  SafeAutoCorrect: false
+  VersionAdded: '<<next>>'
+
 Sorbet/ForbidTAssertType:
   Description: 'Forbid usage of T.assert_type!.'
   Enabled: false
