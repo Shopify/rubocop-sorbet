@@ -13,3 +13,4 @@ gem "mocha"
 gem "rubocop-shopify", require: false
 gem "parallel", "~> 1.10"
 gem "yard", "~> 0.9"
+gem "rubocop", ">= 1.75.2"
