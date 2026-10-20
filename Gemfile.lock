@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rubocop-sorbet (0.17.1)
+    rubocop-sorbet (0.17.2)
       rbi (~> 0.4, >= 0.4.3)
       rbs (>= 4.1.1)
       spoom (~> 1.8)
