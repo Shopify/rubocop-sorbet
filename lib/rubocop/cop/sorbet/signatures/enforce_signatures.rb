@@ -104,11 +104,11 @@ module RuboCop
                 next if abstract_method && !enabled_for_sorbet_static_version?
 
                 if rbs_signatures.empty?
-                  autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
-                else
-                  remove_sigs(corrector, sig_nodes)
-                  autocorrect_abstract_body(corrector, node, "rbs") if abstract_rbs?(rbs_node)
+                  next unless autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
                 end
+
+                remove_sigs(corrector, sig_nodes) unless rbs_signatures.empty?
+                add_forwarding_super(corrector, node) if abstract_method
               end
               return
             end
@@ -130,12 +130,13 @@ module RuboCop
             if rbs_signatures.any?
               first_comment = rbs_signatures.first.comments.first
               add_offense(first_comment, message: "Use sig block signatures rather than RBS signature comments.") do |corrector|
+                abstract_method = sig_nodes.empty? ? abstract_rbs?(node) : abstract_sig?(sig_nodes)
                 if sig_nodes.empty?
                   autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
                 else
                   remove_rbs(corrector, rbs_signatures)
-                  autocorrect_abstract_body(corrector, node, "sig") if abstract_sig?(sig_nodes)
                 end
+                remove_abstract_body(corrector, node) if abstract_method
               end
             elsif sig_nodes.empty?
               add_offense(node, message: "Each method is required to have a sig block signature.") do |corrector|
@@ -176,7 +177,6 @@ module RuboCop
           replacement = translated_signature_prefix(translated).rstrip
           indent = " " * range.column
           corrector.replace(range, replacement.gsub("\n", "\n#{indent}"))
-          autocorrect_abstract_body(corrector, node, "sig") if abstract_rbs?(node)
         end
 
         def remove_rbs(corrector, rbs_signatures)
@@ -190,12 +190,12 @@ module RuboCop
           sig_source = normalize_runtime_sig_receivers(range, sig_nodes)
           translated = translate_sigs_to_rbs("#{sig_source}\n#{node.source}")
           replacement = translated_signature_prefix(translated, reject_sig: true)
-          return unless replacement
+          return false unless replacement
 
           replacement = replacement.lines.map(&:lstrip).join.rstrip
           indent = " " * range.column
           corrector.replace(range, replacement.gsub("\n", "\n#{indent}"))
-          autocorrect_abstract_body(corrector, node, "rbs") if abstract_sig?(sig_nodes)
+          true
         end
 
         def abstract_sig?(sig_nodes)
@@ -215,33 +215,42 @@ module RuboCop
           end
         end
 
-        def autocorrect_abstract_body(corrector, node, type)
+        def add_forwarding_super(corrector, node)
           return unless node.any_def_type?
 
-          if type == "rbs"
-            if endless_abstract_method?(node)
-              header_end = node.arguments.loc.end || node.loc.name
-              corrector.replace(header_end.end.join(node.source_range.end), " = super")
-            elsif node.body
-              corrector.replace(node.body, "super")
-            elsif node.single_line?
-              corrector.insert_before(node.loc.end, "super; ")
-            else
-              indent = " " * leftmost_send_ancestor(node).loc.column
-              corrector.insert_before(node.loc.end, "  super\n#{indent}")
-            end
-          elsif node.loc.assignment
+          if endless_abstract_method?(node)
+            header_end = node.arguments.loc.end || node.loc.name
+            corrector.replace(header_end.end.join(node.source_range.end), " = super")
+          elsif node.body
+            corrector.replace(node.body, "super")
+          elsif node.single_line?
+            corrector.insert_before(node.loc.end, "super; ")
+          else
+            indent = " " * leftmost_send_ancestor(node).loc.column
+            corrector.insert_before(node.loc.end, "  super\n#{indent}")
+          end
+        end
+
+        def remove_abstract_body(corrector, node)
+          return unless node.any_def_type?
+
+          if node.loc.assignment
             range = range_with_surrounding_space(range: node.loc.assignment, side: :left)
               .with(end_pos: node.source_range.end_pos)
             corrector.replace(range, "; end")
           elsif node.body
-            range = node.body.source_range
-            if node.body.first_line > node.first_line && node.body.last_line < node.last_line
-              range = range_by_whole_lines(range, include_final_newline: true)
-            elsif node.single_line?
-              range = range.with(end_pos: node.loc.end.begin_pos)
-            end
-            corrector.remove(range)
+            corrector.remove(abstract_body_removal_range(node))
+          end
+        end
+
+        def abstract_body_removal_range(node)
+          range = node.body.source_range
+          if node.body.first_line > node.first_line && node.body.last_line < node.last_line
+            range_by_whole_lines(range, include_final_newline: true)
+          elsif node.single_line?
+            range.with(end_pos: node.loc.end.begin_pos)
+          else
+            range
           end
         end
 
