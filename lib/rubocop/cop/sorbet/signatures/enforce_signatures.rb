@@ -27,13 +27,22 @@ module RuboCop
       # * `ReturnTypePlaceholder`: placeholders used for return types (default: 'T.untyped')
       # * `Style`: signature style to enforce - 'sig' for sig blocks, 'rbs' for RBS comments, 'both' to allow either (default: 'sig')
       # * `AutocorrectStyle`: signature style to use when autocorrecting - 'sig' for sig blocks, 'rbs' for RBS comments (default: 'sig'). Only used when `Style` is 'both'.
+      #
+      # Abstract sig-to-RBS conversion replaces the body with
+      # forwarding `super`, preferring `def foo = super` while preserving parameters
+      # and comments. Conversion back to sig blocks restores empty regular definitions.
       class EnforceSignatures < ::RuboCop::Cop::Base
         include RangeHelp
         extend AutoCorrector
         include SignatureHelp
+        include TargetSorbetVersion
 
         VALID_STYLES = ["sig", "rbs", "both"].freeze
         VALID_AUTOCORRECT_STYLES = ["sig", "rbs"].freeze
+
+        # Older Sorbet rejects forwarding super in abstract RBS methods.
+        # Only abstract sig-to-RBS autocorrection is gated.
+        minimum_target_sorbet_static_version "0.6.13580"
 
         # Represents a method parameter with its name and AST node kind.
         # @kind is the RuboCop AST node type (:arg, :optarg, :restarg, :kwarg,
@@ -79,19 +88,27 @@ module RuboCop
         def check_node(node)
           scope = self.scope(node)
           sig_nodes = sig_checker.signature_nodes(scope)
-          rbs_signatures = rbs_checker.signatures(node)
-          rbs_signatures = rbs_checker.signatures(sig_nodes.first) if rbs_signatures.empty? && !sig_nodes.empty?
+          rbs_node = node
+          rbs_signatures = rbs_checker.signatures(rbs_node)
+          if rbs_signatures.empty? && !sig_nodes.empty?
+            rbs_node = sig_nodes.first
+            rbs_signatures = rbs_checker.signatures(rbs_node)
+          end
 
           case signature_style
           when "rbs"
             # RBS style - only RBS signatures allowed
             unless sig_nodes.empty?
               add_offense(sig_nodes.first, message: "Use RBS signature comments rather than sig blocks.") do |corrector|
+                abstract_method = rbs_signatures.empty? ? abstract_sig?(sig_nodes) : abstract_rbs?(rbs_node)
+                next if abstract_method && !enabled_for_sorbet_static_version?
+
                 if rbs_signatures.empty?
-                  autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
-                else
-                  remove_sigs(corrector, sig_nodes)
+                  next unless autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
                 end
+
+                remove_sigs(corrector, sig_nodes) unless rbs_signatures.empty?
+                add_forwarding_super(corrector, node) if abstract_method
               end
               return
             end
@@ -113,11 +130,13 @@ module RuboCop
             if rbs_signatures.any?
               first_comment = rbs_signatures.first.comments.first
               add_offense(first_comment, message: "Use sig block signatures rather than RBS signature comments.") do |corrector|
+                abstract_method = sig_nodes.empty? ? abstract_rbs?(node) : abstract_sig?(sig_nodes)
                 if sig_nodes.empty?
                   autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
                 else
                   remove_rbs(corrector, rbs_signatures)
                 end
+                remove_abstract_body(corrector, node) if abstract_method
               end
             elsif sig_nodes.empty?
               add_offense(node, message: "Each method is required to have a sig block signature.") do |corrector|
@@ -171,9 +190,75 @@ module RuboCop
           sig_source = normalize_runtime_sig_receivers(range, sig_nodes)
           translated = translate_sigs_to_rbs("#{sig_source}\n#{node.source}")
           replacement = translated_signature_prefix(translated, reject_sig: true)
-          return unless replacement
+          return false unless replacement
 
-          corrector.replace(range, replacement.rstrip)
+          replacement = replacement.lines.map(&:lstrip).join.rstrip
+          indent = " " * range.column
+          corrector.replace(range, replacement.gsub("\n", "\n#{indent}"))
+          true
+        end
+
+        def abstract_sig?(sig_nodes)
+          sig_nodes.any? do |sig_node|
+            builder = sig_node.body
+            while builder&.send_type?
+              break true if builder.method?(:abstract)
+
+              builder = builder.receiver
+            end
+          end
+        end
+
+        def abstract_rbs?(node)
+          ::RuboCop::Sorbet::RBSParser.rbs_annotations_before(processed_source, node).any? do |comment|
+            comment.text.match?(/\A#\s*@abstract\s*\z/)
+          end
+        end
+
+        def add_forwarding_super(corrector, node)
+          return unless node.any_def_type?
+
+          if endless_abstract_method?(node)
+            header_end = node.arguments.loc.end || node.loc.name
+            corrector.replace(header_end.end.join(node.source_range.end), " = super")
+          elsif node.body
+            corrector.replace(node.body, "super")
+          elsif node.single_line?
+            corrector.insert_before(node.loc.end, "super; ")
+          else
+            indent = " " * leftmost_send_ancestor(node).loc.column
+            corrector.insert_before(node.loc.end, "  super\n#{indent}")
+          end
+        end
+
+        def remove_abstract_body(corrector, node)
+          return unless node.any_def_type?
+
+          if node.loc.assignment
+            range = range_with_surrounding_space(range: node.loc.assignment, side: :left)
+              .with(end_pos: node.source_range.end_pos)
+            corrector.replace(range, "; end")
+          elsif node.body
+            corrector.remove(abstract_body_removal_range(node))
+          end
+        end
+
+        def abstract_body_removal_range(node)
+          range = node.body.source_range
+          if node.body.first_line > node.first_line && node.body.last_line < node.last_line
+            range_by_whole_lines(range, include_final_newline: true)
+          elsif node.single_line?
+            range.with(end_pos: node.loc.end.begin_pos)
+          else
+            range
+          end
+        end
+
+        def endless_abstract_method?(node)
+          return false if target_ruby_version < 3.0 || node.assignment_method?
+          return false if node.arguments.any? && !node.arguments.loc.begin
+
+          processed_source.comments.none? { |comment| node.source_range.contains?(comment.source_range) }
         end
 
         def normalize_runtime_sig_receivers(range, sig_nodes)
