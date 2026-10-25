@@ -110,7 +110,7 @@ module RuboCop
           when :Array then "[]"
           when :Hash
             parent = node.parent
-            if parent&.call_type? && parent.arguments.include?(node) && !parent.loc.begin
+            if parent&.type?(:call, :super, :yield) && parent.arguments.include?(node) && !parent.loc.begin
               "({})"
             else
               "{}"
