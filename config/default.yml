@@ -37,6 +37,7 @@ Sorbet/RedundantTLet:
   Enabled: true
   SafeAutoCorrect: false
   VersionAdded: '0.13.0'
+  VersionChanged: '<<next>>'
 
 Sorbet/StructPropName:
   Description: 'Checks that T::Struct property names use the configured naming style.'

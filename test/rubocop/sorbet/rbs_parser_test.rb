@@ -90,6 +90,58 @@ module RuboCop
         assert_empty(annotations)
       end
 
+      # --- Signature#parameter_types ---
+
+      def test_parameter_types_matches_keywords_by_name_and_positionals_by_position
+        types = parameter_types(<<~RUBY)
+          #: (Integer, ?Float, select: Select, ?operator: Symbol?) -> void
+          def foo(a, b = 1.0, select:, operator: nil); end
+        RUBY
+
+        assert_equal(
+          { a: "Integer", b: "Float", select: "Select", operator: "Symbol?" },
+          types,
+        )
+      end
+
+      def test_parameter_types_returns_rest_element_types
+        types = parameter_types(<<~RUBY)
+          #: (*String, **untyped) -> void
+          def foo(*rest, **opts); end
+        RUBY
+
+        assert_equal({ rest: "String", opts: "untyped" }, types)
+      end
+
+      # A destructured parameter has no name to key on, but it still consumes a
+      # positional type, so the types after it must not shift.
+      def test_parameter_types_skips_destructured_parameter_without_shifting
+        types = parameter_types(<<~RUBY)
+          #: ([String, String], Integer) -> void
+          def foo((b, c), a); end
+        RUBY
+
+        assert_equal({ a: "Integer" }, types)
+      end
+
+      def test_parameter_types_omits_parameters_the_signature_does_not_declare
+        types = parameter_types(<<~RUBY)
+          #: (Integer) -> void
+          def foo(a, b, key: nil); end
+        RUBY
+
+        assert_equal({ a: "Integer" }, types)
+      end
+
+      def test_parameter_types_empty_when_signature_does_not_parse
+        types = parameter_types(<<~RUBY)
+          #: (Integer -> void
+          def foo(a); end
+        RUBY
+
+        assert_empty(types)
+      end
+
       # --- rbs_annotation_after ---
 
       def test_annotation_after_returns_comment_and_text
@@ -235,6 +287,12 @@ module RuboCop
       def signatures_before(source)
         ps = parse(source)
         RBSParser.rbs_signatures_before(ps, def_node(ps))
+      end
+
+      def parameter_types(source)
+        ps = parse(source)
+        node = def_node(ps)
+        RBSParser.rbs_signatures_before(ps, node).first.parameter_types(node.arguments)
       end
 
       def annotations_before(source)

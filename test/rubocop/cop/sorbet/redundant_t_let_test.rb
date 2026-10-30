@@ -186,6 +186,169 @@ module RuboCop
           RUBY
         end
 
+        # Sorbet infers an instance variable's type from an RBS comment
+        # signature exactly as it does from a `sig`.
+        def test_offense_on_redundant_types_in_rbs_signature
+          assert_offense(<<~RUBY)
+            #: (Integer, ?String, select: Select, ?operator: Symbol?) -> void
+            def initialize(a, b = "hello", select:, operator: nil)
+              @a = T.let(a, Integer)
+                   ^^^^^^^^^^^^^^^^^ #{MSG}
+              @b = T.let(b, String)
+                   ^^^^^^^^^^^^^^^^ #{MSG}
+              @select = T.let(select, Select)
+                        ^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              @operator = T.let(operator, T.nilable(Symbol))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            #: (Integer, ?String, select: Select, ?operator: Symbol?) -> void
+            def initialize(a, b = "hello", select:, operator: nil)
+              @a = a
+              @b = b
+              @select = select
+              @operator = operator
+            end
+          RUBY
+        end
+
+        # An RBS comment declares the element type of a rest parameter, so the
+        # inferred type is the collection wrapping it.
+        def test_offense_on_rest_parameters_in_rbs_signature
+          assert_offense(<<~RUBY)
+            #: (*Integer, **String) -> void
+            def initialize(*args, **kwargs)
+              @args = T.let(args, T::Array[Integer])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              @kwargs = T.let(kwargs, T::Hash[Symbol, String])
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            #: (*Integer, **String) -> void
+            def initialize(*args, **kwargs)
+              @args = args
+              @kwargs = kwargs
+            end
+          RUBY
+        end
+
+        # A multiline RBS signature continues on `#|` lines, and the `T.let`
+        # type is compared as a type rather than as source text.
+        def test_offense_on_multiline_rbs_signature
+          assert_offense(<<~RUBY)
+            #: (
+            #|   flags: Hash[Symbol, untyped]
+            #| ) -> void
+            def initialize(flags:)
+              @flags = T.let(flags, T::Hash[Symbol, T.untyped])
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            #: (
+            #|   flags: Hash[Symbol, untyped]
+            #| ) -> void
+            def initialize(flags:)
+              @flags = flags
+            end
+          RUBY
+        end
+
+        # A `T.let` that narrows, widens or retypes the parameter is not
+        # redundant, and neither is one on a value that is not the parameter.
+        def test_no_offense_on_necessary_t_lets_in_rbs_signature
+          assert_no_offenses(<<~RUBY)
+            #: (?operator: Symbol?) -> void
+            def initialize(operator: nil)
+              @operator = T.let(operator || :eq, Symbol)
+            end
+
+            #: (?operator: Symbol?) -> void
+            def initialize(operator: nil)
+              @operator = T.let(operator, Symbol)
+            end
+
+            #: (Integer) -> void
+            def initialize(a)
+              @a = T.let(a, T.any(Integer, String))
+            end
+
+            #: (Integer) -> void
+            def initialize(a)
+              @a = T.let(a, String)
+            end
+
+            #: (Integer) -> void
+            def initialize(a)
+              @a = T.let(a.to_s, String)
+            end
+
+            #: (Integer) -> void
+            def initialize(a)
+              number = a
+              @answer = T.let(number, Integer)
+            end
+
+            #: (?flags: Hash[Symbol, untyped]) -> void
+            def initialize(flags: {})
+              @flags = T.let({}, T::Hash[Symbol, T.untyped])
+            end
+          RUBY
+        end
+
+        # A signature separated from the method by a blank line is not attached
+        # to it, so nothing is inferred.
+        def test_no_offense_on_unattached_rbs_signature
+          assert_no_offenses(<<~RUBY)
+            #: (Integer) -> void
+
+            def initialize(a)
+              @a = T.let(a, Integer)
+            end
+          RUBY
+        end
+
+        # Sorbet rejects a repeated signature rather than treating it as an
+        # overload, reporting every one but the last as unused, so only the last
+        # signature's types are inferred.
+        def test_offense_follows_last_of_repeated_rbs_signatures
+          assert_offense(<<~RUBY)
+            #: (Integer) -> void
+            #: (String) -> void
+            def initialize(a)
+              @a = T.let(a, Integer)
+              @b = T.let(a, String)
+                   ^^^^^^^^^^^^^^^^ #{MSG}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            #: (Integer) -> void
+            #: (String) -> void
+            def initialize(a)
+              @a = T.let(a, Integer)
+              @b = a
+            end
+          RUBY
+        end
+
+        # As with a `sig`, Sorbet's initializer rewriter does not process the
+        # ivar assignments of a method wrapped in a modifier, so T.let remains
+        # required there.
+        def test_no_offense_on_rbs_signature_with_method_modifier
+          assert_no_offenses(<<~RUBY)
+            #: (Integer) -> void
+            private def initialize(a)
+              @a = T.let(a, Integer)
+            end
+          RUBY
+        end
+
         def test_offense_on_constant_assigned_constructor
           assert_offense(<<~RUBY)
             PATTERN = T.let(Regexp.new("foo"), Regexp)
