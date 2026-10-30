@@ -239,7 +239,7 @@ Sorbet/ForbidTAbsurd:
   AutocorrectToRBS: false
   VersionAdded: 0.10.4
   SafeAutoCorrect: false
-  VersionChanged: '0.15.0'
+  VersionChanged: '<<next>>'
 
 Sorbet/ForbidTBind:
   Description: 'Forbid usage of T.bind.'

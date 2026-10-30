@@ -8,19 +8,26 @@ module RuboCop
       # Disallows using `T.absurd` anywhere.
       # Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
       #
+      # Since Sorbet 0.6.13595, the RBS assertion annotates a `raise` and only accepts a variable,
+      # so calls on other expressions are not autocorrected. Older versions use `foo #: absurd`.
+      #
       # @example
       #
       #   # bad
       #   T.absurd(foo)
       #
       #   # good
-      #   foo #: absurd
+      #   raise #: absurd(foo)
       class ForbidTAbsurd < RuboCop::Cop::Base
         include RBSAssertionCorrection
+        include TargetSorbetVersion
         extend AutoCorrector
 
         MSG = "Do not use `T.absurd`."
         RESTRICT_ON_SEND = [:absurd].freeze
+
+        # Sorbet started requiring `raise #: absurd(foo)` in sorbet/sorbet#10817.
+        minimum_target_sorbet_static_version "0.6.13595"
 
         # @!method t_absurd?(node)
         def_node_matcher(:t_absurd?, "(send (const nil? :T) :absurd _)")
@@ -37,7 +44,14 @@ module RuboCop
         def autocorrect_t_absurd_to_rbs(corrector, node)
           return unless rbs_assertion_autocorrectable?(node, allow_assignment: true)
 
-          corrector.replace(node, "#{node.first_argument.source} #: absurd")
+          argument = node.first_argument
+          if enabled_for_sorbet_static_version?
+            return unless argument.type?(:lvar, :ivar, :cvar, :gvar, :self)
+
+            corrector.replace(node, "raise #: absurd(#{argument.source})")
+          else
+            corrector.replace(node, "#{argument.source} #: absurd")
+          end
         end
 
         def assertion_statement(node, allow_assignment:)
