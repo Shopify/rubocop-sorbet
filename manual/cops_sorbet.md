@@ -656,10 +656,13 @@ Exclude | `db/migrate/*.rb` | Array
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Disabled | Yes | Yes (Unsafe) | 0.10.4 | 0.15.0
+Disabled | Yes | Yes (Unsafe) | 0.10.4 | <<next>>
 
 Disallows using `T.absurd` anywhere.
 Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments.
+
+Since Sorbet 0.6.13595, the RBS assertion annotates a `raise` and only accepts a variable,
+so calls on other expressions are not autocorrected. Older versions use `foo #: absurd`.
 
 ### Examples
 
@@ -668,7 +671,7 @@ Set `AutocorrectToRBS: true` to replace supported calls with RBS inline comments
 T.absurd(foo)
 
 # good
-foo #: absurd
+raise #: absurd(foo)
 ```
 
 ### Configurable attributes
