@@ -142,6 +142,33 @@ module RuboCop
           return_type_node.is_a?(RBS::Types::Bases::Void)
         end
 
+        # The parameter types this signature declares, as RBS type strings keyed
+        # by the name of the method parameter each annotates. Keyword types match
+        # by name; positional types match by position, since RBS does not require
+        # them to be named. A rest parameter's type is its element type, as
+        # written. Empty if the signature does not parse.
+        #
+        # `arguments` are the method's argument nodes in source order. A
+        # destructured parameter has no name, so it consumes a positional type
+        # without contributing an entry.
+        def parameter_types(arguments)
+          function = parsed_method_type&.type
+          return {} unless function.is_a?(RBS::Types::Function)
+
+          positionals = function.required_positionals + function.optional_positionals
+          index = 0
+          arguments.each_with_object({}) do |argument, types|
+            parameter = case argument.type
+            when :arg, :optarg, :mlhs then positionals[index].tap { index += 1 }
+            when :kwarg, :kwoptarg then function.required_keywords[argument.name] ||
+              function.optional_keywords[argument.name]
+            when :restarg then function.rest_positionals
+            when :kwrestarg then function.rest_keywords
+            end
+            types[argument.name] = parameter.type.to_s if parameter && argument.respond_to?(:name)
+          end
+        end
+
         private
 
         def return_type_node

@@ -1364,12 +1364,13 @@ end
 
 Enabled by default | Safe | Supports autocorrection | VersionAdded | VersionChanged
 --- | --- | --- | --- | ---
-Enabled | Yes | Yes (Unsafe) | 0.13.0 | -
+Enabled | Yes | Yes (Unsafe) | 0.13.0 | <<next>>
 
 Prevents unnecessary `T.let` where Sorbet infers the type automatically.
 
 When a signature parameter is assigned to an instance variable in
-`initialize`, the type is inferred from the signature.
+`initialize`, the type is inferred from the signature, whether it is
+written as a `sig` or as an RBS comment.
 
 When a constant is assigned a constructor call (`.new`), optionally
 followed by `.freeze` (Sorbet 0.6.13304+), the type is inferred from
@@ -1396,6 +1397,18 @@ end
 sig { params(a: Integer) }
 def initialize(a)
   @a = T.let(a, T.any(Integer, String))
+end
+
+# bad
+#: (Integer) -> void
+def initialize(a)
+  @a = T.let(a, Integer)
+end
+
+# good
+#: (Integer) -> void
+def initialize(a)
+  @a = a
 end
 
 # bad
