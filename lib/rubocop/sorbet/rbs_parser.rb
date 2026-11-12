@@ -21,14 +21,16 @@ module RuboCop
       RBS_SIGNATURE_PREFIX = /\A#:/
       # `#|` continues the preceding `#:` signature (e.g. multiline params/returns).
       RBS_CONTINUATION_PREFIX = /\A#\|/
+      # Type aliases are standalone declarations, not method signatures.
+      RBS_TYPE_ALIAS_PREFIX = /\A#:\s*type\b/
       # `# @` begins a Sorbet method annotation used alongside RBS signatures.
-      RBS_ANNOTATION_PREFIX = /\A#\s*@/
+      RBS_ANNOTATION_PREFIX = /\A#\s*@(?:abstract|override|overridable|final)\b/
 
       class << self
         # The RBS signatures attached to `node`, one `Signature` per overload.
-        # Climbs `private`/`public`/other send wrappers, collects the contiguous
+        # Climbs `private`/`public`/other send wrappers, collects the associated
         # comment block above the unwrapped node, and groups the RBS comments.
-        # A signature separated from the method by a blank line is not attached.
+        # Blank lines and regular comments may separate a signature from its method.
         def rbs_signatures_before(processed_source, node)
           node = node.parent while node.parent&.send_type?
           rbs_signature_groups(comments_above(processed_source, node))
@@ -36,7 +38,7 @@ module RuboCop
         end
 
         # The Sorbet `# @` annotation comments attached to `node`, in source
-        # order. Other comments in the contiguous block, including the RBS
+        # order. Other associated comments, including the RBS
         # signature itself, are omitted.
         def rbs_annotations_before(processed_source, node)
           node = node.parent while node.parent&.send_type?
@@ -71,35 +73,28 @@ module RuboCop
         # skipped.
         def rbs_signature_groups(comments)
           groups = []
+          current_group = nil
           comments.each do |comment|
             case comment.text
+            when RBS_TYPE_ALIAS_PREFIX
+              current_group = nil
             when RBS_SIGNATURE_PREFIX
-              groups << [comment]
+              current_group = [comment]
+              groups << current_group
             when RBS_CONTINUATION_PREFIX
-              groups.last << comment if groups.any?
+              current_group << comment if current_group
             end
           end
           groups
         end
 
-        # Comments forming a contiguous block immediately above `node`, in source
-        # order. A blank line or non-comment sibling breaks the run.
+        # Associated comments above `node`, in source order.
+        # Ruby statements break the association; blank lines do not.
         def comments_above(processed_source, node)
-          comments = processed_source
+          processed_source
             .ast_with_comments[node]
             .select { |comment| comment.loc.line < node.loc.line }
             .sort_by { |comment| comment.loc.line }
-          return [] if comments.empty?
-
-          block = []
-          expected = node.loc.line
-          comments.reverse_each do |comment|
-            break unless comment.loc.line + 1 == expected
-
-            block.unshift(comment)
-            expected = comment.loc.line
-          end
-          block
         end
       end
 

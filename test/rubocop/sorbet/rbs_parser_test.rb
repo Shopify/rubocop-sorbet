@@ -42,8 +42,31 @@ module RuboCop
         assert_equal(["#: (", "#| String name", "#| ) -> String"], sigs.first.comments.map(&:text))
       end
 
-      def test_signatures_before_blank_line_separates
-        assert_empty(signatures_before("#: (String) -> void\n\ndef foo; end"))
+      def test_signatures_before_allows_blank_lines
+        sigs = signatures_before("#: (String) -> void\n\ndef foo; end")
+        assert_equal(["#: (String) -> void"], sigs.first.comments.map(&:text))
+      end
+
+      def test_signatures_before_ignores_type_alias_declarations_and_continuations
+        sigs = signatures_before(<<~RUBY)
+          #: (String) -> String
+
+          #: type name =
+          #| String |
+          #| Integer
+
+          #: (name) -> name
+          def foo(value); end
+        RUBY
+
+        assert_equal(
+          [["#: (String) -> String"], ["#: (name) -> name"]],
+          sigs.map { |sig| sig.comments.map(&:text) },
+        )
+      end
+
+      def test_signatures_before_does_not_cross_a_ruby_statement
+        assert_empty(signatures_before("#: -> void\nvalue = 1\ndef foo; end"))
       end
 
       def test_signatures_before_climbs_send_wrappers
@@ -79,10 +102,35 @@ module RuboCop
         assert_equal(["# @override(allow_incompatible: true)"], annotations.map(&:text))
       end
 
-      def test_annotations_before_blank_line_separates
+      def test_annotations_before_allows_blank_lines_and_regular_comments
         annotations = annotations_before(<<~RUBY)
           # @override(allow_incompatible: true)
 
+          #: () -> void
+
+          # Documentation for foo.
+          def foo; end
+        RUBY
+
+        assert_equal(["# @override(allow_incompatible: true)"], annotations.map(&:text))
+      end
+
+      def test_annotations_before_ignores_yard_documentation
+        annotations = annotations_before(<<~RUBY)
+          # @param value [String] the value
+          # @return [String] the name
+          # @override
+          #: (String) -> String
+          def foo(value); end
+        RUBY
+
+        assert_equal(["# @override"], annotations.map(&:text))
+      end
+
+      def test_annotations_before_does_not_cross_a_ruby_statement
+        annotations = annotations_before(<<~RUBY)
+          # @abstract
+          value = 1
           #: () -> void
           def foo; end
         RUBY

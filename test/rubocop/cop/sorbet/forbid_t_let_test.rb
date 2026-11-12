@@ -8,6 +8,23 @@ module RuboCop
       class ForbidTLetTest < ::Minitest::Test
         MSG = "Do not use `T.let`."
 
+        def test_reports_absolute_t_call
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          assert_offense(<<~RUBY)
+            ::T.let(value, String)
+            ^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+          RUBY
+        end
+
+        def test_ignores_other_receivers
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          assert_no_offenses(<<~RUBY)
+            Other::T.let(value, String)
+          RUBY
+        end
+
         def test_adds_offense_when_using_t_let
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
 
