@@ -8,6 +8,28 @@ module RuboCop
       class ForbidTUnsafeTest < ::Minitest::Test
         MSG = "Do not use `T.unsafe`."
 
+        def test_reports_other_supported_call_forms
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          [
+            "::T.unsafe(value)",
+            "T&.unsafe(value)",
+          ].each do |source|
+            assert_offense(<<~RUBY)
+              #{source}
+              #{"^" * source.length} #{MSG}
+            RUBY
+          end
+        end
+
+        def test_ignores_other_receivers
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          assert_no_offenses(<<~RUBY)
+            Other::T.unsafe(value)
+          RUBY
+        end
+
         def test_adds_offense_when_using_t_unsafe
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
 

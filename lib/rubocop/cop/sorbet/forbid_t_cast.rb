@@ -24,7 +24,7 @@ module RuboCop
         RESTRICT_ON_SEND = [:cast].freeze
 
         # @!method t_cast?(node)
-        def_node_matcher(:t_cast?, "(send (const nil? :T) :cast _ _)")
+        def_node_matcher(:t_cast?, "(call (const {nil? cbase} :T) :cast _ _ ...)")
 
         def on_send(node)
           return unless t_cast?(node)
@@ -39,7 +39,7 @@ module RuboCop
           return if t_cast?(node.first_argument)
 
           autocorrect_rbs_assertion(corrector, node, allow_assignment: true) do
-            type = ::RBI::Type.parse_string(node.last_argument.source).rbs_string
+            type = ::RBI::Type.parse_string(node.arguments[1].source).rbs_string
             [node.first_argument.source, "as #{type}"]
           end
         rescue ::RBI::Type::Error

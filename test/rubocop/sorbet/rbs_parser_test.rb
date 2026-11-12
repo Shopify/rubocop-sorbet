@@ -42,8 +42,13 @@ module RuboCop
         assert_equal(["#: (", "#| String name", "#| ) -> String"], sigs.first.comments.map(&:text))
       end
 
-      def test_signatures_before_blank_line_separates
-        assert_empty(signatures_before("#: (String) -> void\n\ndef foo; end"))
+      def test_signatures_before_allows_blank_lines
+        sigs = signatures_before("#: (String) -> void\n\ndef foo; end")
+        assert_equal(["#: (String) -> void"], sigs.first.comments.map(&:text))
+      end
+
+      def test_signatures_before_does_not_cross_a_ruby_statement
+        assert_empty(signatures_before("#: -> void\nvalue = 1\ndef foo; end"))
       end
 
       def test_signatures_before_climbs_send_wrappers

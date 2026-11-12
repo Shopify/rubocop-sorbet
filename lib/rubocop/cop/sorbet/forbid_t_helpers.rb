@@ -29,7 +29,7 @@ module RuboCop
 
         # @!method t_helpers?(node)
         def_node_matcher :t_helpers?, <<~PATTERN
-          (send _ {:extend :include} (const (const {nil? | cbase} :T) :Helpers))
+          (call _ {:extend :include} <(const (const {nil? cbase} :T) :Helpers) ...>)
         PATTERN
 
         def on_send(node)

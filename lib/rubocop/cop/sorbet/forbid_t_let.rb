@@ -24,7 +24,7 @@ module RuboCop
         RESTRICT_ON_SEND = [:let].freeze
 
         # @!method t_let?(node)
-        def_node_matcher(:t_let?, "(send (const nil? :T) :let _ _)")
+        def_node_matcher(:t_let?, "(call (const {nil? cbase} :T) :let _ _ ...)")
 
         def on_send(node)
           return unless t_let?(node)
@@ -39,7 +39,7 @@ module RuboCop
           return if t_let?(node.first_argument)
 
           autocorrect_rbs_assertion(corrector, node, allow_assignment: true) do
-            type = ::RBI::Type.parse_string(node.last_argument.source).rbs_string
+            type = ::RBI::Type.parse_string(node.arguments[1].source).rbs_string
             [node.first_argument.source, type]
           end
         rescue ::RBI::Type::Error

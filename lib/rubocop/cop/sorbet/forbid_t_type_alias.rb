@@ -24,17 +24,21 @@ module RuboCop
         extend AutoCorrector
 
         MSG = "Do not use `T.type_alias`."
+        RESTRICT_ON_SEND = [:type_alias].freeze
 
         # @!method t_type_alias?(node)
-        def_node_matcher(:t_type_alias?, "(block (call (const nil? :T) :type_alias) _ _)")
+        def_node_matcher(:t_type_alias?, "(call (const {nil? cbase} :T) :type_alias ...)")
 
-        def on_block(node)
+        def on_send(node)
           return unless t_type_alias?(node)
 
-          add_offense(node) { |corrector| autocorrect_type_alias(corrector, node) }
+          parent = node.parent
+          location = parent&.any_block_type? && parent.send_node == node ? parent : node
+          add_offense(location) do |corrector|
+            autocorrect_type_alias(corrector, location) if location.any_block_type?
+          end
         end
-        alias_method :on_numblock, :on_block
-        alias_method :on_itblock, :on_block
+        alias_method :on_csend, :on_send
 
         private
 
@@ -43,6 +47,7 @@ module RuboCop
           return unless assignment&.casgn_type? && assignment.children.first.nil?
           return unless standalone_alias?(assignment)
           return unless node.arguments.empty? && node.body
+          return unless node.send_node.arguments.empty?
           return unless rbs_assertion_autocorrectable?(node, allow_assignment: true)
 
           name = assignment.children[1].to_s

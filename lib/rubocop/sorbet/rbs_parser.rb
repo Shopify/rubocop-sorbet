@@ -26,12 +26,12 @@ module RuboCop
 
       class << self
         # The RBS signatures attached to `node`, one `Signature` per overload.
-        # Climbs `private`/`public`/other send wrappers, collects the contiguous
+        # Climbs `private`/`public`/other send wrappers, collects the associated
         # comment block above the unwrapped node, and groups the RBS comments.
-        # A signature separated from the method by a blank line is not attached.
+        # Blank lines and regular comments may separate a signature from its method.
         def rbs_signatures_before(processed_source, node)
           node = node.parent while node.parent&.send_type?
-          rbs_signature_groups(comments_above(processed_source, node))
+          rbs_signature_groups(comments_above(processed_source, node, contiguous: false))
             .map { |group| Signature.new(processed_source, group) }
         end
 
@@ -82,14 +82,15 @@ module RuboCop
           groups
         end
 
-        # Comments forming a contiguous block immediately above `node`, in source
-        # order. A blank line or non-comment sibling breaks the run.
-        def comments_above(processed_source, node)
+        # Associated comments above `node`, in source order. By default, a blank
+        # line breaks the run. Ruby statements always break the association.
+        def comments_above(processed_source, node, contiguous: true)
           comments = processed_source
             .ast_with_comments[node]
             .select { |comment| comment.loc.line < node.loc.line }
             .sort_by { |comment| comment.loc.line }
           return [] if comments.empty?
+          return comments unless contiguous
 
           block = []
           expected = node.loc.line

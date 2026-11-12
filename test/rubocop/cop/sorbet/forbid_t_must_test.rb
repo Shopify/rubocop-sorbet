@@ -8,6 +8,28 @@ module RuboCop
       class ForbidTMustTest < ::Minitest::Test
         MSG = "Do not use `T.must`."
 
+        def test_reports_other_supported_call_forms
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          [
+            "::T.must(value)",
+            "T&.must(value)",
+          ].each do |source|
+            assert_offense(<<~RUBY)
+              #{source}
+              #{"^" * source.length} #{MSG}
+            RUBY
+          end
+        end
+
+        def test_ignores_other_receivers
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          assert_no_offenses(<<~RUBY)
+            Other::T.must(value)
+          RUBY
+        end
+
         def test_adds_offense_when_using_t_must
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
 

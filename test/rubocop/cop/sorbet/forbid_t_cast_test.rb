@@ -8,6 +8,37 @@ module RuboCop
       class ForbidTCastTest < ::Minitest::Test
         MSG = "Do not use `T.cast`."
 
+        def test_reports_other_supported_call_forms
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          [
+            "::T.cast(value, String)",
+            "T.cast(value, String, checked: false)",
+            "T&.cast(value, String)",
+          ].each do |source|
+            assert_offense(<<~RUBY)
+              #{source}
+              #{"^" * source.length} #{MSG}
+            RUBY
+          end
+        end
+
+        def test_ignores_other_receivers
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          assert_no_offenses(<<~RUBY)
+            Other::T.cast(value, String)
+          RUBY
+        end
+
+        def test_autocorrects_optional_arguments_using_the_type_argument
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          source = "T.cast(value, String, checked: false)"
+          assert_offense("#{source}\n#{"^" * source.length} #{MSG}\n")
+          assert_correction("value #: as String\n")
+        end
+
         def test_adds_offense_when_using_t_cast
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
 
