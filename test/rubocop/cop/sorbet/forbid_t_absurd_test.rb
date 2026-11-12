@@ -12,6 +12,24 @@ module RuboCop
           @cop = ForbidTAbsurd.new
         end
 
+        def test_reports_other_supported_call_forms
+          [
+            "::T.absurd(value)",
+            "T&.absurd(value)",
+          ].each do |source|
+            assert_offense(<<~RUBY)
+              #{source}
+              #{"^" * source.length} #{MSG}
+            RUBY
+          end
+        end
+
+        def test_ignores_other_receivers
+          assert_no_offenses(<<~RUBY)
+            Other::T.absurd(value)
+          RUBY
+        end
+
         def test_adds_offense_when_using_t_absurd
           assert_offense(<<~RUBY)
             T.absurd(foo)

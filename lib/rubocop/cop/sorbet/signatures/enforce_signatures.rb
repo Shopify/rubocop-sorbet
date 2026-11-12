@@ -113,7 +113,8 @@ module RuboCop
         def autocorrect_with_signature_type(corrector, node, type)
           suggest = create_signature_suggestion(node, type)
           populate_signature_suggestion(suggest, node)
-          corrector.insert_before(node, suggest.to_autocorrect)
+          correction = suggest.to_autocorrect
+          corrector.insert_before(node, correction) if correction
         end
 
         def create_signature_suggestion(node, type)
@@ -135,11 +136,7 @@ module RuboCop
 
         def populate_method_definition_suggestion(suggest, node)
           node.arguments.each do |arg|
-            if arg.blockarg_type? && suggest.respond_to?(:has_block=)
-              suggest.has_block = true
-            else
-              suggest.params << arg.children.first
-            end
+            suggest.add_argument(arg)
           end
         end
 
@@ -147,22 +144,7 @@ module RuboCop
           method = node.children[1]
           symbol = node.children[2]
 
-          add_accessor_parameter_if_needed(suggest, symbol, method)
-          set_void_return_for_writer(suggest, method)
-        end
-
-        def add_accessor_parameter_if_needed(suggest, symbol, method)
-          return unless symbol && writer_or_accessor?(method)
-
-          suggest.params << symbol.value
-        end
-
-        def set_void_return_for_writer(suggest, method)
-          suggest.returns = "void" if method == :attr_writer
-        end
-
-        def writer_or_accessor?(method)
-          method == :attr_writer || method == :attr_accessor
+          suggest.accessor(method, symbol)
         end
 
         def param_type_placeholder
@@ -214,9 +196,6 @@ module RuboCop
             comments = preceding_comments(node)
             return if comments.empty?
 
-            last_comment = comments.last
-            return if last_comment.loc.line + 1 < node.loc.line
-
             comments.find { |comment| RBS_COMMENT_REGEX.match?(comment.text) }
           end
 
@@ -248,8 +227,6 @@ module RuboCop
         end
 
         class SigSuggestion
-          attr_accessor :params, :returns
-
           def initialize(indent, param_placeholder, return_placeholder)
             @params = []
             @returns = nil
@@ -260,6 +237,15 @@ module RuboCop
 
           def to_autocorrect
             "sig { #{generate_params}#{generate_return} }\n#{" " * @indent}"
+          end
+
+          def add_argument(arg)
+            @params << arg.children.first
+          end
+
+          def accessor(method, symbol)
+            @params << symbol.value if symbol && [:attr_writer, :attr_accessor].include?(method)
+            @returns = "void" if method == :attr_writer
           end
 
           private
@@ -283,33 +269,57 @@ module RuboCop
         end
 
         class RBSSuggestion
-          attr_accessor :params, :returns, :has_block
+          PARAMETER_TYPES = {
+            arg: "untyped",
+            optarg: "?untyped",
+            restarg: "*untyped",
+            kwarg: "%s: untyped",
+            kwoptarg: "?%s: untyped",
+            kwrestarg: "**untyped",
+          }.freeze
 
           def initialize(indent)
             @params = []
-            @returns = nil
             @has_block = false
             @indent = indent
+            @supported = true
           end
 
           def to_autocorrect
+            return unless @supported
+            return "#: untyped\n#{" " * @indent}" if @attribute
+
             "#: #{generate_signature}\n#{" " * @indent}"
+          end
+
+          def add_argument(arg)
+            if arg.blockarg_type?
+              @has_block = true
+            elsif arg.kwnilarg_type?
+              # No keyword parameter is needed in the signature for **nil.
+            elsif (type = PARAMETER_TYPES[arg.type])
+              @params << (arg.type?(:kwarg, :kwoptarg) ? format(type, arg.name) : type)
+            else
+              @supported = false
+            end
+          end
+
+          def accessor(_method, _symbol)
+            @attribute = true
           end
 
           private
 
           def generate_signature
-            param_types = @params.map { "untyped" }.join(", ")
-            return_type = @returns || "untyped"
-
+            param_types = @params.join(", ")
             signature = if @params.empty?
-              "()"
+              +"()"
             else
               "(#{param_types})"
             end
 
-            signature += " { (?) -> untyped }" if @has_block
-            signature += " -> #{return_type}"
+            signature << " ?{ (?) -> untyped }" if @has_block
+            signature << " -> untyped"
 
             signature
           end

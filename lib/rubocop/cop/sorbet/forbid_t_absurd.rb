@@ -19,7 +19,7 @@ module RuboCop
         RESTRICT_ON_SEND = [:absurd].freeze
 
         # @!method t_absurd?(node)
-        def_node_matcher(:t_absurd?, "(send (const nil? :T) :absurd _)")
+        def_node_matcher(:t_absurd?, "(call (const {nil? cbase} :T) :absurd _)")
 
         def on_send(node)
           add_offense(node) if t_absurd?(node)

@@ -10,6 +10,20 @@ module RuboCop
           @cop = ForbidTSig.new
         end
 
+        def test_reports_the_helper_among_multiple_modules
+          [
+            "extend Other, ::T::Sig, Another",
+            "include T::Sig, Other",
+            "self&.extend Other, T::Sig",
+          ].each do |source|
+            method = source.include?("include") ? "include" : "extend"
+            assert_offense(<<~RUBY)
+              #{source}
+              #{"^" * source.length} Sorbet/ForbidTSig: Do not use `#{method} T::Sig`.
+            RUBY
+          end
+        end
+
         def test_adds_offense_when_extending_t_sig
           assert_offense(<<~RUBY)
             class Example

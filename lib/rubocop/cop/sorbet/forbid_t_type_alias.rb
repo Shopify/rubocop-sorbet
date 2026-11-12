@@ -16,14 +16,19 @@ module RuboCop
       #   #: type string_or_integer = Integer | String
       class ForbidTTypeAlias < RuboCop::Cop::Base
         MSG = "Do not use `T.type_alias`."
+        RESTRICT_ON_SEND = [:type_alias].freeze
 
         # @!method t_type_alias?(node)
-        def_node_matcher(:t_type_alias?, "(block (call (const nil? :T) :type_alias) _ _)")
+        def_node_matcher(:t_type_alias?, "(call (const {nil? cbase} :T) :type_alias ...)")
 
-        def on_block(node)
-          add_offense(node) if t_type_alias?(node)
+        def on_send(node)
+          return unless t_type_alias?(node)
+
+          parent = node.parent
+          location = parent&.type?(:block, :numblock) && parent.send_node == node ? parent : node
+          add_offense(location)
         end
-        alias_method :on_numblock, :on_block
+        alias_method :on_csend, :on_send
       end
     end
   end

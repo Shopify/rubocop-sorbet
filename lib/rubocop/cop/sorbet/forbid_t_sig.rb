@@ -29,7 +29,7 @@ module RuboCop
 
         # @!method t_sig?(node)
         def_node_matcher :t_sig?, <<~PATTERN
-          (send _ {:extend :include} (const (const {nil? | cbase} :T) :Sig))
+          (call _ {:extend :include} <(const (const {nil? cbase} :T) :Sig) ...>)
         PATTERN
 
         def on_send(node)

@@ -300,12 +300,34 @@ module RuboCop
             RUBY
           end
 
-          def test_makes_offense_if_method_has_blank_line_separating_rbs_signature
-            assert_offense(<<~RUBY)
+          def test_allows_blank_lines_between_rbs_signature_and_method
+            assert_no_offenses(<<~RUBY)
               #: -> void
 
               def foo; end
+            RUBY
+          end
+
+          def test_does_not_reuse_rbs_comment_across_a_ruby_statement
+            assert_offense(<<~RUBY)
+              #: -> void
+              value = 1
+              def foo; end
               ^^^^^^^^^^^^ #{MSG}
+            RUBY
+          end
+
+          def test_allows_blank_lines_around_rbs_continuations_and_regular_comments
+            assert_no_offenses(<<~RUBY)
+              class Foo
+                #: (
+                #|   Integer
+                #| ) -> void
+
+                # Documentation for foo.
+
+                def foo(value); end
+              end
             RUBY
           end
 
@@ -613,17 +635,64 @@ module RuboCop
             assert_correction(<<~RUBY)
               #: () -> untyped
               def foo; end
-              #: (untyped, untyped, untyped) -> untyped
+              #: (untyped, ?untyped, ?c: untyped) -> untyped
               def bar(a, b = 2, c: Foo.new); end
-              #: () { (?) -> untyped } -> untyped
+              #: () ?{ (?) -> untyped } -> untyped
               def baz(&blk); end
-              #: (untyped, untyped) { (?) -> untyped } -> untyped
+              #: (untyped, untyped) ?{ (?) -> untyped } -> untyped
               def self.foo(a, b, &c); end
-              #: (untyped, untyped, untyped) -> untyped
+              #: (untyped, *untyped, **untyped) -> untyped
               def self.bar(a, *b, **c); end
-              #: (untyped) -> untyped
+              #: (a: untyped) -> untyped
               def self.baz(a:); end
             RUBY
+          end
+
+          def test_enforce_rbs_preserves_all_parameter_kinds
+            @cop = target_cop.new(cop_config("Style" => "rbs"))
+            source = "def foo(a, b = 1, *rest, trailing, key:, optional: 1, **options, &block); end"
+
+            assert_offense(<<~RUBY)
+              #{source}
+              #{"^" * source.length} Each method is required to have an RBS signature.
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: (untyped, ?untyped, *untyped, untyped, key: untyped, ?optional: untyped, **untyped) ?{ (?) -> untyped } -> untyped
+              #{source}
+            RUBY
+          end
+
+          def test_enforce_rbs_preserves_anonymous_parameters_and_keyword_rejection
+            stubs(:ruby_version).returns(3.4)
+            @cop = target_cop.new(cop_config("Style" => "rbs"))
+
+            assert_offense(<<~RUBY)
+              def foo(*, **, &); end
+              ^^^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def bar(**nil); end
+              ^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: (*untyped, **untyped) ?{ (?) -> untyped } -> untyped
+              def foo(*, **, &); end
+              #: () -> untyped
+              def bar(**nil); end
+            RUBY
+          end
+
+          def test_enforce_rbs_does_not_generate_signatures_for_unsupported_argument_forms
+            @cop = target_cop.new(cop_config("Style" => "rbs"))
+
+            assert_offense(<<~RUBY)
+              def foo(...); end
+              ^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+              def bar((a, b)); end
+              ^^^^^^^^^^^^^^^^^^^^ Each method is required to have an RBS signature.
+            RUBY
+
+            assert_no_corrections
           end
 
           def test_enforce_rbs_autocorrects_accessors
@@ -644,11 +713,11 @@ module RuboCop
 
             assert_correction(<<~RUBY)
               class Foo
-                #: () -> untyped
+                #: untyped
                 attr_reader :foo
-                #: (untyped) -> void
+                #: untyped
                 attr_writer :bar
-                #: (untyped) -> untyped
+                #: untyped
                 attr_accessor :baz
               end
             RUBY
