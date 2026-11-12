@@ -1,0 +1,58 @@
+# Prefer Sorbet's RBS comments for signatures, type aliases, and assertions.
+# https://sorbet.org/docs/rbs-support
+
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
+
+Sorbet/BindingConstantWithoutTypeAlias:
+  # Its correction introduces T.type_alias, which this preset forbids.
+  AutoCorrect: false
+
+Sorbet/EnforceSignatures:
+  Enabled: true
+  Style: rbs
+
+Sorbet/ForbidSig:
+  Enabled: true
+
+Sorbet/ForbidSigWithRuntime:
+  Enabled: true
+
+Sorbet/ForbidSigWithoutRuntime:
+  Enabled: true
+  # Its correction produces a bare sig block, which this preset also forbids.
+  AutoCorrect: false
+
+Sorbet/ForbidTHelpers:
+  Enabled: true
+
+Sorbet/ForbidTSig:
+  Enabled: true
+
+Sorbet/ForbidTAbsurd:
+  Enabled: true
+
+Sorbet/ForbidTBind:
+  Enabled: true
+
+Sorbet/ForbidTCast:
+  Enabled: true
+
+Sorbet/ForbidTLet:
+  Enabled: true
+
+Sorbet/ForbidTMust:
+  Enabled: true
+
+Sorbet/ForbidTTypeAlias:
+  Enabled: true
+
+Sorbet/ForbidTUnsafe:
+  Enabled: true
+
+Sorbet/ForbidTUntyped:
+  Enabled: true
+
+Sorbet/ObsoleteStrictMemoization:
+  # Its correction rewrites T.let and can remove a line-local exception.
+  AutoCorrect: false

@@ -75,6 +75,81 @@ AllCops:
     - "sorbet/rbi/shims/**/*.rbi"
 ```
 
+### Prefer RBS comments
+
+To use Sorbet's RBS comments in Ruby files while keeping `sig` blocks in RBI
+files, use a separate configuration for each.
+
+In the root `.rubocop.yml`, load the plugin and inherit the RBS preset:
+
+```yaml
+plugins:
+  - rubocop-sorbet
+
+inherit_gem:
+  rubocop-sorbet: config/rbs.yml
+```
+
+In `sorbet/rbi/.rubocop.yml`, inherit the RBI preset:
+
+```yaml
+inherit_gem:
+  rubocop-sorbet: config/rbi.yml
+```
+
+Ruby files use the RBS policy, while RBI files use the RBI policy and can keep
+`sig` blocks. See [RBI configuration](#rubocop-rules-for-rbi-files) for including
+RBI files in RuboCop's targets.
+
+The RBS preset requires RBS signatures on methods and attribute accessors. It forbids
+`sig`, `T::Sig.sig`, `T::Sig::WithoutRuntime.sig`, `extend`/`include T::Sig` and
+`T::Helpers`, `T.type_alias`, `T.untyped`, and the assertion methods `T.let`,
+`T.cast`, `T.must`, `T.unsafe`, `T.absurd`, and `T.bind`. Other cops retain their
+default checks, so they can still check Sorbet syntax allowed by local exceptions.
+Autocorrection is disabled for `BindingConstantWithoutTypeAlias`,
+`ObsoleteStrictMemoization`, and `ForbidSigWithoutRuntime` because their corrections
+can produce syntax forbidden by this preset.
+
+This uses the existing cops, which check for RBS signature comments without
+validating their types. Sorbet remains responsible for type checking. The preset
+does not forbid `T::Enum` or `T::Struct`, or every other `sorbet-runtime` feature.
+
+Enable Sorbet's experimental RBS comment support by adding both flags to
+`sorbet/config`, as described in the [RBS support guide](https://sorbet.org/docs/rbs-support#enabling-rbs-comments):
+
+```text
+--parser=prism
+--enable-experimental-rbs-comments
+```
+
+The preset requires a signature on every method and attribute accessor, including
+in `typed: false` files. To choose RBS syntax without requiring every method to have
+a signature, override `Sorbet/EnforceSignatures` with `Enabled: false`. The
+`ForbidSig` cops still reject Sorbet signature blocks.
+
+For incremental adoption, apply the preset in a migrated directory's
+`.rubocop.yml`. Load `rubocop-sorbet` in the root configuration, then use, for
+example, `app/.rubocop.yml`:
+
+```yaml
+inherit_from: ../.rubocop.yml
+
+inherit_gem:
+  rubocop-sorbet: config/rbs.yml
+```
+
+RuboCop supports multiple inherited configurations. Later inherited files override
+earlier ones; local settings override inherited values. When combining this preset
+with optional cops such as `CallbackConditionalsBinding`, `ForbidIncludeConstLiteral`,
+or `ForbidTStruct`, review their autocorrection settings: they can generate Ruby
+annotations that this preset forbids.
+
+This preset configures the existing cops rather than banning every Sorbet API.
+It does not check `T::Generic`, `T.assert_type!`, or `T.must_because`. Run Sorbet to
+validate RBS syntax and types after autocorrection. Missing signatures receive
+`untyped` placeholders; forwarding and destructured parameters require a manually
+written signature.
+
 ## The Cops
 All cops are located under [`lib/rubocop/cop/sorbet`](lib/rubocop/cop/sorbet), and contain examples/documentation.
 
