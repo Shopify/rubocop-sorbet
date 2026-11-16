@@ -10,6 +10,20 @@ module RuboCop
           @cop = ForbidTHelpers.new
         end
 
+        def test_reports_the_helper_among_multiple_modules
+          [
+            "extend Other, ::T::Helpers, Another",
+            "include T::Helpers, Other",
+            "self&.extend Other, T::Helpers",
+          ].each do |source|
+            method = source.include?("include") ? "include" : "extend"
+            assert_offense(<<~RUBY)
+              #{source}
+              #{"^" * source.length} Sorbet/ForbidTHelpers: Do not use `#{method} T::Helpers`.
+            RUBY
+          end
+        end
+
         def test_adds_offense_when_extending_t_helpers
           assert_offense(<<~RUBY)
             class Example

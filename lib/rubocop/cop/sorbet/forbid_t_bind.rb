@@ -24,7 +24,7 @@ module RuboCop
         RESTRICT_ON_SEND = [:bind].freeze
 
         # @!method t_bind?(node)
-        def_node_matcher(:t_bind?, "(send (const {nil? cbase} :T) :bind _ _)")
+        def_node_matcher(:t_bind?, "(call (const {nil? cbase} :T) :bind _ _ ...)")
 
         def on_send(node)
           return unless t_bind?(node)
@@ -39,7 +39,7 @@ module RuboCop
           return unless node.first_argument&.self_type?
           return unless rbs_assertion_autocorrectable?(node)
 
-          type = ::RBI::Type.parse_string(node.last_argument.source).rbs_string
+          type = ::RBI::Type.parse_string(node.arguments[1].source).rbs_string
           corrector.replace(node, "#: self as #{type}")
         rescue ::RBI::Type::Error
           nil

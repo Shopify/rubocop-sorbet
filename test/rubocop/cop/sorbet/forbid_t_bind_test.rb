@@ -8,6 +8,37 @@ module RuboCop
       class ForbidTBindTest < ::Minitest::Test
         MSG = "Do not use `T.bind`."
 
+        def test_reports_other_supported_call_forms
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          [
+            "::T.bind(self, String)",
+            "T.bind(self, String, checked: false)",
+            "T&.bind(self, String)",
+          ].each do |source|
+            assert_offense(<<~RUBY)
+              #{source}
+              #{"^" * source.length} #{MSG}
+            RUBY
+          end
+        end
+
+        def test_ignores_other_receivers
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          assert_no_offenses(<<~RUBY)
+            Other::T.bind(value, String)
+          RUBY
+        end
+
+        def test_autocorrects_optional_arguments_using_the_type_argument
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => true))
+
+          source = "T.bind(self, String, checked: false)"
+          assert_offense("#{source}\n#{"^" * source.length} #{MSG}\n")
+          assert_correction("#: self as String\n")
+        end
+
         def test_adds_offense_when_using_t_bind
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
 

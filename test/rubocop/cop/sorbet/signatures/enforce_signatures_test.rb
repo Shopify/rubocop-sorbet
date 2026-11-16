@@ -302,26 +302,43 @@ module RuboCop
             RUBY
           end
 
-          def test_makes_offense_if_method_has_blank_line_separating_rbs_signature
-            assert_offense(<<~RUBY)
+          def test_allows_blank_lines_between_rbs_signature_and_method
+            assert_no_offenses(<<~RUBY)
               #: -> void
 
+              def foo; end
+            RUBY
+          end
+
+          def test_allows_blank_lines_and_regular_comments_before_method
+            assert_no_offenses(<<~RUBY)
+              #: -> void
+
+              # note
+              def foo; end
+            RUBY
+          end
+
+          def test_does_not_reuse_rbs_comment_across_a_ruby_statement
+            assert_offense(<<~RUBY)
+              #: -> void
+              value = 1
               def foo; end
               ^^^^^^^^^^^^ #{MSG}
             RUBY
           end
 
-          # An RBS signature separated from the method by a blank line is not
-          # attached to it, even when an ordinary comment sits immediately
-          # above the method. The contiguous-comment lookup must not reach back
-          # past the blank line and pick up the stale `#:` signature.
-          def test_makes_offense_if_rbs_signature_separated_by_blank_line_from_adjacent_comment
-            assert_offense(<<~RUBY)
-              #: -> void
+          def test_allows_blank_lines_around_rbs_continuations_and_regular_comments
+            assert_no_offenses(<<~RUBY)
+              class Foo
+                #: (
+                #|   Integer
+                #| ) -> void
 
-              # note
-              def foo; end
-              ^^^^^^^^^^^^ #{MSG}
+                # Documentation for foo.
+
+                def foo(value); end
+              end
             RUBY
           end
 
