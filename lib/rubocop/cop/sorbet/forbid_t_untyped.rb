@@ -22,7 +22,7 @@ module RuboCop
         RESTRICT_ON_SEND = [:untyped].freeze
 
         # @!method t_untyped?(node)
-        def_node_matcher(:t_untyped?, "(send (const nil? :T) :untyped)")
+        def_node_matcher(:t_untyped?, "(send (const {nil? cbase} :T) :untyped)")
 
         def on_send(node)
           add_offense(node) if t_untyped?(node)

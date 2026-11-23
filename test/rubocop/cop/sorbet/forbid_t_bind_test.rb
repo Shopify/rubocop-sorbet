@@ -8,6 +8,14 @@ module RuboCop
       class ForbidTBindTest < ::Minitest::Test
         MSG = "Do not use `T.bind`."
 
+        def test_ignores_other_receivers
+          @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
+
+          assert_no_offenses(<<~RUBY)
+            Other::T.bind(value, String)
+          RUBY
+        end
+
         def test_adds_offense_when_using_t_bind
           @cop = target_cop.new(cop_config("AutocorrectToRBS" => false))
 

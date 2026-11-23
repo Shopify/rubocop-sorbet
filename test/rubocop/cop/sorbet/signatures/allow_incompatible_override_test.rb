@@ -111,10 +111,21 @@ module RuboCop
             RUBY
           end
 
+          def test_disallows_rbs_override_annotation_separated_by_blank_lines
+            assert_offense(<<~RUBY)
+              # @override(allow_incompatible: true)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+
+              #: () -> void
+
+              def foo; end
+            RUBY
+          end
+
           def test_allows_unattached_rbs_override_annotation
             assert_no_offenses(<<~RUBY)
               # @override(allow_incompatible: true)
-
+              value = 1
               #: () -> void
               def foo; end
             RUBY

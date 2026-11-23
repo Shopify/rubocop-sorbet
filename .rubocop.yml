@@ -31,6 +31,7 @@ InternalAffairs/OnSendWithoutOnCSend:
     - lib/rubocop/cop/sorbet/callback_conditionals_binding.rb
     - lib/rubocop/cop/sorbet/forbid_include_const_literal.rb
     - lib/rubocop/cop/sorbet/forbid_t_struct.rb
+    - lib/rubocop/cop/sorbet/forbid_t_type_alias.rb
     - lib/rubocop/cop/sorbet/forbid_t_untyped.rb
     - lib/rubocop/cop/sorbet/implicit_conversion_method.rb
     - lib/rubocop/cop/sorbet/rbi/forbid_extend_t_sig_helpers_in_shims.rb

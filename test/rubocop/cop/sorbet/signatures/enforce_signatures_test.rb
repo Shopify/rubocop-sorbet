@@ -302,26 +302,109 @@ module RuboCop
             RUBY
           end
 
-          def test_makes_offense_if_method_has_blank_line_separating_rbs_signature
-            assert_offense(<<~RUBY)
+          def test_allows_blank_lines_between_rbs_signature_and_method
+            assert_no_offenses(<<~RUBY)
               #: -> void
 
+              def foo; end
+            RUBY
+          end
+
+          def test_type_alias_does_not_satisfy_method_signature_requirement
+            @cop = target_cop.new(cop_config("Style" => "rbs"))
+
+            assert_offense(<<~RUBY)
+              #: type name = String
+
+              def foo; end
+              ^^^^^^^^^^^^ Each method is required to have an RBS signature.
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: type name = String
+
+              #: -> untyped
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_keeps_type_alias_above_an_existing_sig
+            @cop = target_cop.new(cop_config("Style" => "sig"))
+
+            assert_no_offenses(<<~RUBY)
+              #: type name = String
+
+              sig { returns(String) }
+              def foo; "name"; end
+            RUBY
+          end
+
+          def test_enforce_sig_keeps_type_alias_when_converting_method_signature
+            @cop = target_cop.new(cop_config("Style" => "sig"))
+
+            assert_offense(<<~RUBY)
+              #: type name = String
+
+              #: -> String
+              ^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+              def foo; "name"; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+              #: type name = String
+
+              sig { returns(String) }
+              def foo; "name"; end
+            RUBY
+          end
+
+          def test_enforce_sig_does_not_convert_an_intervening_type_alias
+            @cop = target_cop.new(cop_config("Style" => "sig"))
+
+            ["override", "abstract"].each do |annotation|
+              assert_offense(<<~RUBY)
+                # @#{annotation}
+
+                #: type name_type = String
+
+                #: -> String
+                ^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+                def foo = super
+              RUBY
+
+              assert_no_corrections
+            end
+          end
+
+          def test_allows_blank_lines_and_regular_comments_before_method
+            assert_no_offenses(<<~RUBY)
+              #: -> void
+
+              # note
+              def foo; end
+            RUBY
+          end
+
+          def test_does_not_reuse_rbs_comment_across_a_ruby_statement
+            assert_offense(<<~RUBY)
+              #: -> void
+              value = 1
               def foo; end
               ^^^^^^^^^^^^ #{MSG}
             RUBY
           end
 
-          # An RBS signature separated from the method by a blank line is not
-          # attached to it, even when an ordinary comment sits immediately
-          # above the method. The contiguous-comment lookup must not reach back
-          # past the blank line and pick up the stale `#:` signature.
-          def test_makes_offense_if_rbs_signature_separated_by_blank_line_from_adjacent_comment
-            assert_offense(<<~RUBY)
-              #: -> void
+          def test_allows_blank_lines_around_rbs_continuations_and_regular_comments
+            assert_no_offenses(<<~RUBY)
+              class Foo
+                #: (
+                #|   Integer
+                #| ) -> void
 
-              # note
-              def foo; end
-              ^^^^^^^^^^^^ #{MSG}
+                # Documentation for foo.
+
+                def foo(value); end
+              end
             RUBY
           end
 
@@ -482,6 +565,63 @@ module RuboCop
             RUBY
           end
 
+          def test_enforce_sig_removes_abstract_body_across_a_blank_line
+            @cop = target_cop.new(cop_config("Style" => "sig"))
+
+            assert_offense(<<~RUBY)
+              # @abstract
+              #: -> Integer
+              ^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+
+              def foo = super
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+              sig { abstract.returns(Integer) }
+
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_keeps_abstract_annotation_separated_from_signature
+            @cop = target_cop.new(cop_config("Style" => "sig"))
+
+            assert_offense(<<~RUBY)
+              # @abstract
+
+              # Documentation for foo.
+              #: -> Integer
+              ^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+              def foo = super
+            RUBY
+
+            assert_correction(<<~RUBY)
+              # @abstract
+              # Documentation for foo.
+              sig { abstract.returns(Integer) }
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_reads_abstract_annotation_after_signature
+            @cop = target_cop.new(cop_config("Style" => "sig"))
+
+            assert_offense(<<~RUBY)
+              #: -> Integer
+              ^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+
+              # @abstract
+              private def foo = super
+            RUBY
+
+            assert_correction(<<~RUBY)
+              sig { abstract.returns(Integer) }
+              # @abstract
+              private def foo; end
+            RUBY
+          end
+
           def test_enforce_sig_removes_multiline_abstract_body_preserving_header
             @cop = target_cop.new(cop_config({
               "Style" => "sig",
@@ -540,6 +680,47 @@ module RuboCop
             assert_correction(<<~RUBY)
               sig { abstract.returns(Integer) }
               def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_preserves_documentation_when_removing_separated_rbs_comments
+            @cop = target_cop.new(cop_config("Style" => "sig"))
+
+            assert_offense(<<~RUBY)
+              # @abstract
+
+              # Documentation for foo.
+              #: -> Integer
+              ^^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+              sig { abstract.returns(Integer) }
+              def foo = super
+            RUBY
+
+            assert_correction(<<~RUBY)
+
+              # Documentation for foo.
+              sig { abstract.returns(Integer) }
+              def foo; end
+            RUBY
+          end
+
+          def test_enforce_sig_preserves_yard_comments_when_removing_rbs_signature
+            @cop = target_cop.new(cop_config("Style" => "sig"))
+
+            assert_offense(<<~RUBY)
+              #: -> String
+              ^^^^^^^^^^^^ Use sig block signatures rather than RBS signature comments.
+
+              # @return [String] the name
+              sig { returns(String) }
+              def foo; "name"; end
+            RUBY
+
+            assert_correction(<<~RUBY)
+
+              # @return [String] the name
+              sig { returns(String) }
+              def foo; "name"; end
             RUBY
           end
 

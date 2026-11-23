@@ -12,6 +12,19 @@ module RuboCop
           @cop = ForbidTUntyped.new
         end
 
+        def test_reports_absolute_t_call
+          assert_offense(<<~RUBY)
+            ::T.untyped
+            ^^^^^^^^^^^ #{MSG}
+          RUBY
+        end
+
+        def test_ignores_other_receivers
+          assert_no_offenses(<<~RUBY)
+            Other::T.untyped
+          RUBY
+        end
+
         def test_adds_offense_for_simple_usage
           assert_offense(<<~RUBY)
             T.untyped

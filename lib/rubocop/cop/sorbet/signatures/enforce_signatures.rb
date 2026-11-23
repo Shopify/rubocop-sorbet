@@ -132,9 +132,9 @@ module RuboCop
               add_offense(first_comment, message: "Use sig block signatures rather than RBS signature comments.") do |corrector|
                 abstract_method = sig_nodes.empty? ? abstract_rbs?(node) : abstract_sig?(sig_nodes)
                 if sig_nodes.empty?
-                  autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
+                  next unless autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
                 else
-                  remove_rbs(corrector, rbs_signatures)
+                  remove_rbs(corrector, rbs_node, rbs_signatures)
                 end
                 remove_abstract_body(corrector, node) if abstract_method
               end
@@ -170,19 +170,24 @@ module RuboCop
         end
 
         def autocorrect_rbs_to_sigs(corrector, node, rbs_signatures)
-          comments = rbs_signatures.flat_map(&:comments)
-          range = rbs_correction_range(comments)
+          comments = rbs_comments(node, rbs_signatures)
+          range = comments.first.source_range.with(end_pos: comments.last.source_range.end_pos)
+          return if processed_source.each_comment_in_lines(range.first_line..range.last_line).any? do |comment|
+            comment.text.match?(::RuboCop::Sorbet::RBSParser::RBS_TYPE_ALIAS_PREFIX)
+          end
+
           rbs_source = range.source.lines.map(&:lstrip).join
           translated = translate_rbs_to_sigs("#{rbs_source}\n#{node.source}")
           replacement = translated_signature_prefix(translated).rstrip
           indent = " " * range.column
           corrector.replace(range, replacement.gsub("\n", "\n#{indent}"))
+          true
         end
 
-        def remove_rbs(corrector, rbs_signatures)
-          comments = rbs_signatures.flat_map(&:comments)
-          range = range_by_whole_lines(rbs_correction_range(comments), include_final_newline: true)
-          corrector.remove(range)
+        def remove_rbs(corrector, node, rbs_signatures)
+          rbs_comments(node, rbs_signatures).each do |comment|
+            corrector.remove(range_by_whole_lines(comment.source_range, include_final_newline: true))
+          end
         end
 
         def autocorrect_sigs_to_rbs(corrector, node, sig_nodes)
@@ -283,18 +288,10 @@ module RuboCop
           sig_nodes.first.source_range.with(end_pos: sig_nodes.last.source_range.end_pos)
         end
 
-        def rbs_correction_range(comments)
-          first_comment = comments.first
-          expected_line = first_comment.loc.line
-          processed_source.comments.reverse_each do |comment|
-            next if comment.loc.line >= first_comment.loc.line
-            break unless comment.loc.line + 1 == expected_line && comment.text.start_with?("# @")
-
-            first_comment = comment
-            expected_line = comment.loc.line
-          end
-
-          first_comment.source_range.with(end_pos: comments.last.source_range.end_pos)
+        def rbs_comments(node, rbs_signatures)
+          comments = rbs_signatures.flat_map(&:comments)
+          comments.concat(::RuboCop::Sorbet::RBSParser.rbs_annotations_before(processed_source, node))
+          comments.sort_by! { |comment| comment.loc.line }
         end
 
         def translated_signature_prefix(translated, reject_sig: false)
