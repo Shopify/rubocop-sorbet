@@ -325,6 +325,27 @@ module RuboCop
           RUBY
         end
 
+        def test_corrects_super_and_yield_arguments_without_annotations
+          assert_offense(<<~RUBY)
+            def foo
+              super T::Hash[Symbol, Integer].new
+                    ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              yield T::Hash[Symbol, Integer].new, 1
+                    ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+              super(T::Hash[Symbol, Integer].new)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^ #{MSG}
+            end
+          RUBY
+
+          assert_correction(<<~RUBY)
+            def foo
+              super ({})
+              yield ({}), 1
+              super({})
+            end
+          RUBY
+        end
+
         def test_corrects_nested_expressions_without_annotating_the_enclosing_assignment
           assert_offense(<<~RUBY)
             size = T::Array[String].new.size
